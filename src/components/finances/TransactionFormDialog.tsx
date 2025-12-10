@@ -26,6 +26,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { TransactionFormData } from '@/hooks/useTransactions';
 
 const transactionSchema = z.object({
@@ -197,12 +198,10 @@ export function TransactionFormDialog({
                 <FormItem>
                   <FormLabel>Valor *</FormLabel>
                   <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0,00"
-                      {...field}
+                    <CurrencyInput
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="R$ 0,00"
                     />
                   </FormControl>
                   <FormMessage />

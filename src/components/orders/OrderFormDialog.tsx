@@ -33,6 +33,8 @@ import { Loader2, Plus, Trash2, ShoppingBag } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData } from '@/hooks/useOrders';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { formatCurrency } from '@/lib/masks';
 
 const orderSchema = z.object({
   client_id: z.string().min(1, 'Selecione um cliente'),
@@ -115,13 +117,6 @@ export function OrderFormDialog({
 
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
-  };
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
   };
 
   const totalItems = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
@@ -304,12 +299,10 @@ export function OrderFormDialog({
                   <FormItem>
                     <FormLabel>Taxa de Entrega</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0,00"
-                        {...field}
+                      <CurrencyInput
+                        value={field.value || 0}
+                        onChange={field.onChange}
+                        placeholder="R$ 0,00"
                       />
                     </FormControl>
                     <FormMessage />
