@@ -42,13 +42,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X } from 'lucide-react';
-import { useClients } from '@/hooks/useClients';
+import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus } from 'lucide-react';
+import { useClients, ClientFormData } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData, Order } from '@/hooks/useOrders';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { formatCurrency } from '@/lib/masks';
 import { useToast } from '@/hooks/use-toast';
+import { ClientFormDialog } from '@/components/clients/ClientFormDialog';
 import { cn } from '@/lib/utils';
 
 const orderSchema = z.object({
@@ -84,8 +85,9 @@ export function OrderFormDialog({
   isLoading,
   editOrder,
 }: OrderFormDialogProps) {
-  const { clients } = useClients();
+  const { clients, createClient } = useClients();
   const { products } = useProducts();
+  const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const { toast } = useToast();
   const [items, setItems] = useState<OrderItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
@@ -323,7 +325,24 @@ export function OrderFormDialog({
                           <Command>
                             <CommandInput placeholder="Digite para buscar..." />
                             <CommandList>
-                              <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                              <CommandEmpty>
+                                <div className="py-2 text-center">
+                                  <p className="text-sm text-muted-foreground mb-2">Nenhum cliente encontrado.</p>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    className="gap-1"
+                                    onClick={() => {
+                                      setClientSearchOpen(false);
+                                      setShowNewClientDialog(true);
+                                    }}
+                                  >
+                                    <UserPlus className="h-3.5 w-3.5" />
+                                    Criar novo cliente
+                                  </Button>
+                                </div>
+                              </CommandEmpty>
                               <CommandGroup>
                                 {clients.map((client) => (
                                   <CommandItem
@@ -344,6 +363,21 @@ export function OrderFormDialog({
                                   </CommandItem>
                                 ))}
                               </CommandGroup>
+                              <div className="p-1 border-t">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="w-full justify-start gap-2 text-muted-foreground"
+                                  onClick={() => {
+                                    setClientSearchOpen(false);
+                                    setShowNewClientDialog(true);
+                                  }}
+                                >
+                                  <UserPlus className="h-4 w-4" />
+                                  Criar novo cliente
+                                </Button>
+                              </div>
                             </CommandList>
                           </Command>
                         </PopoverContent>
@@ -699,6 +733,19 @@ export function OrderFormDialog({
           </Form>
         </ScrollArea>
       </DialogContent>
+
+      {/* New Client Dialog */}
+      <ClientFormDialog
+        open={showNewClientDialog}
+        onOpenChange={setShowNewClientDialog}
+        onSubmit={async (data) => {
+          const result = await createClient.mutateAsync(data);
+          if (result?.id) {
+            form.setValue('client_id', result.id);
+          }
+        }}
+        isLoading={createClient.isPending}
+      />
     </Dialog>
   );
 }
