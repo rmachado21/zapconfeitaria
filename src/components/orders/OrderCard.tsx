@@ -119,8 +119,12 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
                     return qty === 1 ? '1 un' : `${qty} un`;
                   };
                   return (
-                    <p key={index} className="text-sm text-muted-foreground">
+                    <p key={index} className={cn(
+                      "text-sm",
+                      item.isGift ? "text-success" : "text-muted-foreground"
+                    )}>
                       {formatQuantity(item.quantity, item.unitType)} {item.productName}
+                      {item.isGift && <span className="text-xs ml-1">(Brinde)</span>}
                     </p>
                   );
                 })
