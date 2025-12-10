@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
-import { Sidebar } from './Sidebar';
+import { DesktopHeader } from './DesktopHeader';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { TodayDeliveriesBanner } from './TodayDeliveriesBanner';
 import { User } from 'lucide-react';
@@ -15,7 +15,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar />
+      <DesktopHeader />
       
       {/* Top header bar for mobile */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
@@ -38,11 +38,11 @@ export function AppLayout({ children }: AppLayoutProps) {
       </div>
       
       {/* Desktop banner */}
-      <div className="hidden md:block md:ml-64">
+      <div className="hidden md:block pt-16">
         <TodayDeliveriesBanner />
       </div>
       
-      <main className="md:ml-64 pb-20 pt-12 md:pt-0 md:pb-0 min-h-screen">
+      <main className="pb-20 pt-12 md:pt-16 md:pb-0 min-h-screen">
         {children}
       </main>
       <BottomNav />
