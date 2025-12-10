@@ -9,12 +9,18 @@ interface CurrencyInputProps extends Omit<React.InputHTMLAttributes<HTMLInputEle
 
 export const CurrencyInput = forwardRef<HTMLInputElement, CurrencyInputProps>(
   ({ value, onChange, ...props }, ref) => {
+    // Convert value (in reais) to cents string for formatting
+    const valueToCentsString = (val: number) => {
+      const cents = Math.round(val * 100);
+      return cents.toString();
+    };
+
     const [displayValue, setDisplayValue] = useState(() => 
-      formatCurrencyInput((value * 100).toString())
+      formatCurrencyInput(valueToCentsString(value))
     );
 
     useEffect(() => {
-      setDisplayValue(formatCurrencyInput((value * 100).toString()));
+      setDisplayValue(formatCurrencyInput(valueToCentsString(value)));
     }, [value]);
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
