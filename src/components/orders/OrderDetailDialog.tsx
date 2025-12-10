@@ -382,8 +382,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                 Baixar PDF
               </Button>
               <Button 
-                variant="warm" 
-                className="flex-1 h-11 sm:h-10"
+                className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white"
                 onClick={handleOpenWhatsApp}
                 disabled={!order.client?.phone}
               >
