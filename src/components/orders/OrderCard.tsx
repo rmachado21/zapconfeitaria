@@ -95,7 +95,10 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
           </div>
           <p className="text-sm text-muted-foreground line-clamp-2 pt-0.5">
             {order.items.length > 0 
-              ? order.items.map(item => `${item.quantity}${item.unitType === 'kg' ? 'Kg' : 'UN'} ${item.productName}`).join(', ')
+              ? order.items.map(item => {
+                  const unitLabel = item.unitType === 'kg' ? 'Kg' : item.unitType === 'cento' ? ' Cento' : 'Un';
+                  return `${item.quantity}${unitLabel} ${item.productName}`;
+                }).join(', ')
               : 'Nenhum item'}
           </p>
         </div>
