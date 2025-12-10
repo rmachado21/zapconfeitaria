@@ -91,6 +91,7 @@ export function OrderFormDialog({
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
+  const [productSearchOpen, setProductSearchOpen] = useState(false);
 
   const isEditMode = !!editOrder;
 
@@ -359,20 +360,74 @@ export function OrderFormDialog({
                 
                 {/* Add Product Row */}
                 <div className="flex gap-2">
-                  <Select value={selectedProduct} onValueChange={setSelectedProduct}>
-                    <SelectTrigger className="flex-1">
-                      <SelectValue placeholder="Selecione um produto" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {products.map((product) => {
-                        const unitLabel = product.unit_type === 'kg' ? 'Kg' : product.unit_type === 'cento' ? 'Cento' : 'Un';
-                        return (
-                        <SelectItem key={product.id} value={product.id}>
-                          {product.name} - {formatCurrency(product.sale_price)}/{unitLabel}
-                        </SelectItem>
-                      )})}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={productSearchOpen}
+                        className={cn(
+                          "flex-1 justify-between font-normal",
+                          !selectedProduct && "text-muted-foreground"
+                        )}
+                      >
+                        {selectedProductData ? (
+                          <span className="truncate">
+                            {selectedProductData.name} - {formatCurrency(selectedProductData.sale_price)}/
+                            {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cento' : 'Un'}
+                          </span>
+                        ) : (
+                          "Buscar produto..."
+                        )}
+                        <div className="flex items-center gap-1 ml-2 shrink-0">
+                          {selectedProduct && (
+                            <X
+                              className="h-4 w-4 opacity-50 hover:opacity-100"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedProduct('');
+                              }}
+                            />
+                          )}
+                          <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                        </div>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Digite para buscar..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {products.map((product) => {
+                              const unitLabel = product.unit_type === 'kg' ? 'Kg' : product.unit_type === 'cento' ? 'Cento' : 'Un';
+                              return (
+                                <CommandItem
+                                  key={product.id}
+                                  value={product.name}
+                                  onSelect={() => {
+                                    setSelectedProduct(product.id);
+                                    setProductSearchOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      selectedProduct === product.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  <span className="flex-1 truncate">{product.name}</span>
+                                  <span className="text-xs text-muted-foreground ml-2">
+                                    {formatCurrency(product.sale_price)}/{unitLabel}
+                                  </span>
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <div className="relative">
                     <Input
                       type="number"
