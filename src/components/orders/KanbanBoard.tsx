@@ -25,6 +25,17 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
     return orders.filter((order) => order.status === status);
   };
 
+  const getColumnTotal = (status: OrderStatus) => {
+    return getOrdersByStatus(status).reduce((sum, order) => sum + (order.total_amount || 0), 0);
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
+
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || !onStatusChange) return;
 
@@ -97,9 +108,14 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                         {columnOrders.length}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1.5">
-                      {statusConfig.description}
-                    </p>
+                    <div className="flex items-center justify-between mt-1.5">
+                      <p className="text-xs text-muted-foreground">
+                        {statusConfig.description}
+                      </p>
+                      <p className="text-xs font-semibold text-primary">
+                        {formatCurrency(getColumnTotal(status))}
+                      </p>
+                    </div>
                   </div>
 
                   {/* Column Content */}
