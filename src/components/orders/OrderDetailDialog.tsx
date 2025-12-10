@@ -191,12 +191,11 @@ Ficamos à disposição! 🍰`;
               onValueChange={(value) => handleStatusChange(value as OrderStatus)}
             >
               <SelectTrigger className={cn(
-                "w-auto h-8 text-xs font-medium border-0 gap-1",
+                "w-auto h-8 text-xs font-medium border-0",
                 statusConfig.bgColor,
                 statusConfig.color
               )}>
                 <SelectValue />
-                <ChevronDown className="h-3 w-3 opacity-50" />
               </SelectTrigger>
               <SelectContent>
                 {ALL_STATUSES.map((status) => {
