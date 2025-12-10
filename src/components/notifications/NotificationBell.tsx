@@ -37,14 +37,7 @@ export function NotificationBell() {
     const client = clients.find(c => c.name === notification.clientName);
     if (!client?.phone) return;
 
-    // Birthday message template
-    const message = 
-      `🎂 Feliz Aniversário, ${client.name}! 🎉\n\n` +
-      `Desejamos a você um dia maravilhoso, repleto de alegrias e realizações!\n\n` +
-      `Com carinho,\n` +
-      `Sua Confeitaria ❤️`;
-
-    openWhatsApp(client.phone, message);
+    openWhatsApp(client.phone);
   };
 
   const getPriorityColor = (priority: Notification['priority']) => {
