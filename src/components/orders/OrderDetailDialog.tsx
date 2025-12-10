@@ -29,6 +29,7 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
+import { formatPhone } from '@/lib/masks';
 
 interface OrderDetailDialogProps {
   open: boolean;
@@ -129,7 +130,7 @@ Ficamos à disposição! 🍰`;
                   {order.client?.phone && (
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <Phone className="h-3 w-3" />
-                      {order.client.phone}
+                      {formatPhone(order.client.phone)}
                     </p>
                   )}
                 </div>
