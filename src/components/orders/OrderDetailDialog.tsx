@@ -137,8 +137,14 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
       ? format(parseISO(order.delivery_date), "dd/MM/yyyy", { locale: ptBR })
       : 'a definir';
     
+    const formatUnitType = (type: string) => {
+      if (type === 'kg') return 'Kg';
+      if (type === 'cento') return 'Cento';
+      return 'Un';
+    };
+
     const itemsList = (order.order_items || [])
-      .map(item => `• ${item.quantity}${item.unit_type === 'kg' ? 'Kg' : 'UN'} ${item.product_name}`)
+      .map(item => `• ${item.quantity} ${formatUnitType(item.unit_type)} ${item.product_name}`)
       .join('\n');
 
     const message = `Olá ${order.client?.name}! 👋
@@ -275,16 +281,18 @@ Ficamos à disposição! 🍰`;
                 Itens do Pedido
               </p>
               <div className="space-y-2">
-                {(order.order_items || []).map((item, index) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span>
-                      {item.quantity}{item.unit_type === 'kg' ? 'Kg' : 'UN'} {item.product_name}
-                    </span>
-                    <span className="font-medium">
-                      {formatCurrency(item.quantity * item.unit_price)}
-                    </span>
-                  </div>
-                ))}
+                  {(order.order_items || []).map((item, index) => {
+                    const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
+                    return (
+                    <div key={index} className="flex justify-between text-sm">
+                      <span>
+                        {item.quantity} {unitLabel} {item.product_name}
+                      </span>
+                      <span className="font-medium">
+                        {formatCurrency(item.quantity * item.unit_price)}
+                      </span>
+                    </div>
+                  )})}
               </div>
               
               <Separator className="my-3" />

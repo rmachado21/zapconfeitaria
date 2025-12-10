@@ -15,6 +15,7 @@ interface OrderItem {
   product_name: string;
   quantity: number;
   unit_price: number;
+  unit_type: string;
 }
 
 interface Order {
@@ -54,6 +55,12 @@ const formatDate = (dateString: string | null): string => {
     month: "long",
     year: "numeric",
   });
+};
+
+const formatUnitType = (type: string): string => {
+  if (type === 'kg') return 'Kg';
+  if (type === 'cento') return 'Cento';
+  return 'Un';
 };
 
 // Fetch image as base64 for PDF embedding
@@ -224,8 +231,9 @@ const handler = async (req: Request): Promise<Response> => {
     doc.setFont("helvetica", "normal");
     for (const item of typedOrder.order_items) {
       const itemTotal = item.quantity * item.unit_price;
+      const unitLabel = formatUnitType(item.unit_type || 'unit');
       doc.text(item.product_name.substring(0, 35), margin + 5, yPos);
-      doc.text(item.quantity.toString(), pageWidth - 80, yPos);
+      doc.text(`${item.quantity} ${unitLabel}`, pageWidth - 80, yPos);
       doc.text(formatCurrency(item.unit_price), pageWidth - 55, yPos);
       doc.text(formatCurrency(itemTotal), pageWidth - 30, yPos);
       yPos += 8;
