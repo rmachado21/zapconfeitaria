@@ -55,15 +55,17 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
       <CardContent className="p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
-            {/* Client & Status */}
-            <div className="flex items-center gap-2 mb-2">
-              <h3 className="font-semibold text-foreground truncate">
-                {order.clientName}
-              </h3>
+            {/* Status Badge */}
+            <div className="mb-1.5">
               <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-[10px]")}>
                 {statusConfig.label}
               </Badge>
             </div>
+
+            {/* Client Name */}
+            <h3 className="font-semibold text-foreground truncate mb-2">
+              {order.clientName}
+            </h3>
 
             {/* Items preview */}
             <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
@@ -89,7 +91,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
 
           {/* Right side: Price & Actions */}
           <div className="flex flex-col items-end gap-2">
-            <span className="font-display font-semibold text-lg text-primary">
+            <span className="font-semibold text-lg text-primary">
               {formatCurrency(order.totalAmount)}
             </span>
             <div className="flex items-center gap-1">
