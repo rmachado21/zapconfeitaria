@@ -157,7 +157,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-[550px]">
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-3">
             <Package className="h-5 w-5 text-primary" />
@@ -165,8 +165,9 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
           </DialogTitle>
         </DialogHeader>
 
+        <div className="max-h-[75dvh] overflow-y-auto space-y-4 pr-1">
         {/* Status Selector */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
           <span className="text-sm text-muted-foreground">Status:</span>
           {onStatusChange ? (
             <Select
@@ -174,7 +175,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               onValueChange={(value) => handleStatusChange(value as OrderStatus)}
             >
               <SelectTrigger className={cn(
-                "w-auto h-9 px-3 gap-2 text-sm font-semibold border shadow-sm",
+                "w-full sm:w-auto h-10 sm:h-9 px-3 gap-2 text-sm font-semibold border shadow-sm",
                 statusConfig.bgColor,
                 statusConfig.color,
                 "hover:opacity-90 transition-opacity"
@@ -249,7 +250,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
           </Card>
 
           {/* Delivery Info */}
-          <div className={cn("grid gap-3", order.delivery_address ? "grid-cols-2" : "grid-cols-1")}>
+          <div className={cn("grid gap-3", order.delivery_address ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
             <Card>
               <CardContent className="p-3">
                 <div className="flex items-center justify-between">
@@ -365,11 +366,11 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
           )}
 
           {/* Actions */}
-          <div className="flex flex-col gap-2 pt-2">
-            <div className="flex gap-2">
+          <div className="flex flex-col gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button 
                 variant="outline" 
-                className="flex-1"
+                className="flex-1 h-11 sm:h-10"
                 onClick={handleDownloadPdf}
                 disabled={isGenerating}
               >
@@ -382,7 +383,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               </Button>
               <Button 
                 variant="warm" 
-                className="flex-1"
+                className="flex-1 h-11 sm:h-10"
                 onClick={handleShareWhatsApp}
                 disabled={!order.client?.phone || isGenerating}
               >
@@ -397,12 +398,12 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
             
             {/* Edit/Delete buttons for quote and awaiting_deposit */}
             {canEditOrDelete && (
-              <div className="flex gap-3 pt-2">
+              <div className="flex justify-center sm:justify-start gap-4 pt-1">
                 {onEdit && (
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-10 px-4"
                     onClick={() => {
                       onEdit(order);
                       onOpenChange(false);
@@ -416,7 +417,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                   <Button 
                     variant="ghost" 
                     size="sm"
-                    className="text-muted-foreground hover:text-destructive"
+                    className="text-muted-foreground hover:text-destructive h-10 px-4"
                     onClick={() => setDeleteDialogOpen(true)}
                   >
                     <Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -426,6 +427,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               </div>
             )}
           </div>
+        </div>
         </div>
       </DialogContent>
 
@@ -444,11 +446,11 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               Esta ação não pode ser desfeita e todas as informações serão perdidas.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir Pedido
             </AlertDialogAction>
@@ -472,11 +474,11 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               Deseja confirmar a entrega e registro do pagamento?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingStatus(null)}>Cancelar</AlertDialogCancel>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setPendingStatus(null)}>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelivered}
-              className="bg-success text-success-foreground hover:bg-success/90"
+              className="w-full sm:w-auto bg-success text-success-foreground hover:bg-success/90"
             >
               Confirmar Entrega
             </AlertDialogAction>
