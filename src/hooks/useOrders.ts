@@ -139,7 +139,14 @@ export function useOrders() {
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
+    mutationFn: async ({ id, status, clientName, totalAmount }: { 
+      id: string; 
+      status: OrderStatus;
+      clientName?: string;
+      totalAmount?: number;
+    }) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { data, error } = await supabase
         .from('orders')
         .update({ status })
@@ -148,10 +155,34 @@ export function useOrders() {
         .single();
 
       if (error) throw error;
+
+      // Create transaction for delivered status (final payment)
+      if (status === 'delivered' && totalAmount) {
+        const finalPayment = totalAmount / 2; // Remaining 50%
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            order_id: id,
+            type: 'income',
+            description: `Pagamento Final - ${clientName || 'Cliente'}`,
+            amount: finalPayment,
+            date: new Date().toISOString().split('T')[0],
+          });
+      }
+
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      
+      if (variables.status === 'delivered') {
+        toast({
+          title: 'Pedido entregue!',
+          description: 'Pagamento final registrado automaticamente.',
+        });
+      }
     },
     onError: (error) => {
       toast({
@@ -163,7 +194,14 @@ export function useOrders() {
   });
 
   const updateDepositPaid = useMutation({
-    mutationFn: async ({ id, depositPaid }: { id: string; depositPaid: boolean }) => {
+    mutationFn: async ({ id, depositPaid, clientName, totalAmount }: { 
+      id: string; 
+      depositPaid: boolean;
+      clientName?: string;
+      totalAmount?: number;
+    }) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
       const { data, error } = await supabase
         .from('orders')
         .update({ deposit_paid: depositPaid })
@@ -172,12 +210,38 @@ export function useOrders() {
         .single();
 
       if (error) throw error;
+
+      // Create/delete transaction for deposit
+      if (depositPaid && totalAmount) {
+        const depositAmount = totalAmount / 2;
+        await supabase
+          .from('transactions')
+          .insert({
+            user_id: user.id,
+            order_id: id,
+            type: 'income',
+            description: `Sinal 50% - ${clientName || 'Cliente'}`,
+            amount: depositAmount,
+            date: new Date().toISOString().split('T')[0],
+          });
+      } else if (!depositPaid) {
+        // Remove deposit transaction if unchecked
+        await supabase
+          .from('transactions')
+          .delete()
+          .eq('order_id', id)
+          .ilike('description', '%Sinal 50%');
+      }
+
       return data;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      
       toast({
         title: variables.depositPaid ? 'Sinal marcado como pago!' : 'Sinal desmarcado',
+        description: variables.depositPaid ? 'Receita registrada automaticamente.' : undefined,
       });
     },
     onError: (error) => {
@@ -191,7 +255,13 @@ export function useOrders() {
 
   const deleteOrder = useMutation({
     mutationFn: async (id: string) => {
-      // Delete order items first
+      // Delete related transactions first
+      await supabase
+        .from('transactions')
+        .delete()
+        .eq('order_id', id);
+
+      // Delete order items
       const { error: itemsError } = await supabase
         .from('order_items')
         .delete()
@@ -209,6 +279,7 @@ export function useOrders() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
       toast({
         title: 'Pedido excluído!',
         description: 'O pedido foi removido com sucesso.',

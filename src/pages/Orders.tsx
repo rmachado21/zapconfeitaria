@@ -34,12 +34,12 @@ const Orders = () => {
     await createOrder.mutateAsync(data);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
-    updateOrderStatus.mutate({ id: orderId, status: newStatus });
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => {
+    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount });
   };
 
-  const handleDepositChange = (orderId: string, depositPaid: boolean) => {
-    updateDepositPaid.mutate({ id: orderId, depositPaid });
+  const handleDepositChange = (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number) => {
+    updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount });
   };
 
   return (
