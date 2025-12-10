@@ -39,6 +39,7 @@ interface Profile {
   pix_key: string | null;
   bank_details: string | null;
   include_terms_in_pdf: boolean;
+  custom_terms: string | null;
 }
 
 const formatCurrency = (value: number): string => {
@@ -150,7 +151,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch user profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("company_name, logo_url, pix_key, bank_details, include_terms_in_pdf")
+      .select("company_name, logo_url, pix_key, bank_details, include_terms_in_pdf, custom_terms")
       .eq("user_id", user.id)
       .single();
 
@@ -346,15 +347,25 @@ const handler = async (req: Request): Promise<Response> => {
     if (includeTerms) {
       doc.setFontSize(8);
       doc.setTextColor(120, 120, 120);
-      const terms = [
+      
+      // Use custom terms if provided, otherwise use default
+      const defaultTerms = [
         "TERMOS DE SERVIÇO:",
         "• O pedido será confirmado após o pagamento de 50% do valor total (sinal).",
         "• O restante deve ser pago na entrega/retirada do pedido.",
         "• Cancelamentos com menos de 48h de antecedência não terão reembolso do sinal.",
         "• Alterações devem ser solicitadas com pelo menos 72h de antecedência.",
       ];
+      
+      let terms: string[];
+      if (typedProfile?.custom_terms && typedProfile.custom_terms.trim()) {
+        terms = ["TERMOS DE SERVIÇO:", ...typedProfile.custom_terms.split("\n").filter(line => line.trim())];
+      } else {
+        terms = defaultTerms;
+      }
+      
       for (const term of terms) {
-        doc.text(term, margin, yPos);
+        doc.text(term.substring(0, 90), margin, yPos);
         yPos += 5;
       }
     }

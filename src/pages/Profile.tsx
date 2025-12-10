@@ -41,6 +41,7 @@ const profileSchema = z.object({
   pix_key: z.string().max(100).optional().or(z.literal('')),
   bank_details: z.string().max(500).optional().or(z.literal('')),
   include_terms_in_pdf: z.boolean().optional(),
+  custom_terms: z.string().max(1000).optional().or(z.literal('')),
 });
 
 const Profile = () => {
@@ -58,6 +59,7 @@ const Profile = () => {
       pix_key: '',
       bank_details: '',
       include_terms_in_pdf: true,
+      custom_terms: '',
     },
   });
 
@@ -69,6 +71,7 @@ const Profile = () => {
         pix_key: profile.pix_key || '',
         bank_details: profile.bank_details || '',
         include_terms_in_pdf: profile.include_terms_in_pdf ?? true,
+        custom_terms: profile.custom_terms || '',
       });
     }
   }, [profile, form]);
@@ -265,6 +268,27 @@ const Profile = () => {
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="custom_terms"
+                    render={({ field }) => (
+                      <FormItem className="mt-4">
+                        <FormLabel>Termos Personalizados</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            placeholder={"• O pedido será confirmado após o pagamento de 50% do valor total.\n• O restante deve ser pago na entrega.\n• Cancelamentos com menos de 48h não terão reembolso."}
+                            className="resize-none text-sm"
+                            rows={5}
+                            {...field}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Deixe em branco para usar os termos padrão. Cada linha será um item.
+                        </p>
                       </FormItem>
                     )}
                   />
