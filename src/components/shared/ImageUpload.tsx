@@ -129,7 +129,10 @@ export function ImageUpload({
                 Clique para enviar imagem
               </span>
               <span className="text-xs text-muted-foreground/60">
-                JPG, PNG ou WebP (máx. 5MB)
+                {bucket === 'company-logos' 
+                  ? 'Tamanho ideal: 400x150px (PNG ou JPG, máx. 5MB)'
+                  : 'JPG, PNG ou WebP (máx. 5MB)'
+                }
               </span>
             </>
           )}
