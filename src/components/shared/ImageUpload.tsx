@@ -12,7 +12,7 @@ interface ImageUploadProps {
   onUpload: (url: string) => void;
   onRemove?: () => void;
   className?: string;
-  aspectRatio?: 'square' | 'wide' | 'logo';
+  aspectRatio?: 'square' | 'wide' | 'logo' | 'compact';
 }
 
 export function ImageUpload({
@@ -97,7 +97,8 @@ export function ImageUpload({
           "relative rounded-lg overflow-hidden border border-border bg-muted",
           effectiveAspectRatio === 'square' && 'aspect-square',
           effectiveAspectRatio === 'wide' && 'aspect-video',
-          effectiveAspectRatio === 'logo' && 'aspect-[8/3] min-h-[120px]'
+          effectiveAspectRatio === 'logo' && 'aspect-[8/3] min-h-[120px]',
+          effectiveAspectRatio === 'compact' && 'h-24'
         )}>
           <img
             src={preview}
@@ -123,10 +124,11 @@ export function ImageUpload({
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading}
           className={cn(
-            "w-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors cursor-pointer",
+            "w-full flex flex-col items-center justify-center gap-1 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors cursor-pointer",
             effectiveAspectRatio === 'square' && 'aspect-square',
             effectiveAspectRatio === 'wide' && 'aspect-video',
             effectiveAspectRatio === 'logo' && 'aspect-[8/3] min-h-[120px]',
+            effectiveAspectRatio === 'compact' && 'h-20 py-2',
             uploading && 'opacity-50 cursor-not-allowed'
           )}
         >
@@ -134,8 +136,8 @@ export function ImageUpload({
             <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
           ) : (
             <>
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
-              <span className="text-sm text-muted-foreground">
+              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">
                 Clique para enviar imagem
               </span>
               <span className="text-xs text-muted-foreground/60">
