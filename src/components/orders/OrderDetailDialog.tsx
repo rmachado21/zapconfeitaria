@@ -197,14 +197,33 @@ Ficamos à disposição! 🍰`;
               )}>
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="min-w-[200px]">
                 {ALL_STATUSES.map((status) => {
                   const config = ORDER_STATUS_CONFIG[status];
+                  const isSelected = status === order.status;
                   return (
-                    <SelectItem key={status} value={status}>
-                      <div className="flex items-center gap-2">
-                        <div className={cn("w-2 h-2 rounded-full", config.bgColor)} />
-                        {config.label}
+                    <SelectItem 
+                      key={status} 
+                      value={status}
+                      className="py-2.5 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 w-full">
+                        <div className={cn(
+                          "w-3 h-3 rounded-full ring-2 ring-offset-1",
+                          config.dotColor,
+                          isSelected ? "ring-primary/50" : "ring-transparent"
+                        )} />
+                        <div className="flex flex-col">
+                          <span className={cn(
+                            "font-medium",
+                            isSelected && "text-primary"
+                          )}>
+                            {config.label}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">
+                            {config.description}
+                          </span>
+                        </div>
                       </div>
                     </SelectItem>
                   );
