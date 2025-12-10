@@ -100,7 +100,7 @@ const Profile = () => {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-6 space-y-6 max-w-2xl mx-auto">
+      <div className="px-5 py-4 md:px-8 md:py-6 space-y-6 max-w-2xl mx-auto">
         {/* Profile Header */}
         <Card variant="gradient" className="overflow-hidden">
           <CardContent className="p-6">
