@@ -136,20 +136,26 @@ export function OrderFormDialog({
     }
 
     // Validate based on unit type
-    const isKg = selectedProductData.unit_type === 'kg';
-    const minQuantity = isKg ? 0.1 : 1;
+    const unitType = selectedProductData.unit_type;
+    const getMinQuantity = (type: string) => {
+      if (type === 'kg') return 0.1;
+      if (type === 'cento') return 50;
+      return 1;
+    };
+    const minQuantity = getMinQuantity(unitType);
+    const unitLabel = unitType === 'kg' ? 'Kg' : unitType === 'cento' ? 'Cento' : 'Un';
     
     if (quantity < minQuantity) {
       toast({
         title: 'Quantidade mínima',
-        description: isKg ? 'Mínimo de 0.1 Kg' : 'Mínimo de 1 unidade',
+        description: `Mínimo de ${minQuantity} ${unitLabel}`,
         variant: 'destructive',
       });
       return;
     }
 
-    // Normalize quantity: 2 decimals for Kg, integer for UN
-    const validQuantity = isKg 
+    // Normalize quantity: 2 decimals for Kg, integer for UN/Cento
+    const validQuantity = unitType === 'kg' 
       ? Math.round(quantity * 100) / 100
       : Math.floor(quantity);
 
@@ -176,14 +182,25 @@ export function OrderFormDialog({
   const handleUpdateItemQuantity = (index: number, delta: number) => {
     const newItems = [...items];
     const item = newItems[index];
-    const isKg = item.unit_type === 'kg';
-    const step = isKg ? 0.5 : 1;
-    const minQty = isKg ? 0.1 : 1;
+    const unitType = item.unit_type;
     
+    const getStep = (type: string) => {
+      if (type === 'kg') return 0.5;
+      if (type === 'cento') return 50;
+      return 1;
+    };
+    const getMinQty = (type: string) => {
+      if (type === 'kg') return 0.1;
+      if (type === 'cento') return 50;
+      return 1;
+    };
+    
+    const step = getStep(unitType);
+    const minQty = getMinQty(unitType);
     const newQuantity = item.quantity + (delta * step);
     
     if (newQuantity >= minQty) {
-      newItems[index].quantity = isKg ? Math.round(newQuantity * 100) / 100 : Math.floor(newQuantity);
+      newItems[index].quantity = unitType === 'kg' ? Math.round(newQuantity * 100) / 100 : Math.floor(newQuantity);
       setItems(newItems);
     }
   };
@@ -280,8 +297,8 @@ export function OrderFormDialog({
                   <div className="relative">
                     <Input
                       type="number"
-                      min={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
-                      step={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                      min={selectedProductData?.unit_type === 'kg' ? '0.1' : selectedProductData?.unit_type === 'cento' ? '50' : '1'}
+                      step={selectedProductData?.unit_type === 'kg' ? '0.1' : selectedProductData?.unit_type === 'cento' ? '50' : '1'}
                       value={quantity}
                       onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
                       className="w-24 pr-8"
