@@ -223,10 +223,11 @@ export function TransactionFormDialog({
               )}
             />
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
+                className="w-full sm:w-auto"
                 onClick={() => onOpenChange(false)}
               >
                 Cancelar
@@ -234,6 +235,7 @@ export function TransactionFormDialog({
               <Button 
                 type="submit" 
                 variant={transactionType === 'income' ? 'default' : 'destructive'}
+                className="w-full sm:w-auto"
                 disabled={isLoading}
               >
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
