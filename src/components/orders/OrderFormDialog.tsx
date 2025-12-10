@@ -91,25 +91,29 @@ export function OrderFormDialog({
     }
   }, [open, form]);
 
+  const selectedProductData = products.find(p => p.id === selectedProduct);
+
   const handleAddItem = () => {
-    if (!selectedProduct) return;
+    if (!selectedProduct || !selectedProductData) return;
     
-    const product = products.find(p => p.id === selectedProduct);
-    if (!product) return;
+    // Validate quantity based on unit type
+    const validQuantity = selectedProductData.unit_type === 'kg' 
+      ? Math.max(0.1, parseFloat(quantity.toFixed(2)))
+      : Math.max(1, Math.floor(quantity));
 
     const existingIndex = items.findIndex(i => i.product_id === selectedProduct);
     
     if (existingIndex >= 0) {
       const newItems = [...items];
-      newItems[existingIndex].quantity += quantity;
+      newItems[existingIndex].quantity += validQuantity;
       setItems(newItems);
     } else {
       setItems([...items, {
-        product_id: product.id,
-        product_name: product.name,
-        quantity,
-        unit_price: product.sale_price,
-        unit_type: product.unit_type,
+        product_id: selectedProductData.id,
+        product_name: selectedProductData.name,
+        quantity: validQuantity,
+        unit_price: selectedProductData.sale_price,
+        unit_type: selectedProductData.unit_type,
       }]);
     }
 
@@ -199,20 +203,27 @@ export function OrderFormDialog({
                     <SelectContent>
                       {products.map((product) => (
                         <SelectItem key={product.id} value={product.id}>
-                          {product.name} - {formatCurrency(product.sale_price)}
+                          {product.name} - {formatCurrency(product.sale_price)}/{product.unit_type === 'kg' ? 'Kg' : 'UN'}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input
-                    type="number"
-                    min="0.1"
-                    step="0.1"
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
-                    className="w-20"
-                    placeholder="Qtd"
-                  />
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      min={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                      step={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                      value={quantity}
+                      onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
+                      className="w-24 pr-8"
+                      placeholder="Qtd"
+                    />
+                    {selectedProductData && (
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                        {selectedProductData.unit_type === 'kg' ? 'Kg' : 'UN'}
+                      </span>
+                    )}
+                  </div>
                   <Button
                     type="button"
                     variant="outline"
