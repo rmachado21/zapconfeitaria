@@ -139,7 +139,6 @@ export function OrderFormDialog({
     const unitType = selectedProductData.unit_type;
     const getMinQuantity = (type: string) => {
       if (type === 'kg') return 0.1;
-      if (type === 'cento') return 50;
       return 1;
     };
     const minQuantity = getMinQuantity(unitType);
@@ -186,12 +185,10 @@ export function OrderFormDialog({
     
     const getStep = (type: string) => {
       if (type === 'kg') return 0.5;
-      if (type === 'cento') return 50;
       return 1;
     };
     const getMinQty = (type: string) => {
       if (type === 'kg') return 0.1;
-      if (type === 'cento') return 50;
       return 1;
     };
     
@@ -297,8 +294,8 @@ export function OrderFormDialog({
                   <div className="relative">
                     <Input
                       type="number"
-                      min={selectedProductData?.unit_type === 'kg' ? '0.1' : selectedProductData?.unit_type === 'cento' ? '50' : '1'}
-                      step={selectedProductData?.unit_type === 'kg' ? '0.1' : selectedProductData?.unit_type === 'cento' ? '50' : '1'}
+                      min={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                      step={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
                       value={quantity}
                       onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
                       className="w-24 pr-8"
