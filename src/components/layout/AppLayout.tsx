@@ -6,17 +6,29 @@ import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { TodayDeliveriesBanner } from "./TodayDeliveriesBanner";
 import { User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useScrollDirection } from "@/hooks/useScrollDirection";
+import { cn } from "@/lib/utils";
 import zapLogo from "@/assets/zap-confeitaria-logo.png";
+
 interface AppLayoutProps {
   children: ReactNode;
 }
+
 export function AppLayout({ children }: AppLayoutProps) {
+  const isHeaderVisible = useScrollDirection();
+
   return (
     <div className="min-h-screen bg-background">
       <DesktopHeader />
 
       {/* Top header bar for mobile */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+      <div 
+        className={cn(
+          "md:hidden fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border",
+          "transition-transform duration-300 ease-in-out",
+          isHeaderVisible ? "translate-y-0" : "-translate-y-full"
+        )}
+      >
         <div className="flex items-center justify-between px-4 py-2">
           <img src={zapLogo} alt="Zap Confeitaria" className="h-8 sm:h-10 w-auto object-contain" />
           <div className="flex items-center gap-1">
