@@ -89,10 +89,10 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   className={cn(
-                    "flex-shrink-0 w-80 rounded-2xl border transition-all duration-300 ease-out",
+                    "flex-shrink-0 w-80 rounded-2xl border transition-all duration-200",
                     statusConfig.columnBg,
                     statusConfig.columnBorder,
-                    snapshot.isDraggingOver && "ring-2 ring-primary/50 border-primary/50 scale-[1.01] bg-primary/5"
+                    snapshot.isDraggingOver && "ring-2 ring-primary/50 border-primary/50"
                   )}
                 >
                   {/* Column Header */}
@@ -135,16 +135,9 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                                 ref={provided.innerRef}
                                 {...provided.draggableProps}
                                 {...provided.dragHandleProps}
-                                style={{
-                                  ...provided.draggableProps.style,
-                                  transition: snapshot.isDragging 
-                                    ? provided.draggableProps.style?.transition 
-                                    : 'all 0.25s cubic-bezier(0.2, 0, 0, 1)',
-                                }}
                                 className={cn(
-                                  "transition-all duration-200",
-                                  snapshot.isDragging && "rotate-1 scale-[1.02] shadow-xl shadow-primary/20 z-50",
-                                  snapshot.isDropAnimating && "!transition-all !duration-300"
+                                  "transition-transform",
+                                  snapshot.isDragging && "rotate-2 scale-105"
                                 )}
                               >
                                 <OrderCard 
