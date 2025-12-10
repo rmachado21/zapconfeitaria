@@ -1,11 +1,13 @@
+import { Order as DBOrder } from '@/hooks/useOrders';
 import { Order, OrderStatus, ORDER_STATUS_CONFIG } from '@/types';
 import { OrderCard } from './OrderCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 interface OrdersListProps {
-  orders: Order[];
-  onOrderClick?: (order: Order) => void;
+  orders: DBOrder[];
+  onOrderClick?: (order: DBOrder) => void;
+  onDepositChange?: (orderId: string, depositPaid: boolean) => void;
 }
 
 const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
@@ -16,11 +18,35 @@ const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
   { value: 'ready', label: 'Pronto' },
 ];
 
-export function OrdersList({ orders, onOrderClick }: OrdersListProps) {
+export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersListProps) {
   const getFilteredOrders = (status: 'all' | OrderStatus) => {
     if (status === 'all') return orders.filter(o => o.status !== 'delivered');
     return orders.filter((order) => order.status === status);
   };
+
+  const convertToOrderType = (dbOrder: DBOrder): Order => ({
+    id: dbOrder.id,
+    clientId: dbOrder.client_id || '',
+    clientName: dbOrder.client?.name || 'Cliente não encontrado',
+    clientPhone: dbOrder.client?.phone || '',
+    items: (dbOrder.order_items || []).map(item => ({
+      id: item.id,
+      productId: item.product_id || '',
+      productName: item.product_name,
+      quantity: item.quantity,
+      unitPrice: item.unit_price,
+      total: item.quantity * item.unit_price,
+    })),
+    status: dbOrder.status as OrderStatus,
+    deliveryDate: dbOrder.delivery_date || '',
+    deliveryAddress: dbOrder.delivery_address || undefined,
+    deliveryFee: dbOrder.delivery_fee,
+    totalAmount: dbOrder.total_amount,
+    depositPaid: dbOrder.deposit_paid,
+    depositAmount: dbOrder.total_amount / 2,
+    notes: dbOrder.notes || undefined,
+    createdAt: dbOrder.created_at,
+  });
 
   return (
     <div className="md:hidden">
@@ -57,7 +83,11 @@ export function OrdersList({ orders, onOrderClick }: OrdersListProps) {
                   className={cn("animate-slide-up", `stagger-${Math.min(index + 1, 5)}`)}
                   style={{ opacity: 0, animationFillMode: 'forwards' }}
                 >
-                  <OrderCard order={order} onClick={() => onOrderClick?.(order)} />
+                  <OrderCard 
+                    order={convertToOrderType(order)} 
+                    onClick={() => onOrderClick?.(order)}
+                    onDepositChange={(paid) => onDepositChange?.(order.id, paid)}
+                  />
                 </div>
               ))
             )}

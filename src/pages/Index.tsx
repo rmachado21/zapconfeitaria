@@ -3,30 +3,42 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
 import { Button } from '@/components/ui/button';
-import { mockOrders, mockTransactions } from '@/data/mockData';
-import { ShoppingBag, TrendingUp, Clock, Plus, CakeSlice } from 'lucide-react';
+import { useOrders } from '@/hooks/useOrders';
+import { useClients } from '@/hooks/useClients';
+import { useProducts } from '@/hooks/useProducts';
+import { OrderStatus } from '@/types';
+import { ShoppingBag, TrendingUp, Clock, Plus, CakeSlice, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
+  const { orders, isLoading, updateOrderStatus, updateDepositPaid } = useOrders();
+  const { clients } = useClients();
+  const { products } = useProducts();
 
-  // Calculate stats
-  const activeOrders = mockOrders.filter(o => o.status !== 'delivered').length;
-  const monthlyIncome = mockTransactions
-    .filter(t => t.type === 'income')
-    .reduce((acc, t) => acc + t.amount, 0);
-  const monthlyExpenses = mockTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc, t) => acc + t.amount, 0);
-  const pendingDeposits = mockOrders
-    .filter(o => !o.depositPaid && o.status !== 'delivered')
-    .reduce((acc, o) => acc + o.depositAmount, 0);
+  // Calculate stats from real data
+  const activeOrders = orders.filter(o => o.status !== 'delivered');
+  const pendingDeposits = orders
+    .filter(o => !o.deposit_paid && o.status !== 'delivered')
+    .reduce((sum, o) => sum + (o.total_amount / 2), 0);
+  
+  const monthlyIncome = orders
+    .filter(o => o.status === 'delivered')
+    .reduce((sum, o) => sum + o.total_amount, 0);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
       currency: 'BRL',
     }).format(value);
+  };
+
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    updateOrderStatus.mutate({ id: orderId, status: newStatus });
+  };
+
+  const handleDepositChange = (orderId: string, depositPaid: boolean) => {
+    updateDepositPaid.mutate({ id: orderId, depositPaid });
   };
 
   return (
@@ -56,7 +68,7 @@ const Index = () => {
             variant="warm" 
             size="lg" 
             className="hidden md:flex"
-            onClick={() => navigate('/orders/new')}
+            onClick={() => navigate('/orders')}
           >
             <Plus className="h-5 w-5" />
             Novo Pedido
@@ -68,14 +80,13 @@ const Index = () => {
           <StatsCard
             title="Faturamento do Mês"
             value={formatCurrency(monthlyIncome)}
-            subtitle={`Lucro: ${formatCurrency(monthlyIncome - monthlyExpenses)}`}
+            subtitle={`${orders.filter(o => o.status === 'delivered').length} pedidos entregues`}
             icon={TrendingUp}
             variant="primary"
-            trend={{ value: 12, isPositive: true }}
           />
           <StatsCard
             title="Pedidos Ativos"
-            value={activeOrders}
+            value={activeOrders.length}
             subtitle="Em andamento"
             icon={ShoppingBag}
           />
@@ -87,9 +98,9 @@ const Index = () => {
             variant="warning"
           />
           <StatsCard
-            title="Despesas do Mês"
-            value={formatCurrency(monthlyExpenses)}
-            subtitle="Custos operacionais"
+            title="Cadastros"
+            value={`${clients.length} / ${products.length}`}
+            subtitle="Clientes / Produtos"
             icon={TrendingUp}
           />
         </section>
@@ -108,17 +119,35 @@ const Index = () => {
             </Button>
           </div>
 
-          {/* Kanban for Desktop */}
-          <KanbanBoard 
-            orders={mockOrders} 
-            onOrderClick={(order) => navigate(`/orders/${order.id}`)} 
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : orders.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <p>Nenhum pedido cadastrado</p>
+              <Button variant="link" className="mt-2" onClick={() => navigate('/orders')}>
+                Criar primeiro pedido
+              </Button>
+            </div>
+          ) : (
+            <>
+              {/* Kanban for Desktop */}
+              <KanbanBoard 
+                orders={orders} 
+                onOrderClick={() => navigate('/orders')}
+                onStatusChange={handleStatusChange}
+                onDepositChange={handleDepositChange}
+              />
 
-          {/* List for Mobile */}
-          <OrdersList 
-            orders={mockOrders} 
-            onOrderClick={(order) => navigate(`/orders/${order.id}`)} 
-          />
+              {/* List for Mobile */}
+              <OrdersList 
+                orders={orders} 
+                onOrderClick={() => navigate('/orders')}
+                onDepositChange={handleDepositChange}
+              />
+            </>
+          )}
         </section>
 
         {/* Mobile FAB */}
@@ -126,7 +155,7 @@ const Index = () => {
           variant="warm"
           size="icon-lg"
           className="fixed bottom-20 right-4 md:hidden shadow-warm rounded-full z-40"
-          onClick={() => navigate('/orders/new')}
+          onClick={() => navigate('/orders')}
         >
           <Plus className="h-6 w-6" />
         </Button>

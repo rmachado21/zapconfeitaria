@@ -1,13 +1,46 @@
+import { useState } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
+import { OrderFormDialog } from '@/components/orders/OrderFormDialog';
 import { Button } from '@/components/ui/button';
-import { mockOrders } from '@/data/mockData';
-import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useOrders, OrderFormData, Order } from '@/hooks/useOrders';
+import { OrderStatus } from '@/types';
+import { Plus, Loader2 } from 'lucide-react';
 
 const Orders = () => {
-  const navigate = useNavigate();
+  const [formOpen, setFormOpen] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  const { 
+    orders, 
+    isLoading, 
+    createOrder, 
+    updateOrderStatus, 
+    updateDepositPaid 
+  } = useOrders();
+
+  const handleCreate = () => {
+    setSelectedOrder(null);
+    setFormOpen(true);
+  };
+
+  const handleOrderClick = (order: Order) => {
+    setSelectedOrder(order);
+    // TODO: Open order detail/edit dialog
+  };
+
+  const handleSubmit = async (data: OrderFormData) => {
+    await createOrder.mutateAsync(data);
+  };
+
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
+    updateOrderStatus.mutate({ id: orderId, status: newStatus });
+  };
+
+  const handleDepositChange = (orderId: string, depositPaid: boolean) => {
+    updateDepositPaid.mutate({ id: orderId, depositPaid });
+  };
 
   return (
     <AppLayout>
@@ -19,37 +52,63 @@ const Orders = () => {
               Pedidos
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              Gerencie todos os seus pedidos e orçamentos
+              {orders.length} pedidos • Arraste para mudar o status
             </p>
           </div>
-          <Button variant="warm" onClick={() => navigate('/orders/new')}>
+          <Button variant="warm" onClick={handleCreate}>
             <Plus className="h-5 w-5" />
             Novo Pedido
           </Button>
         </header>
 
-        {/* Kanban for Desktop */}
-        <KanbanBoard 
-          orders={mockOrders} 
-          onOrderClick={(order) => navigate(`/orders/${order.id}`)} 
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="text-center py-12 text-muted-foreground">
+            <p>Nenhum pedido cadastrado</p>
+            <Button variant="link" className="mt-2" onClick={handleCreate}>
+              Criar primeiro pedido
+            </Button>
+          </div>
+        ) : (
+          <>
+            {/* Kanban for Desktop */}
+            <KanbanBoard 
+              orders={orders} 
+              onOrderClick={handleOrderClick}
+              onStatusChange={handleStatusChange}
+              onDepositChange={handleDepositChange}
+            />
 
-        {/* List for Mobile */}
-        <OrdersList 
-          orders={mockOrders} 
-          onOrderClick={(order) => navigate(`/orders/${order.id}`)} 
-        />
+            {/* List for Mobile */}
+            <OrdersList 
+              orders={orders} 
+              onOrderClick={handleOrderClick}
+              onDepositChange={handleDepositChange}
+            />
+          </>
+        )}
 
         {/* Mobile FAB */}
         <Button
           variant="warm"
           size="icon-lg"
           className="fixed bottom-20 right-4 md:hidden shadow-warm rounded-full z-40"
-          onClick={() => navigate('/orders/new')}
+          onClick={handleCreate}
         >
           <Plus className="h-6 w-6" />
         </Button>
       </div>
+
+      {/* Form Dialog */}
+      <OrderFormDialog
+        open={formOpen}
+        onOpenChange={setFormOpen}
+        onSubmit={handleSubmit}
+        isLoading={createOrder.isPending}
+      />
     </AppLayout>
   );
 };
