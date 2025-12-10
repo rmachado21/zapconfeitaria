@@ -227,6 +227,7 @@ export function ProductFormDialog({
                       currentUrl={field.value}
                       onUpload={(url) => field.onChange(url)}
                       onRemove={() => field.onChange('')}
+                      aspectRatio="compact"
                     />
                   </FormControl>
                   <FormMessage />
