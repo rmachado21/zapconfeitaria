@@ -74,6 +74,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   label: string; 
   color: string; 
   bgColor: string;
+  dotColor: string;
   description: string;
   columnBg: string;
   columnBorder: string;
@@ -83,6 +84,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     label: 'Orçamento', 
     color: 'text-slate-700 dark:text-slate-300', 
     bgColor: 'bg-slate-200 dark:bg-slate-700',
+    dotColor: 'bg-slate-400 dark:bg-slate-500',
     description: 'Aguardando aprovação do cliente',
     columnBg: 'bg-slate-50 dark:bg-slate-900/50',
     columnBorder: 'border-slate-200 dark:border-slate-700',
@@ -92,6 +94,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     label: 'Aguardando Sinal', 
     color: 'text-amber-700 dark:text-amber-300', 
     bgColor: 'bg-amber-100 dark:bg-amber-900/50',
+    dotColor: 'bg-amber-500 dark:bg-amber-400',
     description: 'Cliente aprovou, aguardando 50%',
     columnBg: 'bg-amber-50/50 dark:bg-amber-950/30',
     columnBorder: 'border-amber-200 dark:border-amber-800',
@@ -101,6 +104,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     label: 'Em Produção', 
     color: 'text-primary-foreground', 
     bgColor: 'bg-primary',
+    dotColor: 'bg-primary',
     description: 'Sinal recebido, em produção',
     columnBg: 'bg-primary/5 dark:bg-primary/10',
     columnBorder: 'border-primary/30 dark:border-primary/40',
@@ -110,6 +114,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     label: 'Pronto', 
     color: 'text-emerald-700 dark:text-emerald-300', 
     bgColor: 'bg-emerald-100 dark:bg-emerald-900/50',
+    dotColor: 'bg-emerald-500 dark:bg-emerald-400',
     description: 'Finalizado, aguardando entrega',
     columnBg: 'bg-emerald-50/50 dark:bg-emerald-950/30',
     columnBorder: 'border-emerald-200 dark:border-emerald-800',
@@ -119,6 +124,7 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     label: 'Entregue', 
     color: 'text-sky-700 dark:text-sky-300', 
     bgColor: 'bg-sky-100 dark:bg-sky-900/50',
+    dotColor: 'bg-sky-500 dark:bg-sky-400',
     description: 'Pedido entregue e pago',
     columnBg: 'bg-sky-50/50 dark:bg-sky-950/30',
     columnBorder: 'border-sky-200 dark:border-sky-800',

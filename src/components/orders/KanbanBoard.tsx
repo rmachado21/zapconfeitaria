@@ -97,7 +97,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                   <div className={cn("p-4 rounded-t-2xl", statusConfig.headerBg)}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <div className={cn("w-3 h-3 rounded-full", statusConfig.bgColor)} />
+                        <div className={cn("w-3 h-3 rounded-full", statusConfig.dotColor)} />
                         <h3 className="font-semibold text-sm">{statusConfig.label}</h3>
                       </div>
                       <span className={cn(
