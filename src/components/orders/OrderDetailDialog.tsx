@@ -50,6 +50,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { formatPhone } from '@/lib/masks';
+import { PdfPreviewDialog } from './PdfPreviewDialog';
 
 interface OrderDetailDialogProps {
   open: boolean;
@@ -63,7 +64,7 @@ interface OrderDetailDialogProps {
 const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered'];
 
 export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
-  const { generatePdf, isGenerating } = useQuotePdf();
+  const { openPreview, closePreview, downloadFromPreview, showPreview, previewData, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
@@ -123,7 +124,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
   const daysRemaining = order.status !== 'delivered' ? getDaysRemaining(order.delivery_date) : null;
 
   const handleGeneratePdf = async () => {
-    await generatePdf(order.id);
+    await openPreview(order.id);
   };
 
   const handleWhatsApp = () => {
@@ -427,6 +428,16 @@ Ficamos à disposição! 🍰`;
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PDF Preview Dialog */}
+      <PdfPreviewDialog
+        open={showPreview}
+        onOpenChange={(open) => !open && closePreview()}
+        pdfData={previewData?.pdf || null}
+        fileName={previewData?.fileName || ''}
+        isLoading={isGenerating}
+        onDownload={downloadFromPreview}
+      />
     </Dialog>
   );
 }
