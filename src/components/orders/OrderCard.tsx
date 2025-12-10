@@ -78,9 +78,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!order.clientPhone) return;
-    
-    const message = `Olá ${order.clientName}! Aqui é da Confeitaria Pro. Sobre seu pedido para o dia ${formatDate(order.deliveryDate, order.deliveryTime)}...`;
-    openWhatsApp(order.clientPhone, message);
+    openWhatsApp(order.clientPhone);
   };
 
   const handleDepositChange = (e: React.MouseEvent) => {
