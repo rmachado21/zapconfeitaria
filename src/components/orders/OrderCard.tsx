@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, MapPin, MessageCircle, ChevronRight, Package } from 'lucide-react';
+import { Calendar, MapPin, MessageCircle, ChevronRight, Package, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { format, parseISO, differenceInDays } from 'date-fns';
@@ -162,8 +162,22 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
           </div>
         </div>
 
-        {/* Deposit indicator */}
-        {order.status !== 'delivered' && (
+        {/* Payment status indicator */}
+        {order.status === 'delivered' ? (
+          <div className="mt-3 pt-3 border-t border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
+                  <Check className="h-3 w-3 text-success" />
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  Pagamento Total: <span className="font-medium text-foreground">{formatCurrency(order.totalAmount)}</span>
+                </span>
+              </div>
+              <Badge variant="success" className="text-[10px]">Pago</Badge>
+            </div>
+          </div>
+        ) : (
           <div className="mt-3 pt-3 border-t border-border">
             <div className="flex items-center justify-between">
               <div 
