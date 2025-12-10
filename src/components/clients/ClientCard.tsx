@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Phone, Mail, Cake, MessageCircle, ChevronRight, Trash2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { openWhatsApp } from '@/lib/whatsapp';
 
 interface ClientCardProps {
   client: Client;
@@ -12,11 +13,10 @@ interface ClientCardProps {
 }
 
 export function ClientCard({ client, onClick, onDelete }: ClientCardProps) {
-  const openWhatsApp = (e: React.MouseEvent) => {
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const phone = client.phone.replace(/\D/g, '');
-    const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
-    window.open(`https://wa.me/${encodeURIComponent(formattedPhone)}`, '_blank');
+    if (!client.phone) return;
+    openWhatsApp(client.phone);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
@@ -82,7 +82,7 @@ export function ClientCard({ client, onClick, onDelete }: ClientCardProps) {
                 variant="ghost"
                 size="icon-sm"
                 className="text-success hover:text-success hover:bg-success/10"
-                onClick={openWhatsApp}
+                onClick={handleWhatsAppClick}
               >
                 <MessageCircle className="h-4 w-4" />
               </Button>

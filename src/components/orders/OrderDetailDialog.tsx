@@ -28,6 +28,7 @@ import {
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { openWhatsApp } from '@/lib/whatsapp';
 
 interface OrderDetailDialogProps {
   open: boolean;
@@ -97,8 +98,7 @@ Para confirmar o pedido, por favor efetue o pagamento do sinal.
 
 Ficamos à disposição! 🍰`;
 
-    const encodedMessage = encodeURIComponent(message);
-    window.open(`https://wa.me/${formattedPhone}?text=${encodedMessage}`, '_blank');
+    openWhatsApp(formattedPhone, message);
   };
 
   const depositAmount = order.total_amount / 2;
