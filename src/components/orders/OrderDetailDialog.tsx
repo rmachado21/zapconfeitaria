@@ -209,32 +209,34 @@ Ficamos à disposição! 🍰`;
           </Card>
 
           {/* Delivery Info */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className={cn("grid gap-3", order.delivery_address ? "grid-cols-2" : "grid-cols-1")}>
             <Card>
               <CardContent className="p-3">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                  <Calendar className="h-4 w-4" />
-                  Data de Entrega
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Calendar className="h-4 w-4" />
+                    Data de Entrega
+                  </div>
+                  {daysRemaining && (
+                    <span className={cn(
+                      "text-xs font-medium",
+                      daysRemaining.urgent ? "text-destructive" : "text-muted-foreground"
+                    )}>
+                      ({daysRemaining.text})
+                    </span>
+                  )}
                 </div>
-                <p className="font-medium text-sm">{formatDate(order.delivery_date)}</p>
-                {daysRemaining && (
-                  <p className={cn(
-                    "text-xs font-medium mt-1",
-                    daysRemaining.urgent ? "text-destructive" : "text-muted-foreground"
-                  )}>
-                    ({daysRemaining.text})
-                  </p>
-                )}
+                <p className="font-medium text-sm mt-1">{formatDate(order.delivery_date)}</p>
               </CardContent>
             </Card>
             {order.delivery_address && (
               <Card>
                 <CardContent className="p-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4" />
                     Endereço
                   </div>
-                  <p className="font-medium text-sm truncate">{order.delivery_address}</p>
+                  <p className="font-medium text-sm mt-1 truncate">{order.delivery_address}</p>
                 </CardContent>
               </Card>
             )}
