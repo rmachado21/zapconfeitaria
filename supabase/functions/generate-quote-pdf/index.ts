@@ -38,6 +38,7 @@ interface Profile {
   logo_url: string | null;
   pix_key: string | null;
   bank_details: string | null;
+  include_terms_in_pdf: boolean;
 }
 
 const formatCurrency = (value: number): string => {
@@ -149,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Fetch user profile
     const { data: profile } = await supabase
       .from("profiles")
-      .select("company_name, logo_url, pix_key, bank_details")
+      .select("company_name, logo_url, pix_key, bank_details, include_terms_in_pdf")
       .eq("user_id", user.id)
       .single();
 
@@ -340,19 +341,22 @@ const handler = async (req: Request): Promise<Response> => {
       yPos += 15;
     }
 
-    // Terms
-    doc.setFontSize(8);
-    doc.setTextColor(120, 120, 120);
-    const terms = [
-      "TERMOS DE SERVIÇO:",
-      "• O pedido será confirmado após o pagamento de 50% do valor total (sinal).",
-      "• O restante deve ser pago na entrega/retirada do pedido.",
-      "• Cancelamentos com menos de 48h de antecedência não terão reembolso do sinal.",
-      "• Alterações devem ser solicitadas com pelo menos 72h de antecedência.",
-    ];
-    for (const term of terms) {
-      doc.text(term, margin, yPos);
-      yPos += 5;
+    // Terms (only if enabled)
+    const includeTerms = typedProfile?.include_terms_in_pdf ?? true;
+    if (includeTerms) {
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      const terms = [
+        "TERMOS DE SERVIÇO:",
+        "• O pedido será confirmado após o pagamento de 50% do valor total (sinal).",
+        "• O restante deve ser pago na entrega/retirada do pedido.",
+        "• Cancelamentos com menos de 48h de antecedência não terão reembolso do sinal.",
+        "• Alterações devem ser solicitadas com pelo menos 72h de antecedência.",
+      ];
+      for (const term of terms) {
+        doc.text(term, margin, yPos);
+        yPos += 5;
+      }
     }
 
     // Footer

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import {
   Form,
   FormControl,
@@ -30,6 +31,7 @@ import {
   CreditCard,
   Crown,
   CakeSlice,
+  FileText,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,6 +40,7 @@ const profileSchema = z.object({
   logo_url: z.string().url('URL inválida').optional().or(z.literal('')),
   pix_key: z.string().max(100).optional().or(z.literal('')),
   bank_details: z.string().max(500).optional().or(z.literal('')),
+  include_terms_in_pdf: z.boolean().optional(),
 });
 
 const Profile = () => {
@@ -54,6 +57,7 @@ const Profile = () => {
       logo_url: '',
       pix_key: '',
       bank_details: '',
+      include_terms_in_pdf: true,
     },
   });
 
@@ -64,6 +68,7 @@ const Profile = () => {
         logo_url: profile.logo_url || '',
         pix_key: profile.pix_key || '',
         bank_details: profile.bank_details || '',
+        include_terms_in_pdf: profile.include_terms_in_pdf ?? true,
       });
     }
   }, [profile, form]);
@@ -235,7 +240,37 @@ const Profile = () => {
                   />
                 </div>
 
-                <Button 
+                <div className="pt-4 border-t">
+                  <h3 className="font-medium flex items-center gap-2 mb-4">
+                    <FileText className="h-4 w-4 text-primary" />
+                    Configurações do PDF
+                  </h3>
+
+                  <FormField
+                    control={form.control}
+                    name="include_terms_in_pdf"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                        <div className="space-y-0.5">
+                          <FormLabel className="text-sm font-medium">
+                            Incluir Termos de Serviço
+                          </FormLabel>
+                          <p className="text-xs text-muted-foreground">
+                            Exibir termos de serviço no PDF de orçamento
+                          </p>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <Button
                   type="submit" 
                   variant="warm" 
                   className="w-full"
