@@ -21,11 +21,13 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Client, ClientFormData } from '@/hooks/useClients';
 import { PhoneInput } from '@/components/shared/PhoneInput';
-import { formatPhone } from '@/lib/masks';
+import { CpfCnpjInput } from '@/components/shared/CpfCnpjInput';
+import { formatPhone, formatCpfCnpj } from '@/lib/masks';
 
 const clientSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
   phone: z.string().optional(),
+  cpf_cnpj: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   birthday: z.string().optional(),
 });
@@ -52,6 +54,7 @@ export function ClientFormDialog({
     defaultValues: {
       name: '',
       phone: '',
+      cpf_cnpj: '',
       email: '',
       birthday: '',
     },
@@ -62,6 +65,7 @@ export function ClientFormDialog({
       form.reset({
         name: client.name,
         phone: client.phone ? formatPhone(client.phone) : '',
+        cpf_cnpj: (client as any).cpf_cnpj ? formatCpfCnpj((client as any).cpf_cnpj) : '',
         email: client.email || '',
         birthday: client.birthday || '',
       });
@@ -69,6 +73,7 @@ export function ClientFormDialog({
       form.reset({
         name: '',
         phone: '',
+        cpf_cnpj: '',
         email: '',
         birthday: '',
       });
@@ -115,6 +120,24 @@ export function ClientFormDialog({
                   <FormControl>
                     <PhoneInput 
                       placeholder="(11) 99999-9999" 
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cpf_cnpj"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CPF/CNPJ</FormLabel>
+                  <FormControl>
+                    <CpfCnpjInput 
+                      placeholder="123.456.789-00" 
                       value={field.value || ''}
                       onChange={field.onChange}
                     />
