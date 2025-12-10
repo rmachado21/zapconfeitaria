@@ -101,8 +101,8 @@ const Orders = () => {
     deleteOrder.mutate(orderId);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => {
-    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount });
+  const handleStatusChange = (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => {
+    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount, previousStatus });
   };
 
   const handleDepositChange = (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => {

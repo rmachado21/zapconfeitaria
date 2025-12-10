@@ -34,7 +34,8 @@ export type OrderStatus =
   | 'awaiting_deposit' 
   | 'in_production' 
   | 'ready' 
-  | 'delivered';
+  | 'delivered'
+  | 'cancelled';
 
 export interface Order {
   id: string;
@@ -132,5 +133,15 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
     columnBg: 'bg-sky-50/50 dark:bg-sky-950/30',
     columnBorder: 'border-sky-200 dark:border-sky-800',
     headerBg: 'bg-sky-100 dark:bg-sky-900/50',
+  },
+  cancelled: { 
+    label: 'Cancelado', 
+    color: 'text-red-800 dark:text-red-200', 
+    bgColor: 'bg-red-200 dark:bg-red-800',
+    dotColor: 'bg-red-500 dark:bg-red-400',
+    description: 'Pedido cancelado',
+    columnBg: 'bg-red-50/50 dark:bg-red-950/30',
+    columnBorder: 'border-red-200 dark:border-red-800',
+    headerBg: 'bg-red-100 dark:bg-red-900/50',
   },
 };

@@ -152,13 +152,41 @@ export function useOrders() {
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ id, status, clientName, totalAmount }: { 
+    mutationFn: async ({ id, status, clientName, totalAmount, previousStatus }: { 
       id: string; 
       status: OrderStatus;
       clientName?: string;
       totalAmount?: number;
+      previousStatus?: OrderStatus;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
+
+      // Handle cancellation - remove all transactions and reset deposit
+      if (status === 'cancelled') {
+        await supabase
+          .from('transactions')
+          .delete()
+          .eq('order_id', id);
+
+        const { data, error } = await supabase
+          .from('orders')
+          .update({ status, deposit_paid: false })
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (error) throw error;
+        return data;
+      }
+
+      // Handle reverting from delivered - remove final payment transaction
+      if (previousStatus === 'delivered' && status !== 'delivered') {
+        await supabase
+          .from('transactions')
+          .delete()
+          .eq('order_id', id)
+          .ilike('description', '%Pagamento Final%');
+      }
 
       const { data, error } = await supabase
         .from('orders')
@@ -170,7 +198,7 @@ export function useOrders() {
       if (error) throw error;
 
       // Create transaction for delivered status (final payment)
-      if (status === 'delivered' && totalAmount) {
+      if (status === 'delivered' && previousStatus !== 'delivered' && totalAmount) {
         const finalPayment = totalAmount / 2; // Remaining 50%
         await supabase
           .from('transactions')
@@ -190,10 +218,20 @@ export function useOrders() {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       
-      if (variables.status === 'delivered') {
+      if (variables.status === 'cancelled') {
+        toast({
+          title: 'Pedido cancelado',
+          description: 'Transações removidas automaticamente.',
+        });
+      } else if (variables.status === 'delivered') {
         toast({
           title: 'Pedido entregue!',
           description: 'Pagamento final registrado automaticamente.',
+        });
+      } else if (variables.previousStatus === 'delivered') {
+        toast({
+          title: 'Status revertido',
+          description: 'Pagamento final removido automaticamente.',
         });
       }
     },

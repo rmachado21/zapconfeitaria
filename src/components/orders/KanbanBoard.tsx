@@ -8,7 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface KanbanBoardProps {
   orders: DBOrder[];
   onOrderClick?: (order: DBOrder) => void;
-  onStatusChange?: (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => void;
+  onStatusChange?: (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => void;
   onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => void;
 }
 
@@ -18,6 +18,7 @@ const KANBAN_COLUMNS: OrderStatus[] = [
   'in_production',
   'ready',
   'delivered',
+  'cancelled',
 ];
 
 export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositChange }: KanbanBoardProps) {
@@ -46,7 +47,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
 
     const orderId = result.draggableId;
     const order = orders.find(o => o.id === orderId);
-    onStatusChange(orderId, destStatus, order?.client?.name, order?.total_amount);
+    onStatusChange(orderId, destStatus, order?.client?.name, order?.total_amount, sourceStatus);
   };
 
   const convertToOrderType = (dbOrder: DBOrder): OrderType => ({

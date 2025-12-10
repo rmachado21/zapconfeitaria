@@ -290,6 +290,7 @@ export type Database = {
         | "in_production"
         | "ready"
         | "delivered"
+        | "cancelled"
       transaction_type: "income" | "expense"
     }
     CompositeTypes: {
@@ -424,6 +425,7 @@ export const Constants = {
         "in_production",
         "ready",
         "delivered",
+        "cancelled",
       ],
       transaction_type: ["income", "expense"],
     },

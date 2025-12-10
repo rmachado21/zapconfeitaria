@@ -17,6 +17,7 @@ const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
   { value: 'in_production', label: 'Produção' },
   { value: 'ready', label: 'Pronto' },
   { value: 'delivered', label: 'Entregue' },
+  { value: 'cancelled', label: 'Cancelado' },
 ];
 
 export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersListProps) {
