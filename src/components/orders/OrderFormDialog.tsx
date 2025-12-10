@@ -29,13 +29,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag, Minus } from 'lucide-react';
+import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData, Order } from '@/hooks/useOrders';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { formatCurrency } from '@/lib/masks';
 import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
 
 const orderSchema = z.object({
   client_id: z.string().min(1, 'Selecione um cliente'),
@@ -51,6 +52,7 @@ interface OrderItem {
   quantity: number;
   unit_price: number;
   unit_type: string;
+  is_gift?: boolean;
 }
 
 interface OrderFormDialogProps {
@@ -110,6 +112,7 @@ export function OrderFormDialog({
         quantity: item.quantity,
         unit_price: item.unit_price,
         unit_type: item.unit_type || 'unit',
+        is_gift: item.is_gift || false,
       })));
     }
   }, [open, form, editOrder]);
@@ -171,6 +174,7 @@ export function OrderFormDialog({
         quantity: validQuantity,
         unit_price: selectedProductData.sale_price,
         unit_type: selectedProductData.unit_type,
+        is_gift: false,
       }]);
     }
 
@@ -206,7 +210,21 @@ export function OrderFormDialog({
     setItems(items.filter((_, i) => i !== index));
   };
 
-  const totalItems = items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+  const handleToggleGift = (index: number) => {
+    const newItems = [...items];
+    newItems[index].is_gift = !newItems[index].is_gift;
+    setItems(newItems);
+  };
+
+  // Only count non-gift items in total
+  const totalItems = items.reduce((sum, item) => {
+    if (item.is_gift) return sum;
+    return sum + (item.quantity * item.unit_price);
+  }, 0);
+  const giftDiscount = items.reduce((sum, item) => {
+    if (!item.is_gift) return sum;
+    return sum + (item.quantity * item.unit_price);
+  }, 0);
   const deliveryFee = form.watch('delivery_fee') || 0;
   const totalAmount = totalItems + deliveryFee;
 
@@ -324,10 +342,23 @@ export function OrderFormDialog({
                     <CardContent className="p-3 space-y-3">
                       {items.map((item, index) => {
                         const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
+                        const isGift = item.is_gift;
                         return (
-                        <div key={index} className="flex items-center gap-2 text-sm">
+                        <div key={index} className={cn(
+                          "flex items-center gap-2 text-sm p-2 rounded-md transition-colors",
+                          isGift && "bg-success/10 border border-success/20"
+                        )}>
                           <div className="flex-1 min-w-0">
-                            <span className="font-medium block truncate">{item.product_name}</span>
+                            <div className="flex items-center gap-1.5">
+                              {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
+                              <span className={cn(
+                                "font-medium block truncate",
+                                isGift && "text-success"
+                              )}>
+                                {item.product_name}
+                              </span>
+                              {isGift && <Badge variant="success" className="text-[9px] px-1 py-0">BRINDE</Badge>}
+                            </div>
                             <span className="text-muted-foreground text-xs">
                               {formatCurrency(item.unit_price)}/{unitLabel}
                             </span>
@@ -357,9 +388,35 @@ export function OrderFormDialog({
                             </Button>
                           </div>
 
-                          <span className="font-medium w-20 text-right">
-                            {formatCurrency(item.quantity * item.unit_price)}
-                          </span>
+                          <div className="w-20 text-right">
+                            {isGift ? (
+                              <div className="flex flex-col items-end">
+                                <span className="text-[10px] line-through text-muted-foreground">
+                                  {formatCurrency(item.quantity * item.unit_price)}
+                                </span>
+                                <span className="font-medium text-success text-xs">R$ 0,00</span>
+                              </div>
+                            ) : (
+                              <span className="font-medium">
+                                {formatCurrency(item.quantity * item.unit_price)}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Gift Toggle */}
+                          <Button
+                            type="button"
+                            variant={isGift ? "default" : "outline"}
+                            size="icon-sm"
+                            className={cn(
+                              "flex-shrink-0",
+                              isGift && "bg-success hover:bg-success/90"
+                            )}
+                            onClick={() => handleToggleGift(index)}
+                            title={isGift ? "Remover brinde" : "Marcar como brinde"}
+                          >
+                            <Gift className="h-3 w-3" />
+                          </Button>
                           
                           <Button
                             type="button"
@@ -459,8 +516,17 @@ export function OrderFormDialog({
                     <div className="space-y-1 text-sm">
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Subtotal:</span>
-                        <span>{formatCurrency(totalItems)}</span>
+                        <span>{formatCurrency(totalItems + giftDiscount)}</span>
                       </div>
+                      {giftDiscount > 0 && (
+                        <div className="flex justify-between text-success">
+                          <span className="flex items-center gap-1">
+                            <Gift className="h-3 w-3" />
+                            Brinde:
+                          </span>
+                          <span>-{formatCurrency(giftDiscount)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">Taxa de entrega:</span>
                         <span>{formatCurrency(deliveryFee)}</span>
