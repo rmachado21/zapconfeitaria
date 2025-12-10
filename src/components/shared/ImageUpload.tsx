@@ -12,7 +12,7 @@ interface ImageUploadProps {
   onUpload: (url: string) => void;
   onRemove?: () => void;
   className?: string;
-  aspectRatio?: 'square' | 'wide';
+  aspectRatio?: 'square' | 'wide' | 'logo';
 }
 
 export function ImageUpload({
@@ -27,6 +27,9 @@ export function ImageUpload({
   const [uploading, setUploading] = useState(false);
   const [preview, setPreview] = useState<string | null>(currentUrl || null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isLogo = bucket === 'company-logos';
+  const effectiveAspectRatio = isLogo ? 'logo' : aspectRatio;
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -92,12 +95,17 @@ export function ImageUpload({
       {preview ? (
         <div className={cn(
           "relative rounded-lg overflow-hidden border border-border bg-muted",
-          aspectRatio === 'square' ? 'aspect-square' : 'aspect-video'
+          effectiveAspectRatio === 'square' && 'aspect-square',
+          effectiveAspectRatio === 'wide' && 'aspect-video',
+          effectiveAspectRatio === 'logo' && 'aspect-[8/3] min-h-[120px]'
         )}>
           <img
             src={preview}
             alt="Preview"
-            className="w-full h-full object-cover"
+            className={cn(
+              "w-full h-full",
+              isLogo ? "object-contain p-2" : "object-cover"
+            )}
           />
           <Button
             type="button"
@@ -116,7 +124,9 @@ export function ImageUpload({
           disabled={uploading}
           className={cn(
             "w-full flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-muted-foreground/25 bg-muted/50 hover:bg-muted transition-colors cursor-pointer",
-            aspectRatio === 'square' ? 'aspect-square' : 'aspect-video',
+            effectiveAspectRatio === 'square' && 'aspect-square',
+            effectiveAspectRatio === 'wide' && 'aspect-video',
+            effectiveAspectRatio === 'logo' && 'aspect-[8/3] min-h-[120px]',
             uploading && 'opacity-50 cursor-not-allowed'
           )}
         >
