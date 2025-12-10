@@ -37,9 +37,9 @@ const Index = () => {
   const hiddenColumns = (profile?.hidden_kanban_columns || []) as OrderStatus[];
 
   // Calculate stats from real data
-  const activeOrders = orders.filter(o => o.status !== 'delivered');
+  const activeOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled');
   const pendingDeposits = orders
-    .filter(o => !o.deposit_paid && o.status !== 'delivered')
+    .filter(o => !o.deposit_paid && o.status !== 'delivered' && o.status !== 'cancelled')
     .reduce((sum, o) => sum + (o.total_amount / 2), 0);
   
   const monthlyIncome = orders
