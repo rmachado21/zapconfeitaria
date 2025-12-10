@@ -35,6 +35,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData } from '@/hooks/useOrders';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { formatCurrency } from '@/lib/masks';
+import { useToast } from '@/hooks/use-toast';
 
 const orderSchema = z.object({
   client_id: z.string().min(1, 'Selecione um cliente'),
@@ -67,6 +68,7 @@ export function OrderFormDialog({
 }: OrderFormDialogProps) {
   const { clients } = useClients();
   const { products } = useProducts();
+  const { toast } = useToast();
   const [items, setItems] = useState<OrderItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
@@ -94,12 +96,41 @@ export function OrderFormDialog({
   const selectedProductData = products.find(p => p.id === selectedProduct);
 
   const handleAddItem = () => {
-    if (!selectedProduct || !selectedProductData) return;
+    if (!selectedProduct || !selectedProductData) {
+      toast({
+        title: 'Selecione um produto',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate quantity - must be positive
+    if (!quantity || quantity <= 0 || isNaN(quantity)) {
+      toast({
+        title: 'Quantidade inválida',
+        description: 'A quantidade deve ser maior que zero.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate based on unit type
+    const isKg = selectedProductData.unit_type === 'kg';
+    const minQuantity = isKg ? 0.1 : 1;
     
-    // Validate quantity based on unit type
-    const validQuantity = selectedProductData.unit_type === 'kg' 
-      ? Math.max(0.1, parseFloat(quantity.toFixed(2)))
-      : Math.max(1, Math.floor(quantity));
+    if (quantity < minQuantity) {
+      toast({
+        title: 'Quantidade mínima',
+        description: isKg ? 'Mínimo de 0.1 Kg' : 'Mínimo de 1 unidade',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Normalize quantity: 2 decimals for Kg, integer for UN
+    const validQuantity = isKg 
+      ? Math.round(quantity * 100) / 100
+      : Math.floor(quantity);
 
     const existingIndex = items.findIndex(i => i.product_id === selectedProduct);
     
