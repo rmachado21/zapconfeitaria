@@ -108,6 +108,7 @@ export type Database = {
           delivery_address: string | null
           delivery_date: string | null
           delivery_fee: number | null
+          delivery_time: string | null
           deposit_paid: boolean | null
           id: string
           notes: string | null
@@ -122,6 +123,7 @@ export type Database = {
           delivery_address?: string | null
           delivery_date?: string | null
           delivery_fee?: number | null
+          delivery_time?: string | null
           deposit_paid?: boolean | null
           id?: string
           notes?: string | null
@@ -136,6 +138,7 @@ export type Database = {
           delivery_address?: string | null
           delivery_date?: string | null
           delivery_fee?: number | null
+          delivery_time?: string | null
           deposit_paid?: boolean | null
           id?: string
           notes?: string | null

@@ -25,10 +25,14 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
     }).format(value);
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string, timeString?: string) => {
     if (!dateString) return 'Sem data';
     try {
-      return format(parseISO(dateString), "dd 'de' MMM", { locale: ptBR });
+      const dateFormatted = format(parseISO(dateString), "dd 'de' MMM", { locale: ptBR });
+      if (timeString) {
+        return `${dateFormatted} às ${timeString.slice(0, 5)}`;
+      }
+      return dateFormatted;
     } catch {
       return 'Data inválida';
     }
@@ -75,7 +79,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
     e.stopPropagation();
     if (!order.clientPhone) return;
     
-    const message = `Olá ${order.clientName}! Aqui é da Confeitaria Pro. Sobre seu pedido para o dia ${formatDate(order.deliveryDate)}...`;
+    const message = `Olá ${order.clientName}! Aqui é da Confeitaria Pro. Sobre seu pedido para o dia ${formatDate(order.deliveryDate, order.deliveryTime)}...`;
     openWhatsApp(order.clientPhone, message);
   };
 
@@ -142,7 +146,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
             <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
               <Calendar className="h-3 w-3 text-muted-foreground" />
             </div>
-            <span className="text-foreground font-medium">{formatDate(order.deliveryDate)}</span>
+            <span className="text-foreground font-medium">{formatDate(order.deliveryDate, order.deliveryTime)}</span>
             {daysRemaining && (
               <span className={cn(
                 "text-[10px] font-medium",
