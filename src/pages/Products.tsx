@@ -1,25 +1,50 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ProductCard } from '@/components/products/ProductCard';
 import { ProductFormDialog } from '@/components/products/ProductFormDialog';
 import { DeleteProductDialog } from '@/components/products/DeleteProductDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useProducts, Product, ProductFormData } from '@/hooks/useProducts';
-import { Plus, Search, Loader2 } from 'lucide-react';
+import { Plus, Search, Loader2, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type SortOption = 'name-asc' | 'name-desc' | 'price-asc' | 'price-desc' | 'date-desc' | 'date-asc';
 
 const Products = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<SortOption>('name-asc');
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   const { products, isLoading, createProduct, updateProduct, deleteProduct } = useProducts();
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredAndSortedProducts = useMemo(() => {
+    const filtered = products.filter(product =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    return filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'name-asc':
+          return a.name.localeCompare(b.name, 'pt-BR');
+        case 'name-desc':
+          return b.name.localeCompare(a.name, 'pt-BR');
+        case 'price-asc':
+          return a.sale_price - b.sale_price;
+        case 'price-desc':
+          return b.sale_price - a.sale_price;
+        case 'date-desc':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        case 'date-asc':
+          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+        default:
+          return 0;
+      }
+    });
+  }, [products, searchQuery, sortBy]);
 
   const handleCreate = () => {
     setSelectedProduct(null);
@@ -71,15 +96,31 @@ const Products = () => {
           </Button>
         </header>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar produtos..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search & Sort */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar produtos..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <Select value={sortBy} onValueChange={(value) => setSortBy(value as SortOption)}>
+            <SelectTrigger className="w-full sm:w-48">
+              <ArrowUpDown className="h-4 w-4 mr-2 text-muted-foreground" />
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name-asc">Nome (A-Z)</SelectItem>
+              <SelectItem value="name-desc">Nome (Z-A)</SelectItem>
+              <SelectItem value="price-asc">Preço (menor)</SelectItem>
+              <SelectItem value="price-desc">Preço (maior)</SelectItem>
+              <SelectItem value="date-desc">Mais recentes</SelectItem>
+              <SelectItem value="date-asc">Mais antigos</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Products List */}
@@ -88,7 +129,7 @@ const Products = () => {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : filteredAndSortedProducts.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               <p>{products.length === 0 ? 'Nenhum produto cadastrado' : 'Nenhum produto encontrado'}</p>
               {products.length === 0 && (
@@ -98,7 +139,7 @@ const Products = () => {
               )}
             </div>
           ) : (
-            filteredProducts.map((product, index) => (
+            filteredAndSortedProducts.map((product, index) => (
               <div
                 key={product.id}
                 className={cn("animate-slide-up", `stagger-${Math.min(index + 1, 5)}`)}
