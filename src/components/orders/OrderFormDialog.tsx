@@ -281,7 +281,7 @@ export function OrderFormDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] pr-4">
+        <ScrollArea className="max-h-[75dvh] pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               {/* Client Selection with Search */}
@@ -393,7 +393,7 @@ export function OrderFormDialog({
                 <FormLabel>Produtos *</FormLabel>
                 
                 {/* Add Product Row */}
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -401,7 +401,7 @@ export function OrderFormDialog({
                         role="combobox"
                         aria-expanded={productSearchOpen}
                         className={cn(
-                          "flex-1 justify-between font-normal",
+                          "w-full sm:flex-1 justify-between font-normal",
                           !selectedProduct && "text-muted-foreground"
                         )}
                       >
@@ -462,31 +462,34 @@ export function OrderFormDialog({
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  <div className="relative">
-                    <Input
-                      type="number"
-                      min={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
-                      step={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
-                      value={quantity}
-                      onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
-                      className="w-24 pr-8"
-                      placeholder="Qtd"
-                    />
-                    {selectedProductData && (
-                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                        {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cento' : 'Un'}
-                      </span>
-                    )}
+                  <div className="flex gap-2">
+                    <div className="relative flex-1 sm:flex-none">
+                      <Input
+                        type="number"
+                        min={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                        step={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                        value={quantity}
+                        onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
+                        className="w-full sm:w-28 pr-12"
+                        placeholder="Qtd"
+                      />
+                      {selectedProductData && (
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                          {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cento' : 'Un'}
+                        </span>
+                      )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={handleAddItem}
+                      disabled={!selectedProduct}
+                      className="shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={handleAddItem}
-                    disabled={!selectedProduct}
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
                 </div>
 
                 {/* Items List */}
@@ -712,10 +715,11 @@ export function OrderFormDialog({
                 </Card>
               )}
 
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
                 <Button
                   type="button"
                   variant="outline"
+                  className="w-full sm:w-auto"
                   onClick={() => onOpenChange(false)}
                 >
                   Cancelar
@@ -723,6 +727,7 @@ export function OrderFormDialog({
                 <Button 
                   type="submit" 
                   variant="warm" 
+                  className="w-full sm:w-auto"
                   disabled={isLoading || items.length === 0}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
