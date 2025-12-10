@@ -33,6 +33,9 @@ const Index = () => {
     return 'Boa noite';
   };
 
+  // Hidden Kanban columns from profile
+  const hiddenColumns = (profile?.hidden_kanban_columns || []) as OrderStatus[];
+
   // Calculate stats from real data
   const activeOrders = orders.filter(o => o.status !== 'delivered');
   const pendingDeposits = orders
@@ -168,6 +171,7 @@ const Index = () => {
                 onOrderClick={() => navigate('/orders')}
                 onStatusChange={handleStatusChange}
                 onDepositChange={handleDepositChange}
+                hiddenColumns={hiddenColumns}
               />
 
               {/* List for Mobile */}
