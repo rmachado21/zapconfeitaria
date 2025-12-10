@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
 import { Sidebar } from './Sidebar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { TodayDeliveriesBanner } from './TodayDeliveriesBanner';
 import { CakeSlice, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -33,6 +34,12 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Button>
           </div>
         </div>
+        <TodayDeliveriesBanner />
+      </div>
+      
+      {/* Desktop banner */}
+      <div className="hidden md:block md:ml-64">
+        <TodayDeliveriesBanner />
       </div>
       
       <main className="md:ml-64 pb-20 pt-12 md:pt-0 md:pb-0 min-h-screen">
