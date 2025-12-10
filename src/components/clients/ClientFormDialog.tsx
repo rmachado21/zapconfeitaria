@@ -65,7 +65,7 @@ export function ClientFormDialog({
       form.reset({
         name: client.name,
         phone: client.phone ? formatPhone(client.phone) : '',
-        cpf_cnpj: (client as any).cpf_cnpj ? formatCpfCnpj((client as any).cpf_cnpj) : '',
+        cpf_cnpj: client.cpf_cnpj ? formatCpfCnpj(client.cpf_cnpj) : '',
         email: client.email || '',
         birthday: client.birthday || '',
       });

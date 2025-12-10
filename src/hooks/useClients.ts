@@ -7,6 +7,7 @@ export interface Client {
   id: string;
   name: string;
   phone: string | null;
+  cpf_cnpj: string | null;
   email: string | null;
   birthday: string | null;
   created_at: string;
@@ -17,6 +18,7 @@ export interface Client {
 export interface ClientFormData {
   name: string;
   phone?: string;
+  cpf_cnpj?: string;
   email?: string;
   birthday?: string;
 }
@@ -51,6 +53,7 @@ export function useClients() {
         .insert({
           name: formData.name,
           phone: formData.phone || null,
+          cpf_cnpj: formData.cpf_cnpj || null,
           email: formData.email || null,
           birthday: formData.birthday || null,
           user_id: user.id,
@@ -84,6 +87,7 @@ export function useClients() {
         .update({
           name: formData.name,
           phone: formData.phone || null,
+          cpf_cnpj: formData.cpf_cnpj || null,
           email: formData.email || null,
           birthday: formData.birthday || null,
         })
