@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar, MapPin, MessageCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -33,16 +34,12 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
     }
   };
 
-  const openWhatsApp = (e: React.MouseEvent) => {
+  const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (!order.clientPhone) return;
     
-    const phone = order.clientPhone.replace(/\D/g, '');
-    const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
-    const message = encodeURIComponent(
-      `Olá ${order.clientName}! Aqui é da Confeitaria Pro. Sobre seu pedido para o dia ${formatDate(order.deliveryDate)}...`
-    );
-    window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
+    const message = `Olá ${order.clientName}! Aqui é da Confeitaria Pro. Sobre seu pedido para o dia ${formatDate(order.deliveryDate)}...`;
+    openWhatsApp(order.clientPhone, message);
   };
 
   const handleDepositChange = (e: React.MouseEvent) => {
@@ -101,7 +98,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
                   variant="ghost"
                   size="icon-sm"
                   className="text-success hover:text-success hover:bg-success/10"
-                  onClick={openWhatsApp}
+                  onClick={handleWhatsAppClick}
                 >
                   <MessageCircle className="h-4 w-4" />
                 </Button>

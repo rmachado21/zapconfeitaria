@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useClients } from '@/hooks/useClients';
 import { cn } from '@/lib/utils';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 
 export function NotificationBell() {
@@ -34,23 +35,16 @@ export function NotificationBell() {
     
     // Find the client to get their phone number
     const client = clients.find(c => c.name === notification.clientName);
-    if (!client?.phone) {
-      return;
-    }
+    if (!client?.phone) return;
 
-    // Clean phone number (remove non-digits)
-    const cleanPhone = client.phone.replace(/\D/g, '');
-    
     // Birthday message template
-    const message = encodeURIComponent(
+    const message = 
       `🎂 Feliz Aniversário, ${client.name}! 🎉\n\n` +
       `Desejamos a você um dia maravilhoso, repleto de alegrias e realizações!\n\n` +
       `Com carinho,\n` +
-      `Sua Confeitaria ❤️`
-    );
+      `Sua Confeitaria ❤️`;
 
-    // Open WhatsApp with the message
-    window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
+    openWhatsApp(client.phone, message);
   };
 
   const getPriorityColor = (priority: Notification['priority']) => {
