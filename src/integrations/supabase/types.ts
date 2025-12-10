@@ -202,6 +202,7 @@ export type Database = {
           company_name: string | null
           created_at: string
           custom_terms: string | null
+          hidden_kanban_columns: string[] | null
           id: string
           include_terms_in_pdf: boolean
           logo_url: string | null
@@ -214,6 +215,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           custom_terms?: string | null
+          hidden_kanban_columns?: string[] | null
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null
@@ -226,6 +228,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           custom_terms?: string | null
+          hidden_kanban_columns?: string[] | null
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null

@@ -10,9 +10,10 @@ interface KanbanBoardProps {
   onOrderClick?: (order: DBOrder) => void;
   onStatusChange?: (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => void;
   onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => void;
+  hiddenColumns?: OrderStatus[];
 }
 
-const KANBAN_COLUMNS: OrderStatus[] = [
+const ALL_KANBAN_COLUMNS: OrderStatus[] = [
   'quote',
   'awaiting_deposit',
   'in_production',
@@ -21,7 +22,9 @@ const KANBAN_COLUMNS: OrderStatus[] = [
   'cancelled',
 ];
 
-export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositChange }: KanbanBoardProps) {
+export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositChange, hiddenColumns = [] }: KanbanBoardProps) {
+  const visibleColumns = ALL_KANBAN_COLUMNS.filter(col => !hiddenColumns.includes(col));
+
   const getOrdersByStatus = (status: OrderStatus) => {
     return orders.filter((order) => order.status === status);
   };
@@ -79,7 +82,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
   return (
     <DragDropContext onDragEnd={handleDragEnd}>
       <div className="hidden md:flex gap-4 h-[calc(100vh-200px)] overflow-x-auto pb-4 scrollbar-thin">
-        {KANBAN_COLUMNS.map((status) => {
+        {visibleColumns.map((status) => {
           const statusConfig = ORDER_STATUS_CONFIG[status];
           const columnOrders = getOrdersByStatus(status);
 
