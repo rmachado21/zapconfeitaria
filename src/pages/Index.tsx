@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { useOrders } from '@/hooks/useOrders';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
+import { useProfile } from '@/hooks/useProfile';
 import { OrderStatus } from '@/types';
 import { ShoppingBag, TrendingUp, Clock, Plus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -15,6 +16,10 @@ const Index = () => {
   const { orders, isLoading, updateOrderStatus, updateDepositPaid } = useOrders();
   const { clients } = useClients();
   const { products } = useProducts();
+  const { profile } = useProfile();
+
+  // Extract first name from company name
+  const firstName = profile?.company_name?.split(' ')[0] || '';
 
   // Calculate stats from real data
   const activeOrders = orders.filter(o => o.status !== 'delivered');
@@ -48,7 +53,7 @@ const Index = () => {
         <header className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Olá! 👋
+              Olá{firstName ? ` ${firstName}` : ''}! 👋
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
               {new Date().toLocaleDateString('pt-BR', { 
