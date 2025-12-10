@@ -1,4 +1,5 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
@@ -18,7 +19,18 @@ import { OrderStatus } from '@/types';
 import { Plus, Loader2, Search, ArrowUpDown } from 'lucide-react';
 
 const Orders = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
+
+  // Open form automatically if navigated with openNewOrder state
+  useEffect(() => {
+    if (location.state?.openNewOrder) {
+      setFormOpen(true);
+      // Clear the state to prevent reopening on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname]);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
