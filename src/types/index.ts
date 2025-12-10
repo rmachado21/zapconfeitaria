@@ -24,6 +24,7 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   unitPrice: number;
+  unitType: 'kg' | 'unit';
   total: number;
 }
 

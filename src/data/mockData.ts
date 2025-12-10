@@ -87,8 +87,8 @@ export const mockOrders: Order[] = [
     clientName: 'Maria Silva',
     clientPhone: '(11) 99999-1234',
     items: [
-      { id: '1', productId: '1', productName: 'Bolo de Cenoura com Chocolate', quantity: 2, unitPrice: 80, total: 160 },
-      { id: '2', productId: '2', productName: 'Brigadeiro Gourmet', quantity: 50, unitPrice: 4, total: 200 },
+      { id: '1', productId: '1', productName: 'Bolo de Cenoura com Chocolate', quantity: 2, unitPrice: 80, unitType: 'kg', total: 160 },
+      { id: '2', productId: '2', productName: 'Brigadeiro Gourmet', quantity: 50, unitPrice: 4, unitType: 'unit', total: 200 },
     ],
     status: 'in_production',
     deliveryDate: '2024-12-15',
@@ -106,7 +106,7 @@ export const mockOrders: Order[] = [
     clientName: 'João Santos',
     clientPhone: '(11) 98888-5678',
     items: [
-      { id: '3', productId: '3', productName: 'Naked Cake', quantity: 3, unitPrice: 120, total: 360 },
+      { id: '3', productId: '3', productName: 'Naked Cake', quantity: 3, unitPrice: 120, unitType: 'kg', total: 360 },
     ],
     status: 'awaiting_deposit',
     deliveryDate: '2024-12-18',
@@ -122,7 +122,7 @@ export const mockOrders: Order[] = [
     clientName: 'Ana Costa',
     clientPhone: '(11) 97777-9012',
     items: [
-      { id: '4', productId: '4', productName: 'Cupcake Decorado', quantity: 24, unitPrice: 8, total: 192 },
+      { id: '4', productId: '4', productName: 'Cupcake Decorado', quantity: 24, unitPrice: 8, unitType: 'unit', total: 192 },
     ],
     status: 'quote',
     deliveryDate: '2024-12-20',
@@ -139,7 +139,7 @@ export const mockOrders: Order[] = [
     clientName: 'Pedro Oliveira',
     clientPhone: '(11) 96666-3456',
     items: [
-      { id: '5', productId: '5', productName: 'Torta de Limão', quantity: 1, unitPrice: 95, total: 95 },
+      { id: '5', productId: '5', productName: 'Torta de Limão', quantity: 1, unitPrice: 95, unitType: 'unit', total: 95 },
     ],
     status: 'ready',
     deliveryDate: '2024-12-12',
@@ -156,7 +156,7 @@ export const mockOrders: Order[] = [
     clientName: 'Maria Silva',
     clientPhone: '(11) 99999-1234',
     items: [
-      { id: '6', productId: '1', productName: 'Bolo de Cenoura com Chocolate', quantity: 1.5, unitPrice: 80, total: 120 },
+      { id: '6', productId: '1', productName: 'Bolo de Cenoura com Chocolate', quantity: 1.5, unitPrice: 80, unitType: 'kg', total: 120 },
     ],
     status: 'delivered',
     deliveryDate: '2024-12-01',

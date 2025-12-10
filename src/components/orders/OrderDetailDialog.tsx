@@ -113,7 +113,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange }:
       : 'a definir';
     
     const itemsList = (order.order_items || [])
-      .map(item => `• ${item.quantity}x ${item.product_name}`)
+      .map(item => `• ${item.quantity}${item.unit_type === 'kg' ? 'Kg' : 'UN'} ${item.product_name}`)
       .join('\n');
 
     const message = `Olá ${order.client?.name}! 👋
@@ -253,7 +253,7 @@ Ficamos à disposição! 🍰`;
                 {(order.order_items || []).map((item, index) => (
                   <div key={index} className="flex justify-between text-sm">
                     <span>
-                      {item.quantity}x {item.product_name}
+                      {item.quantity}{item.unit_type === 'kg' ? 'Kg' : 'UN'} {item.product_name}
                     </span>
                     <span className="font-medium">
                       {formatCurrency(item.quantity * item.unit_price)}
