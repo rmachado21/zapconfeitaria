@@ -1,7 +1,9 @@
 import { AppLayout } from '@/components/layout/AppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import { 
   CakeSlice, 
   Settings, 
@@ -14,6 +16,17 @@ import {
 } from 'lucide-react';
 
 const Profile = () => {
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleSignOut = async () => {
+    await signOut();
+    toast({
+      title: 'Até logo!',
+      description: 'Você saiu da sua conta.',
+    });
+  };
+
   const menuItems = [
     { icon: Settings, label: 'Configurações da Conta', to: '/settings' },
     { icon: CreditCard, label: 'Assinatura', to: '/subscription', badge: 'Pro' },
@@ -34,16 +47,16 @@ const Profile = () => {
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <h1 className="text-xl font-display font-bold text-foreground">
-                    Doce Encanto
+                    Minha Confeitaria
                   </h1>
                   <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
                     <Crown className="h-3 w-3 mr-1" />
                     Pro
                   </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm">contato@doceencanto.com.br</p>
+                <p className="text-muted-foreground text-sm">{user?.email}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Membro desde Janeiro 2024
+                  Membro desde {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}
                 </p>
               </div>
             </div>
@@ -54,19 +67,19 @@ const Profile = () => {
         <div className="grid grid-cols-3 gap-3">
           <Card className="text-center">
             <CardContent className="p-4">
-              <p className="text-2xl font-display font-bold text-primary">156</p>
+              <p className="text-2xl font-display font-bold text-primary">0</p>
               <p className="text-xs text-muted-foreground">Pedidos</p>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="p-4">
-              <p className="text-2xl font-display font-bold text-primary">48</p>
+              <p className="text-2xl font-display font-bold text-primary">0</p>
               <p className="text-xs text-muted-foreground">Clientes</p>
             </CardContent>
           </Card>
           <Card className="text-center">
             <CardContent className="p-4">
-              <p className="text-2xl font-display font-bold text-primary">23</p>
+              <p className="text-2xl font-display font-bold text-primary">0</p>
               <p className="text-xs text-muted-foreground">Produtos</p>
             </CardContent>
           </Card>
@@ -103,6 +116,7 @@ const Profile = () => {
         <Button 
           variant="ghost" 
           className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+          onClick={handleSignOut}
         >
           <LogOut className="h-5 w-5 mr-2" />
           Sair da Conta
