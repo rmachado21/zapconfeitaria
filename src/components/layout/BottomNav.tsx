@@ -1,13 +1,13 @@
 import { NavLink } from '@/components/NavLink';
-import { Home, ShoppingBag, Users, Wallet, User } from 'lucide-react';
+import { Home, ShoppingBag, Users, Wallet, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
   { to: '/', icon: Home, label: 'Início' },
   { to: '/orders', icon: ShoppingBag, label: 'Pedidos' },
+  { to: '/products', icon: Package, label: 'Produtos' },
   { to: '/clients', icon: Users, label: 'Clientes' },
   { to: '/finances', icon: Wallet, label: 'Financeiro' },
-  { to: '/profile', icon: User, label: 'Perfil' },
 ];
 
 export function BottomNav() {
