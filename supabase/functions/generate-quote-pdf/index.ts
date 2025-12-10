@@ -254,9 +254,14 @@ const handler = async (req: Request): Promise<Response> => {
     const col4Width = tableWidth * 0.20; // Total
     const rowHeight = 10;
 
-    // Table header with terracotta color
+    // Table header with terracotta color and rounded top corners
+    const cornerRadius = 3;
     doc.setFillColor(180, 100, 70);
-    doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
+    
+    // Draw header with rounded top corners
+    doc.roundedRect(margin, yPos - 5, tableWidth, rowHeight, cornerRadius, cornerRadius, "F");
+    // Cover bottom rounded corners with a rectangle
+    doc.rect(margin, yPos - 5 + cornerRadius, tableWidth, rowHeight - cornerRadius, "F");
     
     // Header text in white
     doc.setFontSize(10);
@@ -286,7 +291,7 @@ const handler = async (req: Request): Promise<Response> => {
         doc.setFillColor(220, 252, 231); // Green tint for gifts
         doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
       } else if (isAdditional) {
-        doc.setFillColor(219, 234, 254); // Blue tint for additional items
+        doc.setFillColor(239, 246, 255); // Light blue tint for additional items
         doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
       } else if (i % 2 === 0) {
         doc.setFillColor(255, 255, 255);
@@ -333,17 +338,19 @@ const handler = async (req: Request): Promise<Response> => {
 
     const tableEndY = yPos - 5;
 
-    // Draw table borders
+    // Draw table borders with rounded corners
     doc.setDrawColor(200, 190, 180);
     doc.setLineWidth(0.5);
     
-    // Outer border
-    doc.rect(margin, tableStartY, tableWidth, tableEndY - tableStartY);
+    // Outer border with rounded corners
+    doc.roundedRect(margin, tableStartY, tableWidth, tableEndY - tableStartY, cornerRadius, cornerRadius, "S");
     
-    // Column separators
-    doc.line(margin + col1Width, tableStartY, margin + col1Width, tableEndY);
-    doc.line(margin + col1Width + col2Width, tableStartY, margin + col1Width + col2Width, tableEndY);
-    doc.line(margin + col1Width + col2Width + col3Width, tableStartY, margin + col1Width + col2Width + col3Width, tableEndY);
+    // Column separators (shorter to not overlap with rounded corners)
+    const separatorStartY = tableStartY + cornerRadius;
+    const separatorEndY = tableEndY - cornerRadius;
+    doc.line(margin + col1Width, separatorStartY, margin + col1Width, separatorEndY);
+    doc.line(margin + col1Width + col2Width, separatorStartY, margin + col1Width + col2Width, separatorEndY);
+    doc.line(margin + col1Width + col2Width + col3Width, separatorStartY, margin + col1Width + col2Width + col3Width, separatorEndY);
 
     yPos += 5;
 
