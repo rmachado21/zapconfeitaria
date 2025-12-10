@@ -268,11 +268,13 @@ export function OrderFormDialog({
                       <SelectValue placeholder="Selecione um produto" />
                     </SelectTrigger>
                     <SelectContent>
-                      {products.map((product) => (
+                      {products.map((product) => {
+                        const unitLabel = product.unit_type === 'kg' ? 'Kg' : product.unit_type === 'cento' ? 'Cento' : 'Un';
+                        return (
                         <SelectItem key={product.id} value={product.id}>
-                          {product.name} - {formatCurrency(product.sale_price)}/{product.unit_type === 'kg' ? 'Kg' : 'UN'}
+                          {product.name} - {formatCurrency(product.sale_price)}/{unitLabel}
                         </SelectItem>
-                      ))}
+                      )})}
                     </SelectContent>
                   </Select>
                   <div className="relative">
@@ -287,7 +289,7 @@ export function OrderFormDialog({
                     />
                     {selectedProductData && (
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                        {selectedProductData.unit_type === 'kg' ? 'Kg' : 'UN'}
+                        {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cento' : 'Un'}
                       </span>
                     )}
                   </div>
@@ -306,12 +308,14 @@ export function OrderFormDialog({
                 {items.length > 0 && (
                   <Card>
                     <CardContent className="p-3 space-y-3">
-                      {items.map((item, index) => (
+                      {items.map((item, index) => {
+                        const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
+                        return (
                         <div key={index} className="flex items-center gap-2 text-sm">
                           <div className="flex-1 min-w-0">
                             <span className="font-medium block truncate">{item.product_name}</span>
                             <span className="text-muted-foreground text-xs">
-                              {formatCurrency(item.unit_price)}/{item.unit_type === 'kg' ? 'Kg' : 'UN'}
+                              {formatCurrency(item.unit_price)}/{unitLabel}
                             </span>
                           </div>
                           
@@ -327,7 +331,7 @@ export function OrderFormDialog({
                               <Minus className="h-3 w-3" />
                             </Button>
                             <span className="w-14 text-center font-medium text-xs">
-                              {item.quantity}{item.unit_type === 'kg' ? 'Kg' : 'UN'}
+                              {item.quantity} {unitLabel}
                             </span>
                             <Button
                               type="button"
@@ -353,7 +357,7 @@ export function OrderFormDialog({
                             <Trash2 className="h-3 w-3" />
                           </Button>
                         </div>
-                      ))}
+                      )})}
                     </CardContent>
                   </Card>
                 )}
