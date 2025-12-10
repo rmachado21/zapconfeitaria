@@ -21,7 +21,7 @@ export interface ProductFormData {
   description?: string;
   cost_price: number;
   sale_price: number;
-  unit_type: 'kg' | 'unit';
+  unit_type: 'kg' | 'unit' | 'cento';
   photo_url?: string;
 }
 

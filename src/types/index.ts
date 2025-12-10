@@ -13,7 +13,7 @@ export interface Product {
   description?: string;
   costPrice: number;
   salePrice: number;
-  unitType: 'kg' | 'unit';
+  unitType: 'kg' | 'unit' | 'cento';
   imageUrl?: string;
   createdAt: string;
 }
@@ -24,7 +24,7 @@ export interface OrderItem {
   productName: string;
   quantity: number;
   unitPrice: number;
-  unitType: 'kg' | 'unit';
+  unitType: 'kg' | 'unit' | 'cento';
   total: number;
 }
 
