@@ -28,6 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Product, ProductFormData } from '@/hooks/useProducts';
+import { ImageUpload } from '@/components/shared/ImageUpload';
 
 const productSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
@@ -220,12 +221,13 @@ export function ProductFormDialog({
               name="photo_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>URL da Foto</FormLabel>
+                  <FormLabel>Foto do Produto</FormLabel>
                   <FormControl>
-                    <Input
-                      type="url"
-                      placeholder="https://exemplo.com/foto.jpg"
-                      {...field}
+                    <ImageUpload
+                      bucket="product-images"
+                      currentUrl={field.value}
+                      onUpload={(url) => field.onChange(url)}
+                      onRemove={() => field.onChange('')}
                     />
                   </FormControl>
                   <FormMessage />

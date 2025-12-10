@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TransactionFormDialog } from '@/components/finances/TransactionFormDialog';
 import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
+import { FinanceChart } from '@/components/finances/FinanceChart';
 import { useTransactions, Transaction, TransactionFormData } from '@/hooks/useTransactions';
 import { TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, Trash2, Loader2 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
@@ -103,6 +104,9 @@ const Finances = () => {
             variant="warning"
           />
         </section>
+
+        {/* Financial Chart */}
+        <FinanceChart transactions={transactions} />
 
         {/* Transactions List */}
         <Card>
