@@ -66,7 +66,7 @@ const Finances = () => {
 
   return (
     <AppLayout>
-      <div className="p-4 md:p-6 space-y-6">
+      <div className="px-5 py-4 md:px-8 md:py-6 space-y-6">
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
