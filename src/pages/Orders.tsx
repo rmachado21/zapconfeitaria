@@ -1,18 +1,28 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
 import { OrderFormDialog } from '@/components/orders/OrderFormDialog';
 import { OrderDetailDialog } from '@/components/orders/OrderDetailDialog';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useOrders, OrderFormData, Order } from '@/hooks/useOrders';
 import { OrderStatus } from '@/types';
-import { Plus, Loader2 } from 'lucide-react';
+import { Plus, Loader2, Search, ArrowUpDown } from 'lucide-react';
 
 const Orders = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('asc');
 
   const { 
     orders, 
@@ -21,6 +31,30 @@ const Orders = () => {
     updateOrderStatus, 
     updateDepositPaid 
   } = useOrders();
+
+  // Filter and sort orders
+  const filteredOrders = useMemo(() => {
+    let result = orders;
+
+    // Filter by client name
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter(order => 
+        order.client?.name?.toLowerCase().includes(query)
+      );
+    }
+
+    // Sort by delivery date
+    if (sortOrder !== 'none') {
+      result = [...result].sort((a, b) => {
+        const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : 0;
+        const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : 0;
+        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+      });
+    }
+
+    return result;
+  }, [orders, searchQuery, sortOrder]);
 
   const handleCreate = () => {
     setSelectedOrder(null);
@@ -54,31 +88,57 @@ const Orders = () => {
               Pedidos
             </h1>
             <p className="text-muted-foreground text-sm mt-1">
-              {orders.length} pedidos • Arraste para mudar o status
+              {filteredOrders.length} pedidos {searchQuery && `encontrados`}
             </p>
           </div>
-          <Button variant="warm" onClick={handleCreate}>
+          <Button variant="warm" onClick={handleCreate} className="hidden md:flex">
             <Plus className="h-5 w-5" />
             Novo Pedido
           </Button>
         </header>
 
+        {/* Search and Sort Controls */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por cliente..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as 'asc' | 'desc' | 'none')}>
+            <SelectTrigger className="w-full sm:w-[200px]">
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Ordenar por" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="asc">Data: mais próxima</SelectItem>
+              <SelectItem value="desc">Data: mais distante</SelectItem>
+              <SelectItem value="none">Sem ordenação</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
-        ) : orders.length === 0 ? (
+        ) : filteredOrders.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <p>Nenhum pedido cadastrado</p>
-            <Button variant="link" className="mt-2" onClick={handleCreate}>
-              Criar primeiro pedido
-            </Button>
+            <p>{searchQuery ? 'Nenhum pedido encontrado' : 'Nenhum pedido cadastrado'}</p>
+            {!searchQuery && (
+              <Button variant="link" className="mt-2" onClick={handleCreate}>
+                Criar primeiro pedido
+              </Button>
+            )}
           </div>
         ) : (
           <>
             {/* Kanban for Desktop */}
             <KanbanBoard 
-              orders={orders} 
+              orders={filteredOrders} 
               onOrderClick={handleOrderClick}
               onStatusChange={handleStatusChange}
               onDepositChange={handleDepositChange}
@@ -86,7 +146,7 @@ const Orders = () => {
 
             {/* List for Mobile */}
             <OrdersList 
-              orders={orders} 
+              orders={filteredOrders} 
               onOrderClick={handleOrderClick}
               onDepositChange={handleDepositChange}
             />
