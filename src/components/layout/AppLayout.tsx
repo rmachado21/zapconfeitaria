@@ -1,21 +1,20 @@
-import { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
-import { BottomNav } from './BottomNav';
-import { DesktopHeader } from './DesktopHeader';
-import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { TodayDeliveriesBanner } from './TodayDeliveriesBanner';
-import { User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import zapLogo from '@/assets/zap-confeitaria-logo.png';
+import { ReactNode } from "react";
+import { Link } from "react-router-dom";
+import { BottomNav } from "./BottomNav";
+import { DesktopHeader } from "./DesktopHeader";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { TodayDeliveriesBanner } from "./TodayDeliveriesBanner";
+import { User } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import zapLogo from "@/assets/zap-confeitaria-logo.png";
 interface AppLayoutProps {
   children: ReactNode;
 }
-export function AppLayout({
-  children
-}: AppLayoutProps) {
-  return <div className="min-h-screen bg-background">
+export function AppLayout({ children }: AppLayoutProps) {
+  return (
+    <div className="min-h-screen bg-background">
       <DesktopHeader />
-      
+
       {/* Top header bar for mobile */}
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
         <div className="flex items-center justify-between px-4 py-2">
@@ -31,15 +30,14 @@ export function AppLayout({
         </div>
         <TodayDeliveriesBanner />
       </div>
-      
+
       {/* Desktop banner */}
       <div className="hidden md:block pt-16">
         <TodayDeliveriesBanner />
       </div>
-      
-      <main className="pb-20 pt-14 md:pt-16 md:pb-0 min-h-screen">
-        {children}
-      </main>
+
+      <main className="pb-20 pt-14 md:pt-10 md:pb-0 min-h-screen">{children}</main>
       <BottomNav />
-    </div>;
+    </div>
+  );
 }
