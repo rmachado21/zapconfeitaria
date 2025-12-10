@@ -117,6 +117,7 @@ const Orders = () => {
         open={detailOpen}
         onOpenChange={setDetailOpen}
         order={selectedOrder}
+        onStatusChange={handleStatusChange}
       />
     </AppLayout>
   );

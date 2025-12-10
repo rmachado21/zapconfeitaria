@@ -9,6 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Order } from '@/hooks/useOrders';
 import { useQuotePdf } from '@/hooks/useQuotePdf';
 import { useProfile } from '@/hooks/useProfile';
@@ -18,12 +25,12 @@ import {
   MapPin, 
   Phone, 
   FileText, 
-  MessageCircle, 
   Loader2,
   User,
   Package,
   Banknote,
-  Send
+  Send,
+  ChevronDown
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,15 +42,24 @@ interface OrderDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   order: Order | null;
+  onStatusChange?: (orderId: string, status: OrderStatus, clientName?: string, totalAmount?: number) => void;
 }
 
-export function OrderDetailDialog({ open, onOpenChange, order }: OrderDetailDialogProps) {
+const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered'];
+
+export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange }: OrderDetailDialogProps) {
   const { generatePdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
 
   if (!order) return null;
 
   const statusConfig = ORDER_STATUS_CONFIG[order.status as OrderStatus];
+
+  const handleStatusChange = (newStatus: OrderStatus) => {
+    if (newStatus !== order.status && onStatusChange) {
+      onStatusChange(order.id, newStatus, order.client?.name, order.total_amount);
+    }
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -111,11 +127,45 @@ Ficamos à disposição! 🍰`;
           <DialogTitle className="font-display flex items-center gap-3">
             <Package className="h-5 w-5 text-primary" />
             Detalhes do Pedido
+          </DialogTitle>
+        </DialogHeader>
+
+        {/* Status Selector */}
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Status:</span>
+          {onStatusChange ? (
+            <Select
+              value={order.status}
+              onValueChange={(value) => handleStatusChange(value as OrderStatus)}
+            >
+              <SelectTrigger className={cn(
+                "w-auto h-8 text-xs font-medium border-0 gap-1",
+                statusConfig.bgColor,
+                statusConfig.color
+              )}>
+                <SelectValue />
+                <ChevronDown className="h-3 w-3 opacity-50" />
+              </SelectTrigger>
+              <SelectContent>
+                {ALL_STATUSES.map((status) => {
+                  const config = ORDER_STATUS_CONFIG[status];
+                  return (
+                    <SelectItem key={status} value={status}>
+                      <div className="flex items-center gap-2">
+                        <div className={cn("w-2 h-2 rounded-full", config.bgColor)} />
+                        {config.label}
+                      </div>
+                    </SelectItem>
+                  );
+                })}
+              </SelectContent>
+            </Select>
+          ) : (
             <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-xs")}>
               {statusConfig.label}
             </Badge>
-          </DialogTitle>
-        </DialogHeader>
+          )}
+        </div>
 
         <div className="space-y-4">
           {/* Client Info */}

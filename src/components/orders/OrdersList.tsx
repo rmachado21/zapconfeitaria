@@ -16,11 +16,12 @@ const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
   { value: 'awaiting_deposit', label: 'Aguardando' },
   { value: 'in_production', label: 'Produção' },
   { value: 'ready', label: 'Pronto' },
+  { value: 'delivered', label: 'Entregue' },
 ];
 
 export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersListProps) {
   const getFilteredOrders = (status: 'all' | OrderStatus) => {
-    if (status === 'all') return orders.filter(o => o.status !== 'delivered');
+    if (status === 'all') return orders;
     return orders.filter((order) => order.status === status);
   };
 
