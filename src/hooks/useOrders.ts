@@ -321,11 +321,78 @@ export function useOrders() {
     },
   });
 
+  const updateOrder = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: OrderFormData }) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const totalItems = formData.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      const totalAmount = totalItems + (formData.delivery_fee || 0);
+
+      // Update order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .update({
+          client_id: formData.client_id,
+          delivery_date: formData.delivery_date || null,
+          delivery_address: formData.delivery_address || null,
+          delivery_fee: formData.delivery_fee || 0,
+          total_amount: totalAmount,
+          notes: formData.notes || null,
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Delete existing order items
+      await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', id);
+
+      // Create new order items
+      if (formData.items.length > 0) {
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(
+            formData.items.map(item => ({
+              order_id: id,
+              product_id: item.product_id,
+              product_name: item.product_name,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              unit_type: item.unit_type,
+            }))
+          );
+
+        if (itemsError) throw itemsError;
+      }
+
+      return order;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: 'Pedido atualizado!',
+        description: 'O pedido foi atualizado com sucesso.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao atualizar pedido',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     orders,
     isLoading,
     error,
     createOrder,
+    updateOrder,
     updateOrderStatus,
     updateDepositPaid,
     deleteOrder,
