@@ -574,9 +574,24 @@ export function OrderFormDialog({
                                 {isGift && <Badge variant="success" className="text-[9px] px-1 py-0">BRINDE</Badge>}
                                 {isAdditional && !isGift && <Badge className="text-[9px] px-1 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">ADICIONAL</Badge>}
                               </div>
-                              <span className="text-muted-foreground text-xs">
-                                {formatCurrency(item.unit_price)}/{unitLabel}
-                              </span>
+                              {isAdditional ? (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <CurrencyInput
+                                    value={item.unit_price}
+                                    onChange={(value) => {
+                                      const newItems = [...items];
+                                      newItems[index].unit_price = value;
+                                      setItems(newItems);
+                                    }}
+                                    className="h-7 text-xs w-24"
+                                  />
+                                  <span className="text-muted-foreground text-xs">/{unitLabel}</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">
+                                  {formatCurrency(item.unit_price)}/{unitLabel}
+                                </span>
+                              )}
                             </div>
                             <div className="text-right shrink-0">
                               {isGift ? (
