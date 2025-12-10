@@ -5,6 +5,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -32,7 +42,8 @@ import {
   Send,
   ChevronDown,
   Pencil,
-  Trash2
+  Trash2,
+  AlertTriangle
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -54,11 +65,20 @@ const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production
 export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
   const { generatePdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   if (!order) return null;
 
   const statusConfig = ORDER_STATUS_CONFIG[order.status as OrderStatus];
   const canEditOrDelete = order.status === 'quote' || order.status === 'awaiting_deposit';
+
+  const handleDelete = () => {
+    if (onDelete) {
+      onDelete(order.id);
+      setDeleteDialogOpen(false);
+      onOpenChange(false);
+    }
+  };
 
   const handleStatusChange = (newStatus: OrderStatus) => {
     if (newStatus !== order.status && onStatusChange) {
@@ -361,12 +381,7 @@ Ficamos à disposição! 🍰`;
                     variant="ghost" 
                     size="sm"
                     className="text-muted-foreground hover:text-destructive"
-                    onClick={() => {
-                      if (window.confirm('Tem certeza que deseja excluir este pedido?')) {
-                        onDelete(order.id);
-                        onOpenChange(false);
-                      }
-                    }}
+                    onClick={() => setDeleteDialogOpen(true)}
                   >
                     <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                     Excluir
@@ -377,6 +392,33 @@ Ficamos à disposição! 🍰`;
           </div>
         </div>
       </DialogContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <AlertDialogTitle>Excluir Pedido</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="pt-2">
+              Tem certeza que deseja excluir este pedido de <strong>{order.client?.name}</strong>? 
+              Esta ação não pode ser desfeita e todas as informações serão perdidas.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir Pedido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
