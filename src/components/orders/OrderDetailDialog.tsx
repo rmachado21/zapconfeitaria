@@ -166,7 +166,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
         </DialogHeader>
 
         {/* Status Selector */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="text-sm text-muted-foreground">Status:</span>
           {onStatusChange ? (
             <Select
@@ -174,13 +174,17 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               onValueChange={(value) => handleStatusChange(value as OrderStatus)}
             >
               <SelectTrigger className={cn(
-                "w-auto h-8 text-xs font-medium border-0",
+                "w-auto h-9 px-3 gap-2 text-sm font-semibold border shadow-sm",
                 statusConfig.bgColor,
-                statusConfig.color
+                statusConfig.color,
+                "hover:opacity-90 transition-opacity"
               )}>
-                <SelectValue />
+                <div className="flex items-center gap-2">
+                  <div className={cn("w-2.5 h-2.5 rounded-full", statusConfig.dotColor)} />
+                  <span>{statusConfig.label}</span>
+                </div>
               </SelectTrigger>
-              <SelectContent className="min-w-[200px]">
+              <SelectContent className="min-w-[240px]">
                 {ALL_STATUSES.map((status) => {
                   const config = ORDER_STATUS_CONFIG[status];
                   const isSelected = status === order.status;
@@ -188,22 +192,25 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                     <SelectItem 
                       key={status} 
                       value={status}
-                      className="py-2.5 cursor-pointer"
+                      className={cn(
+                        "py-3 cursor-pointer",
+                        isSelected && "bg-muted/50"
+                      )}
                     >
                       <div className="flex items-center gap-3 w-full">
                         <div className={cn(
-                          "w-3 h-3 rounded-full ring-2 ring-offset-1",
+                          "w-3 h-3 rounded-full shrink-0",
                           config.dotColor,
-                          isSelected ? "ring-primary/50" : "ring-transparent"
+                          isSelected && "ring-2 ring-offset-2 ring-primary/30"
                         )} />
-                        <div className="flex flex-col">
+                        <div className="flex flex-col gap-0.5">
                           <span className={cn(
-                            "font-medium",
-                            isSelected && "text-primary"
+                            "font-semibold text-sm",
+                            isSelected ? "text-primary" : "text-foreground"
                           )}>
                             {config.label}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">
+                          <span className="text-xs text-muted-foreground leading-tight">
                             {config.description}
                           </span>
                         </div>
@@ -214,7 +221,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               </SelectContent>
             </Select>
           ) : (
-            <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-xs")}>
+            <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-xs font-semibold")}>
               {statusConfig.label}
             </Badge>
           )}
