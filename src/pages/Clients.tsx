@@ -1,26 +1,54 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { ClientCard } from '@/components/clients/ClientCard';
 import { ClientFormDialog } from '@/components/clients/ClientFormDialog';
 import { DeleteClientDialog } from '@/components/clients/DeleteClientDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useClients, Client, ClientFormData } from '@/hooks/useClients';
-import { Plus, Search, Loader2 } from 'lucide-react';
+import { Plus, Search, Loader2, ArrowUpDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type SortOption = 'name_asc' | 'name_desc' | 'recent';
 
 const Clients = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<SortOption>('name_asc');
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   const { clients, isLoading, createClient, updateClient, deleteClient } = useClients();
 
-  const filteredClients = clients.filter(client =>
-    client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (client.phone && client.phone.includes(searchQuery))
-  );
+  const filteredClients = useMemo(() => {
+    let result = clients.filter(client =>
+      client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (client.phone && client.phone.includes(searchQuery))
+    );
+
+    // Sort
+    result = [...result].sort((a, b) => {
+      switch (sortOption) {
+        case 'name_asc':
+          return a.name.localeCompare(b.name, 'pt-BR');
+        case 'name_desc':
+          return b.name.localeCompare(a.name, 'pt-BR');
+        case 'recent':
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        default:
+          return 0;
+      }
+    });
+
+    return result;
+  }, [clients, searchQuery, sortOption]);
 
   const handleCreate = () => {
     setSelectedClient(null);
@@ -72,15 +100,28 @@ const Clients = () => {
           </Button>
         </header>
 
-        {/* Search */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nome ou telefone..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
+        {/* Search and Sort */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome ou telefone..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={sortOption} onValueChange={(v) => setSortOption(v as SortOption)}>
+            <SelectTrigger className="w-full sm:w-[180px]">
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              <SelectValue placeholder="Ordenar" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="name_asc">Nome: A-Z</SelectItem>
+              <SelectItem value="name_desc">Nome: Z-A</SelectItem>
+              <SelectItem value="recent">Mais recentes</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Clients List */}
