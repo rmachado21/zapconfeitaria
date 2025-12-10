@@ -30,7 +30,9 @@ import {
   Package,
   Banknote,
   Send,
-  ChevronDown
+  ChevronDown,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -43,17 +45,20 @@ interface OrderDetailDialogProps {
   onOpenChange: (open: boolean) => void;
   order: Order | null;
   onStatusChange?: (orderId: string, status: OrderStatus, clientName?: string, totalAmount?: number) => void;
+  onEdit?: (order: Order) => void;
+  onDelete?: (orderId: string) => void;
 }
 
 const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered'];
 
-export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange }: OrderDetailDialogProps) {
+export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
   const { generatePdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
 
   if (!order) return null;
 
   const statusConfig = ORDER_STATUS_CONFIG[order.status as OrderStatus];
+  const canEditOrDelete = order.status === 'quote' || order.status === 'awaiting_deposit';
 
   const handleStatusChange = (newStatus: OrderStatus) => {
     if (newStatus !== order.status && onStatusChange) {
@@ -308,29 +313,65 @@ Ficamos à disposição! 🍰`;
           )}
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2">
-            <Button 
-              variant="outline" 
-              className="flex-1"
-              onClick={handleGeneratePdf}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <FileText className="mr-2 h-4 w-4" />
-              )}
-              Gerar PDF
-            </Button>
-            <Button 
-              variant="warm" 
-              className="flex-1"
-              onClick={handleWhatsApp}
-              disabled={!order.client?.phone}
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Enviar WhatsApp
-            </Button>
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={handleGeneratePdf}
+                disabled={isGenerating}
+              >
+                {isGenerating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                Gerar PDF
+              </Button>
+              <Button 
+                variant="warm" 
+                className="flex-1"
+                onClick={handleWhatsApp}
+                disabled={!order.client?.phone}
+              >
+                <Send className="mr-2 h-4 w-4" />
+                Enviar WhatsApp
+              </Button>
+            </div>
+            
+            {/* Edit/Delete buttons for quote and awaiting_deposit */}
+            {canEditOrDelete && (
+              <div className="flex gap-2 pt-2 border-t">
+                {onEdit && (
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => {
+                      onEdit(order);
+                      onOpenChange(false);
+                    }}
+                  >
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Editar Pedido
+                  </Button>
+                )}
+                {onDelete && (
+                  <Button 
+                    variant="destructive" 
+                    className="flex-1"
+                    onClick={() => {
+                      if (window.confirm('Tem certeza que deseja excluir este pedido?')) {
+                        onDelete(order.id);
+                        onOpenChange(false);
+                      }
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Excluir
+                  </Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

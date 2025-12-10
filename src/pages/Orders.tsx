@@ -40,9 +40,13 @@ const Orders = () => {
     orders, 
     isLoading, 
     createOrder, 
+    updateOrder,
     updateOrderStatus, 
-    updateDepositPaid 
+    updateDepositPaid,
+    deleteOrder,
   } = useOrders();
+
+  const [editOrder, setEditOrder] = useState<Order | null>(null);
 
   // Filter and sort orders
   const filteredOrders = useMemo(() => {
@@ -70,6 +74,7 @@ const Orders = () => {
 
   const handleCreate = () => {
     setSelectedOrder(null);
+    setEditOrder(null);
     setFormOpen(true);
   };
 
@@ -79,7 +84,21 @@ const Orders = () => {
   };
 
   const handleSubmit = async (data: OrderFormData) => {
-    await createOrder.mutateAsync(data);
+    if (editOrder) {
+      await updateOrder.mutateAsync({ id: editOrder.id, formData: data });
+    } else {
+      await createOrder.mutateAsync(data);
+    }
+    setEditOrder(null);
+  };
+
+  const handleEdit = (order: Order) => {
+    setEditOrder(order);
+    setFormOpen(true);
+  };
+
+  const handleDelete = (orderId: string) => {
+    deleteOrder.mutate(orderId);
   };
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => {
@@ -179,9 +198,13 @@ const Orders = () => {
       {/* Form Dialog */}
       <OrderFormDialog
         open={formOpen}
-        onOpenChange={setFormOpen}
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) setEditOrder(null);
+        }}
         onSubmit={handleSubmit}
-        isLoading={createOrder.isPending}
+        isLoading={createOrder.isPending || updateOrder.isPending}
+        editOrder={editOrder}
       />
 
       {/* Detail Dialog */}
@@ -190,6 +213,8 @@ const Orders = () => {
         onOpenChange={setDetailOpen}
         order={selectedOrder}
         onStatusChange={handleStatusChange}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
       />
     </AppLayout>
   );

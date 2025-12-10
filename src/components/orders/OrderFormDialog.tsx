@@ -29,10 +29,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag } from 'lucide-react';
+import { Loader2, Plus, Trash2, ShoppingBag, Minus } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
-import { OrderFormData } from '@/hooks/useOrders';
+import { OrderFormData, Order } from '@/hooks/useOrders';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { formatCurrency } from '@/lib/masks';
 import { useToast } from '@/hooks/use-toast';
@@ -58,6 +58,7 @@ interface OrderFormDialogProps {
   onOpenChange: (open: boolean) => void;
   onSubmit: (data: OrderFormData) => Promise<void>;
   isLoading: boolean;
+  editOrder?: Order | null;
 }
 
 export function OrderFormDialog({
@@ -65,6 +66,7 @@ export function OrderFormDialog({
   onOpenChange,
   onSubmit,
   isLoading,
+  editOrder,
 }: OrderFormDialogProps) {
   const { clients } = useClients();
   const { products } = useProducts();
@@ -72,6 +74,8 @@ export function OrderFormDialog({
   const [items, setItems] = useState<OrderItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
+
+  const isEditMode = !!editOrder;
 
   const form = useForm({
     resolver: zodResolver(orderSchema),
@@ -90,8 +94,25 @@ export function OrderFormDialog({
       setItems([]);
       setSelectedProduct('');
       setQuantity(1);
+    } else if (editOrder) {
+      // Populate form with existing order data
+      form.reset({
+        client_id: editOrder.client_id || '',
+        delivery_date: editOrder.delivery_date || '',
+        delivery_address: editOrder.delivery_address || '',
+        delivery_fee: editOrder.delivery_fee || 0,
+        notes: editOrder.notes || '',
+      });
+      // Populate items
+      setItems((editOrder.order_items || []).map(item => ({
+        product_id: item.product_id || '',
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        unit_type: item.unit_type || 'unit',
+      })));
     }
-  }, [open, form]);
+  }, [open, form, editOrder]);
 
   const selectedProductData = products.find(p => p.id === selectedProduct);
 
@@ -152,6 +173,21 @@ export function OrderFormDialog({
     setQuantity(1);
   };
 
+  const handleUpdateItemQuantity = (index: number, delta: number) => {
+    const newItems = [...items];
+    const item = newItems[index];
+    const isKg = item.unit_type === 'kg';
+    const step = isKg ? 0.5 : 1;
+    const minQty = isKg ? 0.1 : 1;
+    
+    const newQuantity = item.quantity + (delta * step);
+    
+    if (newQuantity >= minQty) {
+      newItems[index].quantity = isKg ? Math.round(newQuantity * 100) / 100 : Math.floor(newQuantity);
+      setItems(newItems);
+    }
+  };
+
   const handleRemoveItem = (index: number) => {
     setItems(items.filter((_, i) => i !== index));
   };
@@ -188,7 +224,7 @@ export function OrderFormDialog({
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
-            Novo Pedido
+            {isEditMode ? 'Editar Pedido' : 'Novo Pedido'}
           </DialogTitle>
         </DialogHeader>
 
@@ -269,29 +305,53 @@ export function OrderFormDialog({
                 {/* Items List */}
                 {items.length > 0 && (
                   <Card>
-                    <CardContent className="p-3 space-y-2">
+                    <CardContent className="p-3 space-y-3">
                       {items.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between text-sm">
-                          <div className="flex-1">
-                            <span className="font-medium">{item.product_name}</span>
-                            <span className="text-muted-foreground ml-2">
-                              {item.quantity}{item.unit_type === 'kg' ? 'Kg' : 'UN'} × {formatCurrency(item.unit_price)}
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <div className="flex-1 min-w-0">
+                            <span className="font-medium block truncate">{item.product_name}</span>
+                            <span className="text-muted-foreground text-xs">
+                              {formatCurrency(item.unit_price)}/{item.unit_type === 'kg' ? 'Kg' : 'UN'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium">
-                              {formatCurrency(item.quantity * item.unit_price)}
+                          
+                          {/* Quantity Controls */}
+                          <div className="flex items-center gap-1">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="icon-sm"
+                              onClick={() => handleUpdateItemQuantity(index, -1)}
+                              disabled={item.quantity <= (item.unit_type === 'kg' ? 0.5 : 1)}
+                            >
+                              <Minus className="h-3 w-3" />
+                            </Button>
+                            <span className="w-14 text-center font-medium text-xs">
+                              {item.quantity}{item.unit_type === 'kg' ? 'Kg' : 'UN'}
                             </span>
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="icon-sm"
-                              className="text-destructive"
-                              onClick={() => handleRemoveItem(index)}
+                              onClick={() => handleUpdateItemQuantity(index, 1)}
                             >
-                              <Trash2 className="h-3 w-3" />
+                              <Plus className="h-3 w-3" />
                             </Button>
                           </div>
+
+                          <span className="font-medium w-20 text-right">
+                            {formatCurrency(item.quantity * item.unit_price)}
+                          </span>
+                          
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="text-destructive flex-shrink-0"
+                            onClick={() => handleRemoveItem(index)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
                         </div>
                       ))}
                     </CardContent>
@@ -414,7 +474,7 @@ export function OrderFormDialog({
                   disabled={isLoading || items.length === 0}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Criar Pedido
+                  {isEditMode ? 'Salvar Alterações' : 'Criar Pedido'}
                 </Button>
               </div>
             </form>
