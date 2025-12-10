@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Calendar, MapPin, MessageCircle, ChevronRight, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface OrderCardProps {
@@ -33,6 +33,26 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
       return 'Data inválida';
     }
   };
+
+  const getDaysRemaining = (dateString: string) => {
+    if (!dateString) return null;
+    try {
+      const deliveryDate = parseISO(dateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      deliveryDate.setHours(0, 0, 0, 0);
+      const diff = differenceInDays(deliveryDate, today);
+      
+      if (diff < 0) return { text: 'Atrasado', urgent: true };
+      if (diff === 0) return { text: 'Hoje!', urgent: true };
+      if (diff === 1) return { text: 'Amanhã', urgent: true };
+      return { text: `${diff} dias`, urgent: diff <= 3 };
+    } catch {
+      return null;
+    }
+  };
+
+  const daysRemaining = order.status !== 'delivered' ? getDaysRemaining(order.deliveryDate) : null;
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -87,6 +107,14 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
               <Calendar className="h-3 w-3 text-muted-foreground" />
             </div>
             <span className="text-foreground font-medium">{formatDate(order.deliveryDate)}</span>
+            {daysRemaining && (
+              <span className={cn(
+                "text-[10px] font-medium",
+                daysRemaining.urgent ? "text-destructive" : "text-muted-foreground"
+              )}>
+                ({daysRemaining.text})
+              </span>
+            )}
           </div>
           {order.deliveryAddress && (
             <div className="flex items-center gap-1.5 text-xs">
