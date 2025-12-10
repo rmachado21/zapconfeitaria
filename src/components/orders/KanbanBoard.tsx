@@ -8,8 +8,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface KanbanBoardProps {
   orders: DBOrder[];
   onOrderClick?: (order: DBOrder) => void;
-  onStatusChange?: (orderId: string, newStatus: OrderStatus) => void;
-  onDepositChange?: (orderId: string, depositPaid: boolean) => void;
+  onStatusChange?: (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => void;
+  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number) => void;
 }
 
 const KANBAN_COLUMNS: OrderStatus[] = [
@@ -34,7 +34,8 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
     if (sourceStatus === destStatus) return;
 
     const orderId = result.draggableId;
-    onStatusChange(orderId, destStatus);
+    const order = orders.find(o => o.id === orderId);
+    onStatusChange(orderId, destStatus, order?.client?.name, order?.total_amount);
   };
 
   const convertToOrderType = (dbOrder: DBOrder): OrderType => ({
@@ -118,7 +119,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                                 <OrderCard 
                                   order={convertToOrderType(order)} 
                                   onClick={() => onOrderClick?.(order)}
-                                  onDepositChange={(paid) => onDepositChange?.(order.id, paid)}
+                                  onDepositChange={(paid) => onDepositChange?.(order.id, paid, order.client?.name, order.total_amount)}
                                 />
                               </div>
                             )}
