@@ -93,8 +93,8 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   },
   awaiting_deposit: { 
     label: 'Aguardando Sinal', 
-    color: 'text-amber-700 dark:text-amber-300', 
-    bgColor: 'bg-amber-100 dark:bg-amber-900/50',
+    color: 'text-amber-800 dark:text-amber-200', 
+    bgColor: 'bg-amber-200 dark:bg-amber-800',
     dotColor: 'bg-amber-500 dark:bg-amber-400',
     description: 'Cliente aprovou, aguardando 50%',
     columnBg: 'bg-amber-50/50 dark:bg-amber-950/30',
@@ -113,8 +113,8 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   },
   ready: { 
     label: 'Pronto', 
-    color: 'text-emerald-700 dark:text-emerald-300', 
-    bgColor: 'bg-emerald-100 dark:bg-emerald-900/50',
+    color: 'text-emerald-800 dark:text-emerald-200', 
+    bgColor: 'bg-emerald-200 dark:bg-emerald-800',
     dotColor: 'bg-emerald-500 dark:bg-emerald-400',
     description: 'Finalizado, aguardando entrega',
     columnBg: 'bg-emerald-50/50 dark:bg-emerald-950/30',
@@ -123,8 +123,8 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   },
   delivered: { 
     label: 'Entregue', 
-    color: 'text-sky-700 dark:text-sky-300', 
-    bgColor: 'bg-sky-100 dark:bg-sky-900/50',
+    color: 'text-sky-800 dark:text-sky-200', 
+    bgColor: 'bg-sky-200 dark:bg-sky-800',
     dotColor: 'bg-sky-500 dark:bg-sky-400',
     description: 'Pedido entregue e pago',
     columnBg: 'bg-sky-50/50 dark:bg-sky-950/30',

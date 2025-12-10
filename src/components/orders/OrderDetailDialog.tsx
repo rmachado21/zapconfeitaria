@@ -341,24 +341,26 @@ Ficamos à disposição! 🍰`;
             
             {/* Edit/Delete buttons for quote and awaiting_deposit */}
             {canEditOrDelete && (
-              <div className="flex gap-2 pt-2 border-t">
+              <div className="flex gap-3 pt-2">
                 {onEdit && (
                   <Button 
-                    variant="outline" 
-                    className="flex-1"
+                    variant="ghost" 
+                    size="sm"
+                    className="text-muted-foreground hover:text-foreground"
                     onClick={() => {
                       onEdit(order);
                       onOpenChange(false);
                     }}
                   >
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Editar Pedido
+                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                    Editar
                   </Button>
                 )}
                 {onDelete && (
                   <Button 
-                    variant="destructive" 
-                    className="flex-1"
+                    variant="ghost" 
+                    size="sm"
+                    className="text-muted-foreground hover:text-destructive"
                     onClick={() => {
                       if (window.confirm('Tem certeza que deseja excluir este pedido?')) {
                         onDelete(order.id);
@@ -366,7 +368,7 @@ Ficamos à disposição! 🍰`;
                       }
                     }}
                   >
-                    <Trash2 className="mr-2 h-4 w-4" />
+                    <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                     Excluir
                   </Button>
                 )}
