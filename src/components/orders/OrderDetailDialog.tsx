@@ -56,18 +56,19 @@ interface OrderDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   order: Order | null;
-  onStatusChange?: (orderId: string, status: OrderStatus, clientName?: string, totalAmount?: number) => void;
+  onStatusChange?: (orderId: string, status: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => void;
   onEdit?: (order: Order) => void;
   onDelete?: (orderId: string) => void;
 }
 
-const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered'];
+const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered', 'cancelled'];
 
 export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
   const { downloadPdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
 
   if (!order) return null;
@@ -89,17 +90,28 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
       if (newStatus === 'delivered') {
         setPendingStatus(newStatus);
         setDeliveredConfirmOpen(true);
+      } else if (newStatus === 'cancelled') {
+        setPendingStatus(newStatus);
+        setCancelConfirmOpen(true);
       } else {
-        onStatusChange(order.id, newStatus, order.client?.name, order.total_amount);
+        onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
       }
     }
   };
 
   const confirmDelivered = () => {
     if (pendingStatus && onStatusChange) {
-      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount);
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
     }
     setDeliveredConfirmOpen(false);
+    setPendingStatus(null);
+  };
+
+  const confirmCancelled = () => {
+    if (pendingStatus && onStatusChange) {
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
+    }
+    setCancelConfirmOpen(false);
     setPendingStatus(null);
   };
 
@@ -476,6 +488,34 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               className="w-full sm:w-auto bg-success text-success-foreground hover:bg-success/90"
             >
               Confirmar Entrega
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Cancel Confirmation Dialog */}
+      <AlertDialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
+                <AlertTriangle className="h-5 w-5 text-destructive" />
+              </div>
+              <AlertDialogTitle>Cancelar Pedido</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="pt-2">
+              Ao cancelar este pedido, <strong>todas as transações financeiras</strong> associadas (sinal e pagamento final) serão removidas automaticamente.
+              <br /><br />
+              Deseja continuar com o cancelamento?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setPendingStatus(null)}>Voltar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmCancelled}
+              className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Cancelar Pedido
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
