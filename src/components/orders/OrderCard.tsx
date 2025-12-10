@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, MapPin, MessageCircle, ChevronRight, Package, Check } from 'lucide-react';
+import { Calendar, MapPin, MessageCircle, ChevronRight, Package, Check, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { format, parseISO, differenceInDays } from 'date-fns';
@@ -53,6 +53,23 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
   };
 
   const daysRemaining = order.status !== 'delivered' ? getDaysRemaining(order.deliveryDate) : null;
+
+  // Check if deposit is overdue (more than 7 days since order creation)
+  const getDepositOverdueDays = () => {
+    if (order.depositPaid || order.status === 'delivered') return null;
+    try {
+      const createdAt = parseISO(order.createdAt);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      createdAt.setHours(0, 0, 0, 0);
+      const diff = differenceInDays(today, createdAt);
+      return diff >= 7 ? diff : null;
+    } catch {
+      return null;
+    }
+  };
+
+  const depositOverdueDays = getDepositOverdueDays();
 
   const handleWhatsAppClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -191,6 +208,14 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
           </div>
         ) : (
           <div className="mt-3 pt-3 border-t border-border">
+            {depositOverdueDays && (
+              <div className="flex items-center gap-2 mb-2 p-2 rounded-md bg-destructive/10 border border-destructive/20">
+                <AlertTriangle className="h-3.5 w-3.5 text-destructive flex-shrink-0" />
+                <span className="text-xs text-destructive font-medium">
+                  Sinal pendente há {depositOverdueDays} dias
+                </span>
+              </div>
+            )}
             <div className="flex items-center justify-between">
               <div 
                 className="flex items-center gap-2"

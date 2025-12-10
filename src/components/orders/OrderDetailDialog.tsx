@@ -67,6 +67,8 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
   const { openPreview, closePreview, downloadFromPreview, showPreview, previewData, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
+  const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
 
   if (!order) return null;
 
@@ -83,8 +85,22 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
 
   const handleStatusChange = (newStatus: OrderStatus) => {
     if (newStatus !== order.status && onStatusChange) {
-      onStatusChange(order.id, newStatus, order.client?.name, order.total_amount);
+      // If changing to delivered, show confirmation dialog
+      if (newStatus === 'delivered') {
+        setPendingStatus(newStatus);
+        setDeliveredConfirmOpen(true);
+      } else {
+        onStatusChange(order.id, newStatus, order.client?.name, order.total_amount);
+      }
     }
+  };
+
+  const confirmDelivered = () => {
+    if (pendingStatus && onStatusChange) {
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount);
+    }
+    setDeliveredConfirmOpen(false);
+    setPendingStatus(null);
   };
 
   const formatCurrency = (value: number) => {
@@ -442,6 +458,34 @@ Ficamos à disposição! 🍰`;
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Excluir Pedido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delivered Confirmation Dialog */}
+      <AlertDialog open={deliveredConfirmOpen} onOpenChange={setDeliveredConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
+                <Banknote className="h-5 w-5 text-success" />
+              </div>
+              <AlertDialogTitle>Confirmar Entrega</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="pt-2">
+              Ao marcar como <strong>Entregue</strong>, o sistema registrará automaticamente o pagamento restante de <strong>{formatCurrency((order.total_amount || 0) - (order.total_amount || 0) / 2)}</strong> no financeiro.
+              <br /><br />
+              Deseja confirmar a entrega e registro do pagamento?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingStatus(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDelivered}
+              className="bg-success text-success-foreground hover:bg-success/90"
+            >
+              Confirmar Entrega
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
