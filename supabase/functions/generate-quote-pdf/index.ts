@@ -13,6 +13,7 @@ interface QuoteRequest {
 }
 
 interface OrderItem {
+  product_id: string | null;
   product_name: string;
   quantity: number;
   unit_price: number;
@@ -278,10 +279,14 @@ const handler = async (req: Request): Promise<Response> => {
       const itemTotal = item.quantity * item.unit_price;
       const unitLabel = formatUnitType(item.unit_type || 'unit');
       const isGift = item.is_gift;
+      const isAdditional = item.product_id === null;
       
       // Alternating row background
       if (isGift) {
         doc.setFillColor(220, 252, 231); // Green tint for gifts
+        doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
+      } else if (isAdditional) {
+        doc.setFillColor(219, 234, 254); // Blue tint for additional items
         doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
       } else if (i % 2 === 0) {
         doc.setFillColor(255, 255, 255);
@@ -291,10 +296,13 @@ const handler = async (req: Request): Promise<Response> => {
         doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
       }
       
-      // Product name with BRINDE tag if gift
+      // Product name with BRINDE or ADICIONAL tag
       if (isGift) {
         doc.setTextColor(22, 163, 74); // Green for gifts
-        doc.text(`${item.product_name.substring(0, 30)} [BRINDE]`, margin + 5, yPos + 1);
+        doc.text(`${item.product_name.substring(0, 28)} [BRINDE]`, margin + 5, yPos + 1);
+      } else if (isAdditional) {
+        doc.setTextColor(37, 99, 235); // Blue for additional items
+        doc.text(`${item.product_name.substring(0, 26)} [ADICIONAL]`, margin + 5, yPos + 1);
       } else {
         doc.setTextColor(60, 60, 60);
         doc.text(item.product_name.substring(0, 35), margin + 5, yPos + 1);
