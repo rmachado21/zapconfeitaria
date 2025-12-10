@@ -23,13 +23,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift } from 'lucide-react';
+import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X } from 'lucide-react';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData, Order } from '@/hooks/useOrders';
@@ -77,6 +90,7 @@ export function OrderFormDialog({
   const [items, setItems] = useState<OrderItem[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
+  const [clientSearchOpen, setClientSearchOpen] = useState(false);
 
   const isEditMode = !!editOrder;
 
@@ -267,30 +281,76 @@ export function OrderFormDialog({
         <ScrollArea className="max-h-[70vh] pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-              {/* Client Selection */}
+              {/* Client Selection with Search */}
               <FormField
                 control={form.control}
                 name="client_id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Cliente *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o cliente" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {clients.map((client) => (
-                          <SelectItem key={client.id} value={client.id}>
-                            {client.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                render={({ field }) => {
+                  const selectedClient = clients.find(c => c.id === field.value);
+                  return (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Cliente *</FormLabel>
+                      <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant="outline"
+                              role="combobox"
+                              aria-expanded={clientSearchOpen}
+                              className={cn(
+                                "w-full justify-between font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {selectedClient ? selectedClient.name : "Buscar cliente..."}
+                              <div className="flex items-center gap-1 ml-2 shrink-0">
+                                {field.value && (
+                                  <X
+                                    className="h-4 w-4 opacity-50 hover:opacity-100"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      field.onChange('');
+                                    }}
+                                  />
+                                )}
+                                <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                              </div>
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Digite para buscar..." />
+                            <CommandList>
+                              <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                              <CommandGroup>
+                                {clients.map((client) => (
+                                  <CommandItem
+                                    key={client.id}
+                                    value={client.name}
+                                    onSelect={() => {
+                                      field.onChange(client.id);
+                                      setClientSearchOpen(false);
+                                    }}
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "mr-2 h-4 w-4",
+                                        field.value === client.id ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    {client.name}
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  );
+                }}
               />
 
               {/* Products Section */}
