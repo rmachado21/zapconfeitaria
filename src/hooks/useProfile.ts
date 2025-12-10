@@ -12,6 +12,7 @@ export interface Profile {
   bank_details: string | null;
   include_terms_in_pdf: boolean;
   custom_terms: string | null;
+  hidden_kanban_columns: string[] | null;
   created_at: string;
   updated_at: string;
 }
@@ -23,6 +24,7 @@ export interface ProfileFormData {
   bank_details?: string;
   include_terms_in_pdf?: boolean;
   custom_terms?: string;
+  hidden_kanban_columns?: string[];
 }
 
 export function useProfile() {
@@ -57,16 +59,19 @@ export function useProfile() {
     mutationFn: async (formData: ProfileFormData) => {
       if (!user) throw new Error('Usuário não autenticado');
 
+      const updateData: Record<string, unknown> = {};
+      
+      if (formData.company_name !== undefined) updateData.company_name = formData.company_name || null;
+      if (formData.logo_url !== undefined) updateData.logo_url = formData.logo_url || null;
+      if (formData.pix_key !== undefined) updateData.pix_key = formData.pix_key || null;
+      if (formData.bank_details !== undefined) updateData.bank_details = formData.bank_details || null;
+      if (formData.include_terms_in_pdf !== undefined) updateData.include_terms_in_pdf = formData.include_terms_in_pdf;
+      if (formData.custom_terms !== undefined) updateData.custom_terms = formData.custom_terms || null;
+      if (formData.hidden_kanban_columns !== undefined) updateData.hidden_kanban_columns = formData.hidden_kanban_columns;
+
       const { data, error } = await supabase
         .from('profiles')
-        .update({
-          company_name: formData.company_name || null,
-          logo_url: formData.logo_url || null,
-          pix_key: formData.pix_key || null,
-          bank_details: formData.bank_details || null,
-          include_terms_in_pdf: formData.include_terms_in_pdf ?? true,
-          custom_terms: formData.custom_terms || null,
-        })
+        .update(updateData)
         .eq('user_id', user.id)
         .select()
         .single();
