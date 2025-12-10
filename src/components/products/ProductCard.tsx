@@ -33,52 +33,59 @@ export function ProductCard({ product, onClick, onDelete }: ProductCardProps) {
       onClick={onClick}
     >
       <CardContent className="p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex gap-3">
           {/* Image/Icon */}
-          <div className="w-14 h-14 rounded-xl bg-cream flex items-center justify-center flex-shrink-0">
+          <div className="w-16 h-16 rounded-xl bg-cream flex items-center justify-center flex-shrink-0 overflow-hidden">
             {product.imageUrl ? (
               <img
                 src={product.imageUrl}
                 alt={product.name}
-                className="w-full h-full object-cover rounded-xl"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <CakeSlice className="h-6 w-6 text-chocolate" />
+              <CakeSlice className="h-7 w-7 text-chocolate" />
             )}
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <h3 className="font-semibold text-foreground truncate">{product.name}</h3>
-              <Badge variant="cream" className="text-[10px]">
-                {product.unitType === 'kg' ? 'Por Kg' : 'Unidade'}
-              </Badge>
+          <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+            <div>
+              <div className="flex items-start justify-between gap-2">
+                <h3 className="font-semibold text-foreground leading-tight line-clamp-2">
+                  {product.name}
+                </h3>
+                <Badge variant="cream" className="text-[10px] flex-shrink-0">
+                  {product.unitType === 'kg' ? 'Por Kg' : 'Unidade'}
+                </Badge>
+              </div>
+              {product.description && (
+                <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+                  {product.description}
+                </p>
+              )}
             </div>
-            {product.description && (
-              <p className="text-xs text-muted-foreground line-clamp-1 mb-2">
-                {product.description}
-              </p>
-            )}
-            <div className="flex items-center gap-4 text-xs">
-              <span className="text-muted-foreground">
-                Custo: {formatCurrency(product.costPrice)}
+            
+            <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">
+                  Custo: {formatCurrency(product.costPrice)}
+                </span>
+                <Badge variant="success" className="text-[10px]">
+                  {profitMargin}%
+                </Badge>
+              </div>
+              <span className="font-display font-bold text-lg text-primary">
+                {formatCurrency(product.salePrice)}
               </span>
-              <Badge variant="success" className="text-[10px]">
-                {profitMargin}% margem
-              </Badge>
             </div>
           </div>
 
-          {/* Price & Actions */}
-          <div className="flex items-center gap-2">
-            <span className="font-display font-semibold text-lg text-primary">
-              {formatCurrency(product.salePrice)}
-            </span>
+          {/* Actions */}
+          <div className="flex flex-col items-center justify-between py-0.5">
             <Button
               variant="ghost"
               size="icon-sm"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 h-8 w-8"
               onClick={handleDelete}
             >
               <Trash2 className="h-4 w-4" />
