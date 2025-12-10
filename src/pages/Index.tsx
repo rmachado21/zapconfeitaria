@@ -1,8 +1,10 @@
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
+import { StatsCardSkeleton } from '@/components/dashboard/StatsCardSkeleton';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useOrders } from '@/hooks/useOrders';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
@@ -13,10 +15,12 @@ import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { orders, isLoading, updateOrderStatus, updateDepositPaid } = useOrders();
-  const { clients } = useClients();
-  const { products } = useProducts();
-  const { profile } = useProfile();
+  const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
+  const { clients, isLoading: clientsLoading } = useClients();
+  const { products, isLoading: productsLoading } = useProducts();
+  const { profile, isLoading: profileLoading } = useProfile();
+
+  const isLoading = ordersLoading || clientsLoading || productsLoading || profileLoading;
 
   // Extract first name from company name
   const firstName = profile?.company_name?.split(' ')[0] || '';
@@ -84,40 +88,51 @@ const Index = () => {
 
         {/* Stats Grid */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <div className="animate-fade-in stagger-1">
-            <StatsCard
-              title="Faturamento do Mês"
-              value={formatCurrency(monthlyIncome)}
-              subtitle={`${orders.filter(o => o.status === 'delivered').length} pedidos entregues`}
-              icon={TrendingUp}
-              variant="primary"
-            />
-          </div>
-          <div className="animate-fade-in stagger-2">
-            <StatsCard
-              title="Pedidos Ativos"
-              value={activeOrders.length}
-              subtitle="Em andamento"
-              icon={ShoppingBag}
-            />
-          </div>
-          <div className="animate-fade-in stagger-3">
-            <StatsCard
-              title="Sinais Pendentes"
-              value={formatCurrency(pendingDeposits)}
-              subtitle="Aguardando pagamento"
-              icon={Clock}
-              variant="warning"
-            />
-          </div>
-          <div className="animate-fade-in stagger-4">
-            <StatsCard
-              title="Cadastros"
-              value={`${clients.length} / ${products.length}`}
-              subtitle="Clientes / Produtos"
-              icon={TrendingUp}
-            />
-          </div>
+          {isLoading ? (
+            <>
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+              <StatsCardSkeleton />
+            </>
+          ) : (
+            <>
+              <div className="animate-fade-in stagger-1">
+                <StatsCard
+                  title="Faturamento do Mês"
+                  value={formatCurrency(monthlyIncome)}
+                  subtitle={`${orders.filter(o => o.status === 'delivered').length} pedidos entregues`}
+                  icon={TrendingUp}
+                  variant="primary"
+                />
+              </div>
+              <div className="animate-fade-in stagger-2">
+                <StatsCard
+                  title="Pedidos Ativos"
+                  value={activeOrders.length}
+                  subtitle="Em andamento"
+                  icon={ShoppingBag}
+                />
+              </div>
+              <div className="animate-fade-in stagger-3">
+                <StatsCard
+                  title="Sinais Pendentes"
+                  value={formatCurrency(pendingDeposits)}
+                  subtitle="Aguardando pagamento"
+                  icon={Clock}
+                  variant="warning"
+                />
+              </div>
+              <div className="animate-fade-in stagger-4">
+                <StatsCard
+                  title="Cadastros"
+                  value={`${clients.length} / ${products.length}`}
+                  subtitle="Clientes / Produtos"
+                  icon={TrendingUp}
+                />
+              </div>
+            </>
+          )}
         </section>
 
         {/* Orders Section */}
@@ -134,7 +149,7 @@ const Index = () => {
             </Button>
           </div>
 
-          {isLoading ? (
+          {ordersLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
