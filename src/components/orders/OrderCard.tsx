@@ -164,17 +164,29 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
 
         {/* Payment status indicator */}
         {order.status === 'delivered' ? (
-          <div className="mt-3 pt-3 border-t border-border">
+          <div className="mt-3 pt-3 border-t border-border space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
                   <Check className="h-3 w-3 text-success" />
                 </div>
-                <span className="text-sm text-muted-foreground">
-                  Pagamento Total: <span className="font-medium text-foreground">{formatCurrency(order.totalAmount)}</span>
-                </span>
+                <span className="text-sm font-medium text-foreground">Pagamento Completo</span>
               </div>
               <Badge variant="success" className="text-[10px]">Pago</Badge>
+            </div>
+            <div className="pl-7 space-y-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Sinal (50%)</span>
+                <span className="text-foreground">{formatCurrency(order.depositAmount)}</span>
+              </div>
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Na entrega</span>
+                <span className="text-foreground">{formatCurrency(order.totalAmount - order.depositAmount)}</span>
+              </div>
+              <div className="flex justify-between text-xs font-medium pt-1 border-t border-border/50">
+                <span className="text-foreground">Total</span>
+                <span className="text-success">{formatCurrency(order.totalAmount)}</span>
+              </div>
             </div>
           </div>
         ) : (
