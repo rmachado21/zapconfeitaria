@@ -14,6 +14,7 @@ export interface OrderItem {
   quantity: number;
   unit_price: number;
   unit_type: string;
+  is_gift: boolean;
   created_at: string;
 }
 
@@ -51,6 +52,7 @@ export interface OrderFormData {
     quantity: number;
     unit_price: number;
     unit_type: string;
+    is_gift?: boolean;
   }[];
 }
 
@@ -83,7 +85,11 @@ export function useOrders() {
     mutationFn: async (formData: OrderFormData) => {
       if (!user) throw new Error('Usuário não autenticado');
 
-      const totalItems = formData.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      // Only count non-gift items in total
+      const totalItems = formData.items.reduce((sum, item) => {
+        if (item.is_gift) return sum;
+        return sum + (item.quantity * item.unit_price);
+      }, 0);
       const totalAmount = totalItems + (formData.delivery_fee || 0);
 
       // Create order
@@ -117,6 +123,7 @@ export function useOrders() {
               quantity: item.quantity,
               unit_price: item.unit_price,
               unit_type: item.unit_type,
+              is_gift: item.is_gift || false,
             }))
           );
 
@@ -325,9 +332,12 @@ export function useOrders() {
     mutationFn: async ({ id, formData }: { id: string; formData: OrderFormData }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
-      const totalItems = formData.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      // Only count non-gift items in total
+      const totalItems = formData.items.reduce((sum, item) => {
+        if (item.is_gift) return sum;
+        return sum + (item.quantity * item.unit_price);
+      }, 0);
       const totalAmount = totalItems + (formData.delivery_fee || 0);
-
       // Update order
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -363,6 +373,7 @@ export function useOrders() {
               quantity: item.quantity,
               unit_price: item.unit_price,
               unit_type: item.unit_type,
+              is_gift: item.is_gift || false,
             }))
           );
 

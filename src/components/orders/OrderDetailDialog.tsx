@@ -43,7 +43,8 @@ import {
   ChevronDown,
   Pencil,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  Gift
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -318,14 +319,29 @@ Ficamos à disposição! 🍰`;
               <div className="space-y-2">
                   {(order.order_items || []).map((item, index) => {
                     const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
+                    const isGift = item.is_gift;
                     return (
-                    <div key={index} className="flex justify-between text-sm">
-                      <span>
+                    <div key={index} className={cn(
+                      "flex justify-between text-sm",
+                      isGift && "text-success"
+                    )}>
+                      <span className="flex items-center gap-1.5">
+                        {isGift && <Gift className="h-3.5 w-3.5" />}
                         {item.quantity} {unitLabel} {item.product_name}
+                        {isGift && <Badge variant="success" className="text-[9px] px-1 py-0 ml-1">BRINDE</Badge>}
                       </span>
-                      <span className="font-medium">
-                        {formatCurrency(item.quantity * item.unit_price)}
-                      </span>
+                      {isGift ? (
+                        <span className="flex items-center gap-2">
+                          <span className="line-through text-muted-foreground text-xs">
+                            {formatCurrency(item.quantity * item.unit_price)}
+                          </span>
+                          <span className="font-medium">R$ 0,00</span>
+                        </span>
+                      ) : (
+                        <span className="font-medium">
+                          {formatCurrency(item.quantity * item.unit_price)}
+                        </span>
+                      )}
                     </div>
                   )})}
               </div>

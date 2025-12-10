@@ -26,6 +26,7 @@ export interface OrderItem {
   unitPrice: number;
   unitType: 'kg' | 'unit' | 'cento';
   total: number;
+  isGift?: boolean;
 }
 
 export type OrderStatus = 
