@@ -1,8 +1,10 @@
 import { ReactNode } from 'react';
+import { Link } from 'react-router-dom';
 import { BottomNav } from './BottomNav';
 import { Sidebar } from './Sidebar';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { CakeSlice } from 'lucide-react';
+import { CakeSlice, User } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -22,7 +24,14 @@ export function AppLayout({ children }: AppLayoutProps) {
             </div>
             <span className="font-display font-semibold text-lg">Confeitaria Pro</span>
           </div>
-          <NotificationBell />
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <Button variant="ghost" size="icon" asChild className="h-9 w-9">
+              <Link to="/profile">
+                <User className="h-5 w-5 text-muted-foreground" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </div>
       
