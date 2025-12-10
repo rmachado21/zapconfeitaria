@@ -245,31 +245,33 @@ const handler = async (req: Request): Promise<Response> => {
     }
     yPos += 8;
 
-    // Items table - improved styling
+    // Items table - improved styling with borders
     const tableWidth = pageWidth - margin * 2;
-    const col1Width = tableWidth * 0.50; // Produto
+    const col1Width = tableWidth * 0.45; // Produto
     const col2Width = tableWidth * 0.15; // Qtd
-    const col3Width = tableWidth * 0.17; // Unit
-    const col4Width = tableWidth * 0.18; // Total
+    const col3Width = tableWidth * 0.20; // Unit
+    const col4Width = tableWidth * 0.20; // Total
+    const rowHeight = 10;
 
-    // Table header with warm color
-    doc.setFillColor(245, 240, 235);
-    doc.setDrawColor(200, 190, 180);
-    doc.rect(margin, yPos - 5, tableWidth, 10, "FD");
+    // Table header with terracotta color
+    doc.setFillColor(180, 100, 70);
+    doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
     
-    doc.setFontSize(9);
+    // Header text in white
+    doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(80, 70, 60);
-    doc.text("Produto", margin + 4, yPos);
-    doc.text("Qtd", margin + col1Width + 4, yPos);
-    doc.text("Unit.", margin + col1Width + col2Width + 4, yPos);
-    doc.text("Total", margin + col1Width + col2Width + col3Width + 4, yPos);
-    yPos += 8;
+    doc.setTextColor(255, 255, 255);
+    doc.text("Produto", margin + 5, yPos + 1);
+    doc.text("Qtd", margin + col1Width + 5, yPos + 1);
+    doc.text("Unit.", margin + col1Width + col2Width + 5, yPos + 1);
+    doc.text("Total", margin + col1Width + col2Width + col3Width + 5, yPos + 1);
+    yPos += rowHeight + 2;
 
-    // Items with alternating row colors
+    // Items with borders
     doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
-    doc.setTextColor(51, 51, 51);
+    
+    const tableStartY = yPos - 5;
     
     for (let i = 0; i < typedOrder.order_items.length; i++) {
       const item = typedOrder.order_items[i];
@@ -277,59 +279,72 @@ const handler = async (req: Request): Promise<Response> => {
       const unitLabel = formatUnitType(item.unit_type || 'unit');
       const isGift = item.is_gift;
       
-      // Alternating row background - green tint for gifts
+      // Alternating row background
       if (isGift) {
         doc.setFillColor(220, 252, 231); // Green tint for gifts
-        doc.rect(margin, yPos - 4, tableWidth, 7, "F");
-      } else if (i % 2 === 1) {
-        doc.setFillColor(252, 250, 248);
-        doc.rect(margin, yPos - 4, tableWidth, 7, "F");
+        doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
+      } else if (i % 2 === 0) {
+        doc.setFillColor(255, 255, 255);
+        doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
+      } else {
+        doc.setFillColor(250, 248, 245);
+        doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
       }
       
       // Product name with BRINDE tag if gift
       if (isGift) {
         doc.setTextColor(22, 163, 74); // Green for gifts
-        doc.text(`${item.product_name.substring(0, 35)} [BRINDE]`, margin + 4, yPos);
+        doc.text(`${item.product_name.substring(0, 30)} [BRINDE]`, margin + 5, yPos + 1);
       } else {
-        doc.setTextColor(51, 51, 51);
-        doc.text(item.product_name.substring(0, 40), margin + 4, yPos);
+        doc.setTextColor(60, 60, 60);
+        doc.text(item.product_name.substring(0, 35), margin + 5, yPos + 1);
       }
       
-      doc.setTextColor(51, 51, 51);
-      doc.text(`${item.quantity} ${unitLabel}`, margin + col1Width + 4, yPos);
-      doc.text(formatCurrency(item.unit_price), margin + col1Width + col2Width + 4, yPos);
+      doc.setTextColor(60, 60, 60);
+      doc.text(`${item.quantity} ${unitLabel}`, margin + col1Width + 5, yPos + 1);
+      doc.text(formatCurrency(item.unit_price), margin + col1Width + col2Width + 5, yPos + 1);
       
       // For gifts: show strikethrough price and R$ 0,00
       if (isGift) {
-        const priceX = margin + col1Width + col2Width + col3Width + 4;
-        // Draw strikethrough line
+        const priceX = margin + col1Width + col2Width + col3Width + 5;
         doc.setTextColor(150, 150, 150);
         const priceText = formatCurrency(itemTotal);
-        doc.text(priceText, priceX, yPos);
+        doc.text(priceText, priceX, yPos + 1);
         const priceWidth = doc.getTextWidth(priceText);
         doc.setLineWidth(0.3);
         doc.setDrawColor(150, 150, 150);
-        doc.line(priceX, yPos - 1, priceX + priceWidth, yPos - 1);
-        // Show R$ 0,00 below or to the right
+        doc.line(priceX, yPos, priceX + priceWidth, yPos);
         doc.setTextColor(22, 163, 74);
-        doc.text("R$ 0,00", priceX + priceWidth + 2, yPos);
+        doc.text("R$ 0,00", priceX + priceWidth + 2, yPos + 1);
       } else {
-        doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 4, yPos);
+        doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 5, yPos + 1);
       }
       
-      doc.setTextColor(51, 51, 51);
-      yPos += 7;
+      yPos += rowHeight;
     }
 
-    yPos += 3;
-    doc.setDrawColor(200, 190, 180);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 8;
+    const tableEndY = yPos - 5;
 
-    // Totals - aligned to the right (excluding gifts from subtotal display)
+    // Draw table borders
+    doc.setDrawColor(200, 190, 180);
+    doc.setLineWidth(0.5);
+    
+    // Outer border
+    doc.rect(margin, tableStartY, tableWidth, tableEndY - tableStartY);
+    
+    // Column separators
+    doc.line(margin + col1Width, tableStartY, margin + col1Width, tableEndY);
+    doc.line(margin + col1Width + col2Width, tableStartY, margin + col1Width + col2Width, tableEndY);
+    doc.line(margin + col1Width + col2Width + col3Width, tableStartY, margin + col1Width + col2Width + col3Width, tableEndY);
+
+    yPos += 5;
+
+    // Totals - aligned to the right
     const totalsX = margin + col1Width + col2Width;
+    const totalsValueX = margin + col1Width + col2Width + col3Width + 5;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
     
     // Calculate subtotal and gift discount
     const fullSubtotal = typedOrder.order_items.reduce(
@@ -342,32 +357,38 @@ const handler = async (req: Request): Promise<Response> => {
     );
     const subtotal = fullSubtotal - giftDiscount;
     
-    doc.text("Subtotal:", totalsX, yPos);
-    doc.text(formatCurrency(fullSubtotal), margin + col1Width + col2Width + col3Width + 4, yPos);
-    yPos += 6;
-    
     // Show gift discount if there are gifts
     if (giftDiscount > 0) {
+      doc.text("Subtotal:", totalsX, yPos);
+      doc.text(formatCurrency(fullSubtotal), totalsValueX, yPos);
+      yPos += 7;
+      
       doc.setTextColor(22, 163, 74);
       doc.text("Brinde:", totalsX, yPos);
-      doc.text(`-${formatCurrency(giftDiscount)}`, margin + col1Width + col2Width + col3Width + 4, yPos);
-      doc.setTextColor(51, 51, 51);
-      yPos += 6;
+      doc.text(`- ${formatCurrency(giftDiscount)}`, totalsValueX, yPos);
+      doc.setTextColor(60, 60, 60);
+      yPos += 7;
     }
-    doc.text("Subtotal:", totalsX, yPos);
-    doc.text(formatCurrency(subtotal), margin + col1Width + col2Width + col3Width + 4, yPos);
-    yPos += 6;
+    
+    // Only show subtotal line when there's delivery fee or gifts
+    if (typedOrder.delivery_fee > 0 || giftDiscount > 0) {
+      doc.text("Subtotal Produtos:", totalsX, yPos);
+      doc.text(formatCurrency(subtotal), totalsValueX, yPos);
+      yPos += 7;
+    }
 
     if (typedOrder.delivery_fee > 0) {
       doc.text("Taxa de Entrega:", totalsX, yPos);
-      doc.text(formatCurrency(typedOrder.delivery_fee), margin + col1Width + col2Width + col3Width + 4, yPos);
-      yPos += 6;
+      doc.text(formatCurrency(typedOrder.delivery_fee), totalsValueX, yPos);
+      yPos += 7;
     }
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(11);
+    doc.setFontSize(12);
+    doc.setTextColor(180, 100, 70); // Terracotta color for TOTAL
     doc.text("TOTAL:", totalsX, yPos);
-    doc.text(formatCurrency(typedOrder.total_amount), margin + col1Width + col2Width + col3Width + 4, yPos);
+    doc.text(formatCurrency(typedOrder.total_amount), totalsValueX, yPos);
+    doc.setTextColor(60, 60, 60);
     yPos += 12;
 
     // Deposit info
