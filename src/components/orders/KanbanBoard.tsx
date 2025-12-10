@@ -76,22 +76,28 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                   ref={provided.innerRef}
                   {...provided.droppableProps}
                   className={cn(
-                    "flex-shrink-0 w-80 bg-muted/30 rounded-2xl border border-border transition-colors",
-                    snapshot.isDraggingOver && "border-primary/50 bg-primary/5"
+                    "flex-shrink-0 w-80 rounded-2xl border transition-all duration-200",
+                    statusConfig.columnBg,
+                    statusConfig.columnBorder,
+                    snapshot.isDraggingOver && "ring-2 ring-primary/50 border-primary/50"
                   )}
                 >
                   {/* Column Header */}
-                  <div className="p-4 border-b border-border">
+                  <div className={cn("p-4 rounded-t-2xl", statusConfig.headerBg)}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className={cn("w-3 h-3 rounded-full", statusConfig.bgColor)} />
                         <h3 className="font-semibold text-sm">{statusConfig.label}</h3>
                       </div>
-                      <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                      <span className={cn(
+                        "text-xs font-medium px-2.5 py-1 rounded-full",
+                        statusConfig.bgColor,
+                        statusConfig.color
+                      )}>
                         {columnOrders.length}
                       </span>
                     </div>
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-xs text-muted-foreground mt-1.5">
                       {statusConfig.description}
                     </p>
                   </div>

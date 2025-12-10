@@ -75,35 +75,53 @@ export const ORDER_STATUS_CONFIG: Record<OrderStatus, {
   color: string; 
   bgColor: string;
   description: string;
+  columnBg: string;
+  columnBorder: string;
+  headerBg: string;
 }> = {
   quote: { 
     label: 'Orçamento', 
-    color: 'text-muted-foreground', 
-    bgColor: 'bg-muted',
-    description: 'Aguardando aprovação do cliente'
+    color: 'text-slate-700 dark:text-slate-300', 
+    bgColor: 'bg-slate-200 dark:bg-slate-700',
+    description: 'Aguardando aprovação do cliente',
+    columnBg: 'bg-slate-50 dark:bg-slate-900/50',
+    columnBorder: 'border-slate-200 dark:border-slate-700',
+    headerBg: 'bg-slate-100 dark:bg-slate-800',
   },
   awaiting_deposit: { 
     label: 'Aguardando Sinal', 
-    color: 'text-warning-foreground', 
-    bgColor: 'bg-warning',
-    description: 'Cliente aprovou, aguardando 50%'
+    color: 'text-amber-700 dark:text-amber-300', 
+    bgColor: 'bg-amber-100 dark:bg-amber-900/50',
+    description: 'Cliente aprovou, aguardando 50%',
+    columnBg: 'bg-amber-50/50 dark:bg-amber-950/30',
+    columnBorder: 'border-amber-200 dark:border-amber-800',
+    headerBg: 'bg-amber-100 dark:bg-amber-900/50',
   },
   in_production: { 
     label: 'Em Produção', 
     color: 'text-primary-foreground', 
     bgColor: 'bg-primary',
-    description: 'Sinal recebido, em produção'
+    description: 'Sinal recebido, em produção',
+    columnBg: 'bg-primary/5 dark:bg-primary/10',
+    columnBorder: 'border-primary/30 dark:border-primary/40',
+    headerBg: 'bg-primary/15 dark:bg-primary/20',
   },
   ready: { 
     label: 'Pronto', 
-    color: 'text-success-foreground', 
-    bgColor: 'bg-success',
-    description: 'Finalizado, aguardando entrega'
+    color: 'text-emerald-700 dark:text-emerald-300', 
+    bgColor: 'bg-emerald-100 dark:bg-emerald-900/50',
+    description: 'Finalizado, aguardando entrega',
+    columnBg: 'bg-emerald-50/50 dark:bg-emerald-950/30',
+    columnBorder: 'border-emerald-200 dark:border-emerald-800',
+    headerBg: 'bg-emerald-100 dark:bg-emerald-900/50',
   },
   delivered: { 
     label: 'Entregue', 
-    color: 'text-accent-foreground', 
-    bgColor: 'bg-accent',
-    description: 'Pedido entregue e pago'
+    color: 'text-sky-700 dark:text-sky-300', 
+    bgColor: 'bg-sky-100 dark:bg-sky-900/50',
+    description: 'Pedido entregue e pago',
+    columnBg: 'bg-sky-50/50 dark:bg-sky-950/30',
+    columnBorder: 'border-sky-200 dark:border-sky-800',
+    headerBg: 'bg-sky-100 dark:bg-sky-900/50',
   },
 };
