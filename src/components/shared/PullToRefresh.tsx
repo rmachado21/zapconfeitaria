@@ -18,19 +18,18 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
 
   return (
     <div ref={containerRef} className={cn("relative min-h-full", className)}>
-      {/* Pull indicator */}
+      {/* Pull indicator - fixed position so it doesn't affect layout */}
       <div
-        className="absolute left-0 right-0 flex justify-center items-center pointer-events-none z-50 overflow-hidden"
+        className="fixed left-0 right-0 flex justify-center items-center pointer-events-none z-[60]"
         style={{
-          top: -60,
-          height: 60,
-          transform: `translateY(${pullDistance}px)`,
+          top: 56 + pullDistance - 50,
           opacity: progress,
+          transition: pullDistance === 0 ? 'top 0.2s ease-out, opacity 0.2s ease-out' : 'none',
         }}
       >
         <div
           className={cn(
-            "flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border border-primary/20",
+            "flex items-center justify-center w-10 h-10 rounded-full bg-background border border-border shadow-md",
             isRefreshing && "animate-pulse"
           )}
         >
@@ -46,11 +45,11 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
         </div>
       </div>
       
-      {/* Content with pull offset */}
+      {/* Content - no transform to avoid affecting fixed children */}
       <div
         style={{
-          transform: `translateY(${pullDistance}px)`,
-          transition: pullDistance === 0 ? 'transform 0.2s ease-out' : 'none',
+          paddingTop: pullDistance,
+          transition: pullDistance === 0 ? 'padding-top 0.2s ease-out' : 'none',
         }}
       >
         {children}
