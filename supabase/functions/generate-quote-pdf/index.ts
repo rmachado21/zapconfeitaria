@@ -16,6 +16,7 @@ interface OrderItem {
   quantity: number;
   unit_price: number;
   unit_type: string;
+  is_gift: boolean;
 }
 
 interface Order {
@@ -252,17 +253,49 @@ const handler = async (req: Request): Promise<Response> => {
       const item = typedOrder.order_items[i];
       const itemTotal = item.quantity * item.unit_price;
       const unitLabel = formatUnitType(item.unit_type || 'unit');
+      const isGift = item.is_gift;
       
-      // Alternating row background
-      if (i % 2 === 1) {
+      // Alternating row background - green tint for gifts
+      if (isGift) {
+        doc.setFillColor(220, 252, 231); // Green tint for gifts
+        doc.rect(margin, yPos - 4, tableWidth, 7, "F");
+      } else if (i % 2 === 1) {
         doc.setFillColor(252, 250, 248);
         doc.rect(margin, yPos - 4, tableWidth, 7, "F");
       }
       
-      doc.text(item.product_name.substring(0, 40), margin + 4, yPos);
+      // Product name with BRINDE tag if gift
+      if (isGift) {
+        doc.setTextColor(22, 163, 74); // Green for gifts
+        doc.text(`${item.product_name.substring(0, 35)} [BRINDE]`, margin + 4, yPos);
+      } else {
+        doc.setTextColor(51, 51, 51);
+        doc.text(item.product_name.substring(0, 40), margin + 4, yPos);
+      }
+      
+      doc.setTextColor(51, 51, 51);
       doc.text(`${item.quantity} ${unitLabel}`, margin + col1Width + 4, yPos);
       doc.text(formatCurrency(item.unit_price), margin + col1Width + col2Width + 4, yPos);
-      doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 4, yPos);
+      
+      // For gifts: show strikethrough price and R$ 0,00
+      if (isGift) {
+        const priceX = margin + col1Width + col2Width + col3Width + 4;
+        // Draw strikethrough line
+        doc.setTextColor(150, 150, 150);
+        const priceText = formatCurrency(itemTotal);
+        doc.text(priceText, priceX, yPos);
+        const priceWidth = doc.getTextWidth(priceText);
+        doc.setLineWidth(0.3);
+        doc.setDrawColor(150, 150, 150);
+        doc.line(priceX, yPos - 1, priceX + priceWidth, yPos - 1);
+        // Show R$ 0,00 below or to the right
+        doc.setTextColor(22, 163, 74);
+        doc.text("R$ 0,00", priceX + priceWidth + 2, yPos);
+      } else {
+        doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 4, yPos);
+      }
+      
+      doc.setTextColor(51, 51, 51);
       yPos += 7;
     }
 
@@ -271,14 +304,34 @@ const handler = async (req: Request): Promise<Response> => {
     doc.line(margin, yPos, pageWidth - margin, yPos);
     yPos += 8;
 
-    // Totals - aligned to the right
+    // Totals - aligned to the right (excluding gifts from subtotal display)
     const totalsX = margin + col1Width + col2Width;
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    const subtotal = typedOrder.order_items.reduce(
+    
+    // Calculate subtotal and gift discount
+    const fullSubtotal = typedOrder.order_items.reduce(
       (sum, item) => sum + item.quantity * item.unit_price,
       0
     );
+    const giftDiscount = typedOrder.order_items.reduce(
+      (sum, item) => item.is_gift ? sum + item.quantity * item.unit_price : sum,
+      0
+    );
+    const subtotal = fullSubtotal - giftDiscount;
+    
+    doc.text("Subtotal:", totalsX, yPos);
+    doc.text(formatCurrency(fullSubtotal), margin + col1Width + col2Width + col3Width + 4, yPos);
+    yPos += 6;
+    
+    // Show gift discount if there are gifts
+    if (giftDiscount > 0) {
+      doc.setTextColor(22, 163, 74);
+      doc.text("Brinde:", totalsX, yPos);
+      doc.text(`-${formatCurrency(giftDiscount)}`, margin + col1Width + col2Width + col3Width + 4, yPos);
+      doc.setTextColor(51, 51, 51);
+      yPos += 6;
+    }
     doc.text("Subtotal:", totalsX, yPos);
     doc.text(formatCurrency(subtotal), margin + col1Width + col2Width + col3Width + 4, yPos);
     yPos += 6;
