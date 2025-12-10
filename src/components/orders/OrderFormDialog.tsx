@@ -42,7 +42,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus } from 'lucide-react';
+import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus, PackagePlus } from 'lucide-react';
 import { useClients, ClientFormData } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData, Order } from '@/hooks/useOrders';
@@ -62,7 +62,7 @@ const orderSchema = z.object({
 });
 
 interface OrderItem {
-  product_id: string;
+  product_id: string | null;
   product_name: string;
   quantity: number;
   unit_price: number;
@@ -94,6 +94,11 @@ export function OrderFormDialog({
   const [quantity, setQuantity] = useState<number>(1);
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
+  
+  // Additional items state
+  const [additionalItemName, setAdditionalItemName] = useState('');
+  const [additionalItemQty, setAdditionalItemQty] = useState<number>(1);
+  const [additionalItemPrice, setAdditionalItemPrice] = useState<number>(0);
 
   const isEditMode = !!editOrder;
 
@@ -115,6 +120,9 @@ export function OrderFormDialog({
       setItems([]);
       setSelectedProduct('');
       setQuantity(1);
+      setAdditionalItemName('');
+      setAdditionalItemQty(1);
+      setAdditionalItemPrice(0);
     } else if (editOrder) {
       // Populate form with existing order data
       form.reset({
@@ -127,7 +135,7 @@ export function OrderFormDialog({
       });
       // Populate items
       setItems((editOrder.order_items || []).map(item => ({
-        product_id: item.product_id || '',
+        product_id: item.product_id || null,
         product_name: item.product_name,
         quantity: item.quantity,
         unit_price: item.unit_price,
@@ -136,6 +144,50 @@ export function OrderFormDialog({
       })));
     }
   }, [open, form, editOrder]);
+
+  // Handler for additional items
+  const handleAddAdditionalItem = () => {
+    if (!additionalItemName.trim()) {
+      toast({
+        title: 'Descrição obrigatória',
+        description: 'Informe a descrição do item adicional.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (additionalItemQty <= 0) {
+      toast({
+        title: 'Quantidade inválida',
+        description: 'A quantidade deve ser maior que zero.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (additionalItemPrice < 0) {
+      toast({
+        title: 'Valor inválido',
+        description: 'O valor não pode ser negativo.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setItems([...items, {
+      product_id: null,
+      product_name: additionalItemName.trim(),
+      quantity: additionalItemQty,
+      unit_price: additionalItemPrice,
+      unit_type: 'unit',
+      is_gift: false,
+    }]);
+
+    // Reset additional item fields
+    setAdditionalItemName('');
+    setAdditionalItemQty(1);
+    setAdditionalItemPrice(0);
+  };
 
   const selectedProductData = products.find(p => p.id === selectedProduct);
 
@@ -499,23 +551,28 @@ export function OrderFormDialog({
                       {items.map((item, index) => {
                         const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
                         const isGift = item.is_gift;
+                        const isAdditional = item.product_id === null;
                         return (
                         <div key={index} className={cn(
                           "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors",
-                          isGift && "bg-success/10 border border-success/20"
+                          isGift && "bg-success/10 border border-success/20",
+                          isAdditional && !isGift && "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30"
                         )}>
                           {/* Linha 1: Nome + Preço */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
+                                {isAdditional && !isGift && <PackagePlus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />}
                                 <span className={cn(
                                   "font-medium",
-                                  isGift && "text-success"
+                                  isGift && "text-success",
+                                  isAdditional && !isGift && "text-blue-700 dark:text-blue-300"
                                 )}>
                                   {item.product_name}
                                 </span>
                                 {isGift && <Badge variant="success" className="text-[9px] px-1 py-0">BRINDE</Badge>}
+                                {isAdditional && !isGift && <Badge className="text-[9px] px-1 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">ADICIONAL</Badge>}
                               </div>
                               <span className="text-muted-foreground text-xs">
                                 {formatCurrency(item.unit_price)}/{unitLabel}
@@ -601,6 +658,57 @@ export function OrderFormDialog({
                     Nenhum produto adicionado
                   </p>
                 )}
+              </div>
+
+              {/* Additional Items Section */}
+              <div className="space-y-3">
+                <FormLabel className="flex items-center gap-2">
+                  <PackagePlus className="h-4 w-4 text-blue-600" />
+                  Itens Adicionais
+                </FormLabel>
+                <p className="text-xs text-muted-foreground -mt-1">
+                  Para itens avulsos não cadastrados como produto
+                </p>
+                
+                <div className="space-y-2">
+                  <Input
+                    placeholder="Descrição do item (ex: Topper personalizado)"
+                    value={additionalItemName}
+                    onChange={(e) => setAdditionalItemName(e.target.value)}
+                  />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        type="number"
+                        min="1"
+                        step="1"
+                        value={additionalItemQty}
+                        onChange={(e) => setAdditionalItemQty(parseInt(e.target.value) || 1)}
+                        className="pr-10"
+                        placeholder="Qtd"
+                      />
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                        Un
+                      </span>
+                    </div>
+                    <div className="flex-1">
+                      <CurrencyInput
+                        value={additionalItemPrice}
+                        onChange={setAdditionalItemPrice}
+                        placeholder="Valor unitário"
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleAddAdditionalItem}
+                      className="w-full sm:w-auto gap-2"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span className="sm:hidden">Adicionar Item</span>
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {/* Delivery Date & Time */}

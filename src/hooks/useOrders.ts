@@ -49,7 +49,7 @@ export interface OrderFormData {
   delivery_fee?: number;
   notes?: string;
   items: {
-    product_id: string;
+    product_id: string | null;
     product_name: string;
     quantity: number;
     unit_price: number;
@@ -121,7 +121,7 @@ export function useOrders() {
           .insert(
             formData.items.map(item => ({
               order_id: order.id,
-              product_id: item.product_id,
+              product_id: item.product_id || null,
               product_name: item.product_name,
               quantity: item.quantity,
               unit_price: item.unit_price,
@@ -410,7 +410,7 @@ export function useOrders() {
           .insert(
             formData.items.map(item => ({
               order_id: id,
-              product_id: item.product_id,
+              product_id: item.product_id || null,
               product_name: item.product_name,
               quantity: item.quantity,
               unit_price: item.unit_price,

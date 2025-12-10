@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, MapPin, MessageCircle, ChevronRight, Package, Check, AlertTriangle } from 'lucide-react';
+import { Calendar, MapPin, MessageCircle, ChevronRight, Package, Check, AlertTriangle, PackagePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { format, parseISO, differenceInDays } from 'date-fns';
@@ -120,13 +120,16 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
                     if (unit === 'cento') return qty === 1 ? '1 cento' : `${qty} centos`;
                     return qty === 1 ? '1 un' : `${qty} un`;
                   };
+                  const isAdditional = !item.productId;
                   return (
                     <p key={index} className={cn(
-                      "text-sm",
-                      item.isGift ? "text-success" : "text-muted-foreground"
+                      "text-sm flex items-center gap-1",
+                      item.isGift ? "text-success" : isAdditional ? "text-blue-600 dark:text-blue-400" : "text-muted-foreground"
                     )}>
+                      {isAdditional && !item.isGift && <PackagePlus className="h-3 w-3 flex-shrink-0" />}
                       {formatQuantity(item.quantity, item.unitType)} {item.productName}
                       {item.isGift && <span className="text-xs ml-1">(Brinde)</span>}
+                      {isAdditional && !item.isGift && <span className="text-xs ml-1">(Adicional)</span>}
                     </p>
                   );
                 })

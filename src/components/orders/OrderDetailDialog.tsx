@@ -45,7 +45,8 @@ import {
   Pencil,
   Trash2,
   AlertTriangle,
-  Gift
+  Gift,
+  PackagePlus
 } from 'lucide-react';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -306,15 +307,19 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                   {(order.order_items || []).map((item, index) => {
                     const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
                     const isGift = item.is_gift;
+                    const isAdditional = item.product_id === null;
                     return (
                     <div key={index} className={cn(
                       "flex justify-between text-sm",
-                      isGift && "text-success"
+                      isGift && "text-success",
+                      isAdditional && !isGift && "text-blue-700 dark:text-blue-300"
                     )}>
                       <span className="flex items-center gap-1.5">
                         {isGift && <Gift className="h-3.5 w-3.5" />}
+                        {isAdditional && !isGift && <PackagePlus className="h-3.5 w-3.5" />}
                         {item.quantity} {unitLabel} {item.product_name}
                         {isGift && <Badge variant="success" className="text-[9px] px-1 py-0 ml-1">BRINDE</Badge>}
+                        {isAdditional && !isGift && <Badge className="text-[9px] px-1 py-0 ml-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">ADICIONAL</Badge>}
                       </span>
                       {isGift ? (
                         <span className="flex items-center gap-2">
