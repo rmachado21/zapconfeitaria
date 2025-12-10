@@ -1,20 +1,32 @@
+import { useState, useMemo } from 'react';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { StatsCardSkeleton } from '@/components/dashboard/StatsCardSkeleton';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useOrders } from '@/hooks/useOrders';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { useProfile } from '@/hooks/useProfile';
 import { OrderStatus } from '@/types';
-import { ShoppingBag, TrendingUp, Clock, Plus, Loader2 } from 'lucide-react';
+import { ShoppingBag, TrendingUp, Clock, Plus, Loader2, CalendarDays } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { subDays, subMonths, subYears, isAfter, parseISO } from 'date-fns';
+
+type PeriodFilter = 'week' | 'month' | 'year' | 'all';
+
+const periodLabels: Record<PeriodFilter, string> = {
+  week: 'Última Semana',
+  month: 'Último Mês',
+  year: 'Último Ano',
+  all: 'Todo Período',
+};
 
 const Index = () => {
   const navigate = useNavigate();
+  const [period, setPeriod] = useState<PeriodFilter>('month');
   const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
   const { clients, isLoading: clientsLoading } = useClients();
   const { products, isLoading: productsLoading } = useProducts();
@@ -36,13 +48,31 @@ const Index = () => {
   // Hidden Kanban columns from profile
   const hiddenColumns = (profile?.hidden_kanban_columns || []) as OrderStatus[];
 
-  // Calculate stats from real data
-  const activeOrders = orders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled');
-  const pendingDeposits = orders
+  // Get cutoff date based on period filter
+  const getCutoffDate = (p: PeriodFilter): Date | null => {
+    const now = new Date();
+    switch (p) {
+      case 'week': return subDays(now, 7);
+      case 'month': return subMonths(now, 1);
+      case 'year': return subYears(now, 1);
+      case 'all': return null;
+    }
+  };
+
+  // Filter orders by period
+  const filteredOrders = useMemo(() => {
+    const cutoff = getCutoffDate(period);
+    if (!cutoff) return orders;
+    return orders.filter(o => isAfter(parseISO(o.created_at), cutoff));
+  }, [orders, period]);
+
+  // Calculate stats from filtered data
+  const activeOrders = filteredOrders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled');
+  const pendingDeposits = filteredOrders
     .filter(o => !o.deposit_paid && o.status !== 'delivered' && o.status !== 'cancelled')
     .reduce((sum, o) => sum + (o.total_amount / 2), 0);
   
-  const monthlyIncome = orders
+  const periodIncome = filteredOrders
     .filter(o => o.status === 'delivered')
     .reduce((sum, o) => sum + o.total_amount, 0);
 
@@ -89,26 +119,41 @@ const Index = () => {
           </Button>
         </header>
 
-        {/* Stats Grid */}
-        <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          {isLoading ? (
-            <>
-              <StatsCardSkeleton />
-              <StatsCardSkeleton />
-              <StatsCardSkeleton />
-              <StatsCardSkeleton />
-            </>
-          ) : (
-            <>
-              <div className="animate-fade-in stagger-1">
-                <StatsCard
-                  title="Faturamento do Mês"
-                  value={formatCurrency(monthlyIncome)}
-                  subtitle={`${orders.filter(o => o.status === 'delivered').length} pedidos entregues`}
-                  icon={TrendingUp}
-                  variant="primary"
-                />
-              </div>
+        {/* Period Filter + Stats Grid */}
+        <section className="space-y-4">
+          <div className="flex items-center gap-2">
+            <CalendarDays className="h-4 w-4 text-muted-foreground" />
+            <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
+              <SelectTrigger className="w-[160px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(periodLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>{label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            {isLoading ? (
+              <>
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+                <StatsCardSkeleton />
+              </>
+            ) : (
+              <>
+                <div className="animate-fade-in stagger-1">
+                  <StatsCard
+                    title={`Faturamento (${periodLabels[period]})`}
+                    value={formatCurrency(periodIncome)}
+                    subtitle={`${filteredOrders.filter(o => o.status === 'delivered').length} pedidos entregues`}
+                    icon={TrendingUp}
+                    variant="primary"
+                  />
+                </div>
               <div className="animate-fade-in stagger-2">
                 <StatsCard
                   title="Pedidos Ativos"
@@ -136,6 +181,7 @@ const Index = () => {
               </div>
             </>
           )}
+          </div>
         </section>
 
         {/* Orders Section */}
