@@ -32,7 +32,7 @@ import {
   Send,
   ChevronDown
 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
@@ -76,6 +76,26 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange }:
       return 'Data inválida';
     }
   };
+
+  const getDaysRemaining = (dateString: string | null) => {
+    if (!dateString) return null;
+    try {
+      const deliveryDate = parseISO(dateString);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      deliveryDate.setHours(0, 0, 0, 0);
+      const diff = differenceInDays(deliveryDate, today);
+      
+      if (diff < 0) return { text: 'Atrasado', urgent: true };
+      if (diff === 0) return { text: 'Hoje!', urgent: true };
+      if (diff === 1) return { text: 'Amanhã', urgent: true };
+      return { text: `faltam ${diff} dias`, urgent: diff <= 3 };
+    } catch {
+      return null;
+    }
+  };
+
+  const daysRemaining = order.status !== 'delivered' ? getDaysRemaining(order.delivery_date) : null;
 
   const handleGeneratePdf = async () => {
     await generatePdf(order.id);
@@ -197,6 +217,14 @@ Ficamos à disposição! 🍰`;
                   Data de Entrega
                 </div>
                 <p className="font-medium text-sm">{formatDate(order.delivery_date)}</p>
+                {daysRemaining && (
+                  <p className={cn(
+                    "text-xs font-medium mt-1",
+                    daysRemaining.urgent ? "text-destructive" : "text-muted-foreground"
+                  )}>
+                    ({daysRemaining.text})
+                  </p>
+                )}
               </CardContent>
             </Card>
             {order.delivery_address && (
