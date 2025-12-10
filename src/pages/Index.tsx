@@ -21,6 +21,14 @@ const Index = () => {
   // Extract first name from company name
   const firstName = profile?.company_name?.split(' ')[0] || '';
 
+  // Get greeting based on time of day
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) return 'Bom dia';
+    if (hour >= 12 && hour < 18) return 'Boa tarde';
+    return 'Boa noite';
+  };
+
   // Calculate stats from real data
   const activeOrders = orders.filter(o => o.status !== 'delivered');
   const pendingDeposits = orders
@@ -53,7 +61,7 @@ const Index = () => {
         <header className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Olá{firstName ? ` ${firstName}` : ''}! 👋
+              {getGreeting()}{firstName ? `, ${firstName}` : ''}! 👋
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
               {new Date().toLocaleDateString('pt-BR', { 
