@@ -31,6 +31,11 @@ export function TodayDeliveriesBanner() {
       currency: 'BRL'
     }).format(value);
   };
+
+  const formatTime = (time: string | null) => {
+    if (!time) return null;
+    return time.slice(0, 5);
+  };
   
   return (
     <div className="bg-primary/10 border-b border-primary/20">
@@ -62,6 +67,7 @@ export function TodayDeliveriesBanner() {
                       {order.client?.name || 'Cliente não informado'}
                     </p>
                     <p className="text-xs text-muted-foreground">
+                      {order.delivery_time ? `${formatTime(order.delivery_time)} - ` : ''}
                       {formatCurrency(order.total_amount || 0)}
                     </p>
                   </div>

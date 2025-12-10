@@ -42,6 +42,7 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
     })),
     status: dbOrder.status as OrderStatus,
     deliveryDate: dbOrder.delivery_date || '',
+    deliveryTime: dbOrder.delivery_time || undefined,
     deliveryAddress: dbOrder.delivery_address || undefined,
     deliveryFee: dbOrder.delivery_fee,
     totalAmount: dbOrder.total_amount,

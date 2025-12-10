@@ -24,6 +24,7 @@ export interface Order {
   client_id: string | null;
   status: OrderStatus;
   delivery_date: string | null;
+  delivery_time: string | null;
   delivery_address: string | null;
   delivery_fee: number;
   total_amount: number;
@@ -43,6 +44,7 @@ export interface Order {
 export interface OrderFormData {
   client_id: string;
   delivery_date?: string;
+  delivery_time?: string;
   delivery_address?: string;
   delivery_fee?: number;
   notes?: string;
@@ -99,6 +101,7 @@ export function useOrders() {
           user_id: user.id,
           client_id: formData.client_id,
           delivery_date: formData.delivery_date || null,
+          delivery_time: formData.delivery_time || null,
           delivery_address: formData.delivery_address || null,
           delivery_fee: formData.delivery_fee || 0,
           total_amount: totalAmount,
@@ -344,6 +347,7 @@ export function useOrders() {
         .update({
           client_id: formData.client_id,
           delivery_date: formData.delivery_date || null,
+          delivery_time: formData.delivery_time || null,
           delivery_address: formData.delivery_address || null,
           delivery_fee: formData.delivery_fee || 0,
           total_amount: totalAmount,

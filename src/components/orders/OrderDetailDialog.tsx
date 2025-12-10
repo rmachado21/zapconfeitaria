@@ -109,10 +109,14 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
     }).format(value);
   };
 
-  const formatDate = (dateString: string | null) => {
+  const formatDate = (dateString: string | null, timeString?: string | null) => {
     if (!dateString) return 'A definir';
     try {
-      return format(parseISO(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+      const formatted = format(parseISO(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+      if (timeString) {
+        return `${formatted} às ${timeString.slice(0, 5)}`;
+      }
+      return formatted;
     } catch {
       return 'Data inválida';
     }
@@ -255,7 +259,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                     </span>
                   )}
                 </div>
-                <p className="font-medium text-sm mt-1">{formatDate(order.delivery_date)}</p>
+                <p className="font-medium text-sm mt-1">{formatDate(order.delivery_date, order.delivery_time)}</p>
               </CardContent>
             </Card>
             {order.delivery_address && (

@@ -41,6 +41,7 @@ import { cn } from '@/lib/utils';
 const orderSchema = z.object({
   client_id: z.string().min(1, 'Selecione um cliente'),
   delivery_date: z.string().optional(),
+  delivery_time: z.string().optional(),
   delivery_address: z.string().max(200).optional(),
   delivery_fee: z.coerce.number().min(0).optional(),
   notes: z.string().max(500).optional(),
@@ -84,6 +85,7 @@ export function OrderFormDialog({
     defaultValues: {
       client_id: '',
       delivery_date: '',
+      delivery_time: '',
       delivery_address: '',
       delivery_fee: 0,
       notes: '',
@@ -101,6 +103,7 @@ export function OrderFormDialog({
       form.reset({
         client_id: editOrder.client_id || '',
         delivery_date: editOrder.delivery_date || '',
+        delivery_time: editOrder.delivery_time || '',
         delivery_address: editOrder.delivery_address || '',
         delivery_fee: editOrder.delivery_fee || 0,
         notes: editOrder.notes || '',
@@ -242,6 +245,7 @@ export function OrderFormDialog({
     await onSubmit({
       client_id: data.client_id,
       delivery_date: data.delivery_date,
+      delivery_time: data.delivery_time,
       delivery_address: data.delivery_address,
       delivery_fee: data.delivery_fee,
       notes: data.notes,
@@ -440,20 +444,35 @@ export function OrderFormDialog({
                 )}
               </div>
 
-              {/* Delivery Date */}
-              <FormField
-                control={form.control}
-                name="delivery_date"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Data de Entrega</FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Delivery Date & Time */}
+              <div className="grid grid-cols-2 gap-3">
+                <FormField
+                  control={form.control}
+                  name="delivery_date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Data de Entrega</FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="delivery_time"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Horário</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               {/* Delivery Address */}
               <FormField
