@@ -97,15 +97,17 @@ const Profile = () => {
         <Card variant="gradient" className="overflow-hidden">
           <CardContent className="p-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl gradient-warm flex items-center justify-center shadow-warm overflow-hidden">
+              <div className="w-20 h-20 rounded-2xl bg-background flex items-center justify-center shadow-warm overflow-hidden border border-border">
                 {profile?.logo_url ? (
                   <img 
                     src={profile.logo_url} 
                     alt="Logo" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain p-1"
                   />
                 ) : (
-                  <CakeSlice className="h-10 w-10 text-primary-foreground" />
+                  <div className="w-full h-full gradient-warm flex items-center justify-center">
+                    <CakeSlice className="h-10 w-10 text-primary-foreground" />
+                  </div>
                 )}
               </div>
               <div className="flex-1">
