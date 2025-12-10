@@ -162,108 +162,136 @@ const handler = async (req: Request): Promise<Response> => {
     const margin = 20;
     let yPos = 20;
 
-    // Header with logo
-    // Recommended logo size: 400x150px for good PDF resolution
-    // Logo will be displayed at 50x18.75mm (maintaining aspect ratio)
+    // Header with logo or company name
+    const companyName = typedProfile?.company_name || "Confeitaria Pro";
+    let hasLogo = false;
+    
     if (typedProfile?.logo_url) {
       try {
         const logoBase64 = await fetchImageAsBase64(typedProfile.logo_url);
         if (logoBase64) {
-          // Logo dimensions in PDF: width 50mm, height auto (max ~20mm)
-          const logoWidth = 50;
-          const logoHeight = 18.75; // Assuming 8:3 aspect ratio (400x150px)
+          // Logo dimensions in PDF: width 60mm, height auto
+          const logoWidth = 60;
+          const logoHeight = 22.5; // Assuming 8:3 aspect ratio
           const logoX = (pageWidth - logoWidth) / 2;
           doc.addImage(logoBase64, 'PNG', logoX, yPos, logoWidth, logoHeight);
-          yPos += logoHeight + 5;
+          yPos += logoHeight + 8;
+          hasLogo = true;
         }
       } catch (error) {
         console.error('Error adding logo to PDF:', error);
       }
     }
 
-    // Company Name (below logo or at top if no logo)
-    doc.setFontSize(24);
-    doc.setTextColor(51, 51, 51);
-    const companyName = typedProfile?.company_name || "Confeitaria Pro";
-    doc.text(companyName, pageWidth / 2, yPos, { align: "center" });
-    yPos += 15;
+    // Only show company name text if no logo was added
+    if (!hasLogo) {
+      doc.setFontSize(24);
+      doc.setTextColor(51, 51, 51);
+      doc.text(companyName, pageWidth / 2, yPos, { align: "center" });
+      yPos += 12;
+    }
 
     // Quote title
     doc.setFontSize(14);
     doc.setTextColor(100, 100, 100);
     doc.text("ORÇAMENTO", pageWidth / 2, yPos, { align: "center" });
-    yPos += 5;
+    yPos += 8;
 
     // Line separator
-    doc.setDrawColor(200, 200, 200);
+    doc.setDrawColor(220, 220, 220);
+    doc.setLineWidth(0.5);
     doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 15;
+    yPos += 12;
 
     // Client info
-    doc.setFontSize(11);
-    doc.setTextColor(51, 51, 51);
+    doc.setFontSize(10);
+    doc.setTextColor(80, 80, 80);
     doc.text(`Cliente: ${typedOrder.client?.name || "N/A"}`, margin, yPos);
-    yPos += 7;
+    yPos += 6;
     if (typedOrder.client?.phone) {
       doc.text(`Telefone: ${typedOrder.client.phone}`, margin, yPos);
-      yPos += 7;
+      yPos += 6;
     }
     doc.text(`Data de Entrega: ${formatDate(typedOrder.delivery_date)}`, margin, yPos);
-    yPos += 7;
+    yPos += 6;
     if (typedOrder.delivery_address) {
       doc.text(`Endereço: ${typedOrder.delivery_address}`, margin, yPos);
-      yPos += 7;
+      yPos += 6;
     }
-    yPos += 10;
+    yPos += 8;
 
-    // Items table header
-    doc.setFillColor(245, 245, 245);
-    doc.rect(margin, yPos - 5, pageWidth - margin * 2, 10, "F");
-    doc.setFontSize(10);
+    // Items table - improved styling
+    const tableWidth = pageWidth - margin * 2;
+    const col1Width = tableWidth * 0.50; // Produto
+    const col2Width = tableWidth * 0.15; // Qtd
+    const col3Width = tableWidth * 0.17; // Unit
+    const col4Width = tableWidth * 0.18; // Total
+
+    // Table header with warm color
+    doc.setFillColor(245, 240, 235);
+    doc.setDrawColor(200, 190, 180);
+    doc.rect(margin, yPos - 5, tableWidth, 10, "FD");
+    
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
-    doc.text("Produto", margin + 5, yPos);
-    doc.text("Qtd", pageWidth - 80, yPos);
-    doc.text("Unit.", pageWidth - 55, yPos);
-    doc.text("Total", pageWidth - 30, yPos);
-    yPos += 10;
+    doc.setTextColor(80, 70, 60);
+    doc.text("Produto", margin + 4, yPos);
+    doc.text("Qtd", margin + col1Width + 4, yPos);
+    doc.text("Unit.", margin + col1Width + col2Width + 4, yPos);
+    doc.text("Total", margin + col1Width + col2Width + col3Width + 4, yPos);
+    yPos += 8;
 
-    // Items
+    // Items with alternating row colors
     doc.setFont("helvetica", "normal");
-    for (const item of typedOrder.order_items) {
+    doc.setFontSize(9);
+    doc.setTextColor(51, 51, 51);
+    
+    for (let i = 0; i < typedOrder.order_items.length; i++) {
+      const item = typedOrder.order_items[i];
       const itemTotal = item.quantity * item.unit_price;
       const unitLabel = formatUnitType(item.unit_type || 'unit');
-      doc.text(item.product_name.substring(0, 35), margin + 5, yPos);
-      doc.text(`${item.quantity} ${unitLabel}`, pageWidth - 80, yPos);
-      doc.text(formatCurrency(item.unit_price), pageWidth - 55, yPos);
-      doc.text(formatCurrency(itemTotal), pageWidth - 30, yPos);
-      yPos += 8;
+      
+      // Alternating row background
+      if (i % 2 === 1) {
+        doc.setFillColor(252, 250, 248);
+        doc.rect(margin, yPos - 4, tableWidth, 7, "F");
+      }
+      
+      doc.text(item.product_name.substring(0, 40), margin + 4, yPos);
+      doc.text(`${item.quantity} ${unitLabel}`, margin + col1Width + 4, yPos);
+      doc.text(formatCurrency(item.unit_price), margin + col1Width + col2Width + 4, yPos);
+      doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 4, yPos);
+      yPos += 7;
     }
 
-    yPos += 5;
+    yPos += 3;
+    doc.setDrawColor(200, 190, 180);
     doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 10;
+    yPos += 8;
 
-    // Totals
+    // Totals - aligned to the right
+    const totalsX = margin + col1Width + col2Width;
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
     const subtotal = typedOrder.order_items.reduce(
       (sum, item) => sum + item.quantity * item.unit_price,
       0
     );
-    doc.text("Subtotal:", pageWidth - 80, yPos);
-    doc.text(formatCurrency(subtotal), pageWidth - 30, yPos);
-    yPos += 7;
+    doc.text("Subtotal:", totalsX, yPos);
+    doc.text(formatCurrency(subtotal), margin + col1Width + col2Width + col3Width + 4, yPos);
+    yPos += 6;
 
     if (typedOrder.delivery_fee > 0) {
-      doc.text("Taxa de Entrega:", pageWidth - 80, yPos);
-      doc.text(formatCurrency(typedOrder.delivery_fee), pageWidth - 30, yPos);
-      yPos += 7;
+      doc.text("Taxa de Entrega:", totalsX, yPos);
+      doc.text(formatCurrency(typedOrder.delivery_fee), margin + col1Width + col2Width + col3Width + 4, yPos);
+      yPos += 6;
     }
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(12);
-    doc.text("TOTAL:", pageWidth - 80, yPos);
-    doc.text(formatCurrency(typedOrder.total_amount), pageWidth - 30, yPos);
-    yPos += 15;
+    doc.setFontSize(11);
+    doc.text("TOTAL:", totalsX, yPos);
+    doc.text(formatCurrency(typedOrder.total_amount), margin + col1Width + col2Width + col3Width + 4, yPos);
+    yPos += 12;
 
     // Deposit info
     const depositAmount = typedOrder.total_amount / 2;
