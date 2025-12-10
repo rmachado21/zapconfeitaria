@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils';
 interface OrdersListProps {
   orders: DBOrder[];
   onOrderClick?: (order: DBOrder) => void;
-  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number) => void;
+  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => void;
 }
 
 const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
@@ -86,7 +86,7 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
                   <OrderCard 
                     order={convertToOrderType(order)} 
                     onClick={() => onOrderClick?.(order)}
-                    onDepositChange={(paid) => onDepositChange?.(order.id, paid, order.client?.name, order.total_amount)}
+                    onDepositChange={(paid) => onDepositChange?.(order.id, paid, order.client?.name, order.total_amount, order.status)}
                   />
                 </div>
               ))

@@ -194,17 +194,30 @@ export function useOrders() {
   });
 
   const updateDepositPaid = useMutation({
-    mutationFn: async ({ id, depositPaid, clientName, totalAmount }: { 
+    mutationFn: async ({ id, depositPaid, clientName, totalAmount, currentStatus }: { 
       id: string; 
       depositPaid: boolean;
       clientName?: string;
       totalAmount?: number;
+      currentStatus?: OrderStatus;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
+      // When deposit is paid, move to "in_production" if currently in quote or awaiting_deposit
+      const shouldUpdateStatus = depositPaid && 
+        (currentStatus === 'quote' || currentStatus === 'awaiting_deposit');
+
+      const updateData: { deposit_paid: boolean; status?: OrderStatus } = { 
+        deposit_paid: depositPaid 
+      };
+      
+      if (shouldUpdateStatus) {
+        updateData.status = 'in_production';
+      }
+
       const { data, error } = await supabase
         .from('orders')
-        .update({ deposit_paid: depositPaid })
+        .update(updateData)
         .eq('id', id)
         .select()
         .single();
@@ -233,16 +246,27 @@ export function useOrders() {
           .ilike('description', '%Sinal 50%');
       }
 
-      return data;
+      return { data, statusUpdated: shouldUpdateStatus };
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       
-      toast({
-        title: variables.depositPaid ? 'Sinal marcado como pago!' : 'Sinal desmarcado',
-        description: variables.depositPaid ? 'Receita registrada automaticamente.' : undefined,
-      });
+      if (variables.depositPaid && result.statusUpdated) {
+        toast({
+          title: 'Sinal recebido! 🎉',
+          description: 'Pedido movido para "Em Produção" automaticamente.',
+        });
+      } else if (variables.depositPaid) {
+        toast({
+          title: 'Sinal marcado como pago!',
+          description: 'Receita registrada automaticamente.',
+        });
+      } else {
+        toast({
+          title: 'Sinal desmarcado',
+        });
+      }
     },
     onError: (error) => {
       toast({

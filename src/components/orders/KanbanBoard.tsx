@@ -9,7 +9,7 @@ interface KanbanBoardProps {
   orders: DBOrder[];
   onOrderClick?: (order: DBOrder) => void;
   onStatusChange?: (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => void;
-  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number) => void;
+  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => void;
 }
 
 const KANBAN_COLUMNS: OrderStatus[] = [
@@ -119,7 +119,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
                                 <OrderCard 
                                   order={convertToOrderType(order)} 
                                   onClick={() => onOrderClick?.(order)}
-                                  onDepositChange={(paid) => onDepositChange?.(order.id, paid, order.client?.name, order.total_amount)}
+                                  onDepositChange={(paid) => onDepositChange?.(order.id, paid, order.client?.name, order.total_amount, order.status)}
                                 />
                               </div>
                             )}
