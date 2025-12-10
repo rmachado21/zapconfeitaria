@@ -96,13 +96,13 @@ const Profile = () => {
         {/* Profile Header */}
         <Card variant="gradient" className="overflow-hidden">
           <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-2xl bg-background flex items-center justify-center shadow-warm overflow-hidden border border-border">
+            <div className="flex items-start gap-4">
+              <div className="w-24 h-24 rounded-2xl bg-background flex items-center justify-center shadow-warm overflow-hidden border border-border flex-shrink-0">
                 {profile?.logo_url ? (
                   <img 
                     src={profile.logo_url} 
                     alt="Logo" 
-                    className="w-full h-full object-contain p-1"
+                    className="w-full h-full object-contain p-1.5"
                   />
                 ) : (
                   <div className="w-full h-full gradient-warm flex items-center justify-center">
@@ -110,17 +110,17 @@ const Profile = () => {
                   </div>
                 )}
               </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <h1 className="text-xl font-display font-bold text-foreground">
+              <div className="flex-1 min-w-0 pt-1">
+                <div className="flex items-center gap-2 mb-1 flex-wrap">
+                  <h1 className="text-lg md:text-xl font-display font-bold text-foreground truncate max-w-[200px] md:max-w-none">
                     {profile?.company_name || 'Minha Confeitaria'}
                   </h1>
-                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0">
+                  <Badge className="bg-gradient-to-r from-amber-400 to-orange-500 text-white border-0 flex-shrink-0">
                     <Crown className="h-3 w-3 mr-1" />
                     Pro
                   </Badge>
                 </div>
-                <p className="text-muted-foreground text-sm">{user?.email}</p>
+                <p className="text-muted-foreground text-sm truncate">{user?.email}</p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Membro desde {user?.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }) : ''}
                 </p>
