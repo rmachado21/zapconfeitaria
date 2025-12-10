@@ -49,9 +49,7 @@ import {
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
-import { openWhatsApp } from '@/lib/whatsapp';
 import { formatPhone } from '@/lib/masks';
-
 
 interface OrderDetailDialogProps {
   open: boolean;
@@ -65,7 +63,7 @@ interface OrderDetailDialogProps {
 const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered'];
 
 export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
-  const { generatePdf, isGenerating } = useQuotePdf();
+  const { downloadPdf, shareViaWhatsApp, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
@@ -140,52 +138,16 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
 
   const daysRemaining = order.status !== 'delivered' ? getDaysRemaining(order.delivery_date) : null;
 
-  const handleGeneratePdf = async () => {
-    await generatePdf(order.id);
+  const handleDownloadPdf = async () => {
+    await downloadPdf(order.id);
   };
 
-  const handleWhatsApp = () => {
+  const handleShareWhatsApp = async () => {
     if (!order.client?.phone) return;
-
-    const phone = order.client.phone.replace(/\D/g, '');
-    const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
-    
     const companyName = profile?.company_name || 'Confeitaria Pro';
-    const deliveryDate = order.delivery_date 
-      ? format(parseISO(order.delivery_date), "dd/MM/yyyy", { locale: ptBR })
-      : 'a definir';
-    
-    const formatUnitType = (type: string) => {
-      if (type === 'kg') return 'Kg';
-      if (type === 'cento') return 'Cento';
-      return 'Un';
-    };
-
-    const itemsList = (order.order_items || [])
-      .map(item => `• ${item.quantity} ${formatUnitType(item.unit_type)} ${item.product_name}`)
-      .join('\n');
-
-    const message = `Olá ${order.client?.name}! 👋
-
-Aqui é da *${companyName}*!
-
-Segue o orçamento do seu pedido:
-
-📅 *Data de Entrega:* ${deliveryDate}
-${order.delivery_address ? `📍 *Endereço:* ${order.delivery_address}\n` : ''}
-📦 *Itens:*
-${itemsList}
-
-💰 *Valor Total:* ${formatCurrency(order.total_amount)}
-💳 *Sinal (50%):* ${formatCurrency(order.total_amount / 2)}
-
-${profile?.pix_key ? `*Chave Pix:* ${profile.pix_key}\n` : ''}
-Para confirmar o pedido, por favor efetue o pagamento do sinal.
-
-Ficamos à disposição! 🍰`;
-
-    openWhatsApp(formattedPhone, message);
+    await shareViaWhatsApp(order.id, order.client.phone, order.client.name, companyName);
   };
+
 
   const depositAmount = order.total_amount / 2;
 
@@ -397,7 +359,7 @@ Ficamos à disposição! 🍰`;
               <Button 
                 variant="outline" 
                 className="flex-1"
-                onClick={handleGeneratePdf}
+                onClick={handleDownloadPdf}
                 disabled={isGenerating}
               >
                 {isGenerating ? (
@@ -405,16 +367,20 @@ Ficamos à disposição! 🍰`;
                 ) : (
                   <FileText className="mr-2 h-4 w-4" />
                 )}
-                Gerar PDF
+                Baixar PDF
               </Button>
               <Button 
                 variant="warm" 
                 className="flex-1"
-                onClick={handleWhatsApp}
-                disabled={!order.client?.phone}
+                onClick={handleShareWhatsApp}
+                disabled={!order.client?.phone || isGenerating}
               >
-                <Send className="mr-2 h-4 w-4" />
-                Enviar WhatsApp
+                {isGenerating ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                Enviar PDF
               </Button>
             </div>
             
