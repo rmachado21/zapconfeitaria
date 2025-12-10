@@ -37,7 +37,7 @@ export function AppLayout({
         <TodayDeliveriesBanner />
       </div>
       
-      <main className="pb-20 pt-14 md:pt-20 md:pb-0 min-h-screen">
+      <main className="pb-20 pt-14 md:pt-16 md:pb-0 min-h-screen">
         {children}
       </main>
       <BottomNav />
