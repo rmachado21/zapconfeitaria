@@ -29,6 +29,7 @@ import {
 import { Order } from '@/hooks/useOrders';
 import { useQuotePdf } from '@/hooks/useQuotePdf';
 import { useProfile } from '@/hooks/useProfile';
+import { openWhatsApp } from '@/lib/whatsapp';
 import { ORDER_STATUS_CONFIG, OrderStatus } from '@/types';
 import { 
   Calendar, 
@@ -63,7 +64,7 @@ interface OrderDetailDialogProps {
 const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered'];
 
 export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
-  const { downloadPdf, shareViaWhatsApp, isGenerating } = useQuotePdf();
+  const { downloadPdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
@@ -146,10 +147,9 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
     await downloadPdf(order.id);
   };
 
-  const handleShareWhatsApp = async () => {
+  const handleOpenWhatsApp = () => {
     if (!order.client?.phone) return;
-    const companyName = profile?.company_name || 'Confeitaria Pro';
-    await shareViaWhatsApp(order.id, order.client.phone, order.client.name, companyName);
+    openWhatsApp(order.client.phone);
   };
 
 
@@ -384,15 +384,11 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               <Button 
                 variant="warm" 
                 className="flex-1 h-11 sm:h-10"
-                onClick={handleShareWhatsApp}
-                disabled={!order.client?.phone || isGenerating}
+                onClick={handleOpenWhatsApp}
+                disabled={!order.client?.phone}
               >
-                {isGenerating ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Send className="mr-2 h-4 w-4" />
-                )}
-                Enviar PDF
+                <Send className="mr-2 h-4 w-4" />
+                Abrir WhatsApp
               </Button>
             </div>
             
