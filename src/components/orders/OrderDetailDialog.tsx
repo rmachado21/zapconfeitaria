@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -71,10 +71,21 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
+  
+  // Local optimistic state for status
+  const [displayStatus, setDisplayStatus] = useState<OrderStatus | null>(null);
+
+  // Sync displayStatus with order.status when order changes
+  useEffect(() => {
+    if (order) {
+      setDisplayStatus(order.status as OrderStatus);
+    }
+  }, [order?.status, order?.id]);
 
   if (!order) return null;
 
-  const statusConfig = ORDER_STATUS_CONFIG[order.status as OrderStatus];
+  const currentStatus = displayStatus || (order.status as OrderStatus);
+  const statusConfig = ORDER_STATUS_CONFIG[currentStatus];
   const canEditOrDelete = order.status === 'quote' || order.status === 'awaiting_deposit';
 
   const handleDelete = () => {
@@ -86,7 +97,10 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
   };
 
   const handleStatusChange = (newStatus: OrderStatus) => {
-    if (newStatus !== order.status && onStatusChange) {
+    if (newStatus !== currentStatus && onStatusChange) {
+      // Update display immediately (optimistic update)
+      setDisplayStatus(newStatus);
+      
       // If changing to delivered, show confirmation dialog
       if (newStatus === 'delivered') {
         setPendingStatus(newStatus);
@@ -108,10 +122,24 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
     setPendingStatus(null);
   };
 
+  const cancelDelivered = () => {
+    // Revert optimistic update
+    setDisplayStatus(order.status as OrderStatus);
+    setDeliveredConfirmOpen(false);
+    setPendingStatus(null);
+  };
+
   const confirmCancelled = () => {
     if (pendingStatus && onStatusChange) {
       onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
     }
+    setCancelConfirmOpen(false);
+    setPendingStatus(null);
+  };
+
+  const cancelCancelled = () => {
+    // Revert optimistic update
+    setDisplayStatus(order.status as OrderStatus);
     setCancelConfirmOpen(false);
     setPendingStatus(null);
   };
@@ -184,7 +212,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
           <span className="text-sm text-muted-foreground">Status:</span>
           {onStatusChange ? (
             <Select
-              value={order.status}
+              value={currentStatus}
               onValueChange={(value) => handleStatusChange(value as OrderStatus)}
             >
               <SelectTrigger className={cn(
@@ -201,7 +229,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               <SelectContent className="min-w-[240px]">
                 {ALL_STATUSES.map((status) => {
                   const config = ORDER_STATUS_CONFIG[status];
-                  const isSelected = status === order.status;
+                  const isSelected = status === currentStatus;
                   return (
                     <SelectItem 
                       key={status} 
@@ -487,7 +515,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setPendingStatus(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelDelivered}>Cancelar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmDelivered}
               className="w-full sm:w-auto bg-success text-success-foreground hover:bg-success/90"
@@ -515,7 +543,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto" onClick={() => setPendingStatus(null)}>Voltar</AlertDialogCancel>
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelCancelled}>Voltar</AlertDialogCancel>
             <AlertDialogAction 
               onClick={confirmCancelled}
               className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
