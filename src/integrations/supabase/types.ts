@@ -195,6 +195,7 @@ export type Database = {
           bank_details: string | null
           company_name: string | null
           created_at: string
+          custom_terms: string | null
           id: string
           include_terms_in_pdf: boolean
           logo_url: string | null
@@ -206,6 +207,7 @@ export type Database = {
           bank_details?: string | null
           company_name?: string | null
           created_at?: string
+          custom_terms?: string | null
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null
@@ -217,6 +219,7 @@ export type Database = {
           bank_details?: string | null
           company_name?: string | null
           created_at?: string
+          custom_terms?: string | null
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null

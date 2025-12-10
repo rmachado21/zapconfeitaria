@@ -11,6 +11,7 @@ export interface Profile {
   pix_key: string | null;
   bank_details: string | null;
   include_terms_in_pdf: boolean;
+  custom_terms: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,7 @@ export interface ProfileFormData {
   pix_key?: string;
   bank_details?: string;
   include_terms_in_pdf?: boolean;
+  custom_terms?: string;
 }
 
 export function useProfile() {
@@ -63,6 +65,7 @@ export function useProfile() {
           pix_key: formData.pix_key || null,
           bank_details: formData.bank_details || null,
           include_terms_in_pdf: formData.include_terms_in_pdf ?? true,
+          custom_terms: formData.custom_terms || null,
         })
         .eq('user_id', user.id)
         .select()
