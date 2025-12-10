@@ -9,6 +9,7 @@ const corsHeaders = {
 
 interface QuoteRequest {
   orderId: string;
+  saveToStorage?: boolean;
 }
 
 interface OrderItem {
@@ -126,8 +127,8 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { orderId }: QuoteRequest = await req.json();
-    console.log("Generating PDF for order:", orderId);
+    const { orderId, saveToStorage = false }: QuoteRequest = await req.json();
+    console.log("Generating PDF for order:", orderId, "saveToStorage:", saveToStorage);
 
     // Fetch order with client and items
     const { data: order, error: orderError } = await supabase
@@ -434,15 +435,55 @@ const handler = async (req: Request): Promise<Response> => {
       { align: "center" }
     );
 
-    // Convert to base64
+    // Convert to base64 and arraybuffer
     const pdfBase64 = doc.output("datauristring");
+    const fileName = `orcamento-${typedOrder.client?.name?.replace(/\s+/g, "-") || "cliente"}-${new Date().toISOString().split("T")[0]}.pdf`;
+
+    let publicUrl: string | null = null;
+
+    // Save to storage if requested (for WhatsApp sharing)
+    if (saveToStorage) {
+      try {
+        // Convert base64 to Uint8Array
+        const base64Data = pdfBase64.split(",")[1];
+        const binaryString = atob(base64Data);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+
+        // Upload to storage
+        const storagePath = `${user.id}/${orderId}-${Date.now()}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from("quote-pdfs")
+          .upload(storagePath, bytes, {
+            contentType: "application/pdf",
+            upsert: true,
+          });
+
+        if (uploadError) {
+          console.error("Error uploading PDF to storage:", uploadError);
+        } else {
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from("quote-pdfs")
+            .getPublicUrl(storagePath);
+          
+          publicUrl = urlData.publicUrl;
+          console.log("PDF uploaded to storage:", publicUrl);
+        }
+      } catch (storageError) {
+        console.error("Error saving PDF to storage:", storageError);
+      }
+    }
 
     console.log("PDF generated successfully");
 
     return new Response(
       JSON.stringify({
         pdf: pdfBase64,
-        fileName: `orcamento-${typedOrder.client?.name?.replace(/\s+/g, "-") || "cliente"}-${new Date().toISOString().split("T")[0]}.pdf`,
+        fileName,
+        publicUrl,
       }),
       {
         status: 200,
