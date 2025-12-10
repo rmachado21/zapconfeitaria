@@ -56,6 +56,31 @@ const formatDate = (dateString: string | null): string => {
   });
 };
 
+// Fetch image as base64 for PDF embedding
+const fetchImageAsBase64 = async (url: string): Promise<string | null> => {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    
+    const buffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64 = btoa(binary);
+    
+    // Detect image type
+    const contentType = response.headers.get('content-type') || 'image/png';
+    const format = contentType.includes('jpeg') || contentType.includes('jpg') ? 'JPEG' : 'PNG';
+    
+    return `data:${contentType};base64,${base64}`;
+  } catch (error) {
+    console.error('Error fetching image:', error);
+    return null;
+  }
+};
+
 const handler = async (req: Request): Promise<Response> => {
   console.log("Generate quote PDF function called");
 
@@ -130,7 +155,26 @@ const handler = async (req: Request): Promise<Response> => {
     const margin = 20;
     let yPos = 20;
 
-    // Header - Company Name
+    // Header with logo
+    // Recommended logo size: 400x150px for good PDF resolution
+    // Logo will be displayed at 50x18.75mm (maintaining aspect ratio)
+    if (typedProfile?.logo_url) {
+      try {
+        const logoBase64 = await fetchImageAsBase64(typedProfile.logo_url);
+        if (logoBase64) {
+          // Logo dimensions in PDF: width 50mm, height auto (max ~20mm)
+          const logoWidth = 50;
+          const logoHeight = 18.75; // Assuming 8:3 aspect ratio (400x150px)
+          const logoX = (pageWidth - logoWidth) / 2;
+          doc.addImage(logoBase64, 'PNG', logoX, yPos, logoWidth, logoHeight);
+          yPos += logoHeight + 5;
+        }
+      } catch (error) {
+        console.error('Error adding logo to PDF:', error);
+      }
+    }
+
+    // Company Name (below logo or at top if no logo)
     doc.setFontSize(24);
     doc.setTextColor(51, 51, 51);
     const companyName = typedProfile?.company_name || "Confeitaria Pro";
