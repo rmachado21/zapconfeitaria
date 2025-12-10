@@ -127,7 +127,28 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    const { orderId, saveToStorage = false }: QuoteRequest = await req.json();
+    const body = await req.json();
+    const { orderId, saveToStorage = false } = body as QuoteRequest;
+
+    // Input validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    
+    if (!orderId || typeof orderId !== 'string' || !uuidRegex.test(orderId)) {
+      console.error('Invalid orderId format:', orderId);
+      return new Response(
+        JSON.stringify({ error: 'Invalid orderId format. Must be a valid UUID.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (saveToStorage !== undefined && typeof saveToStorage !== 'boolean') {
+      console.error('Invalid saveToStorage type:', typeof saveToStorage);
+      return new Response(
+        JSON.stringify({ error: 'saveToStorage must be a boolean.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log("Generating PDF for order:", orderId, "saveToStorage:", saveToStorage);
 
     // Fetch order with client and items
