@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Cake, Truck, MessageCircle } from 'lucide-react';
+import { Bell, Cake, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useClients } from '@/hooks/useClients';
 import { cn } from '@/lib/utils';
+import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 
 export function NotificationBell() {
   const navigate = useNavigate();
@@ -150,11 +151,11 @@ export function NotificationBell() {
                     <Button
                       variant="ghost"
                       size="icon-sm"
-                      className="flex-shrink-0 text-success hover:text-success hover:bg-success/10"
+                      className="flex-shrink-0 text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
                       onClick={(e) => handleWhatsAppBirthday(e, notification)}
                       title="Enviar felicitação por WhatsApp"
                     >
-                      <MessageCircle className="h-4 w-4" />
+                      <WhatsAppIcon />
                     </Button>
                   )}
                 </div>

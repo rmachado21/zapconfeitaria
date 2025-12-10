@@ -20,6 +20,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Client, ClientFormData } from '@/hooks/useClients';
+import { PhoneInput } from '@/components/shared/PhoneInput';
+import { formatPhone } from '@/lib/masks';
 
 const clientSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
@@ -59,7 +61,7 @@ export function ClientFormDialog({
     if (client) {
       form.reset({
         name: client.name,
-        phone: client.phone || '',
+        phone: client.phone ? formatPhone(client.phone) : '',
         email: client.email || '',
         birthday: client.birthday || '',
       });
@@ -111,7 +113,11 @@ export function ClientFormDialog({
                 <FormItem>
                   <FormLabel>WhatsApp</FormLabel>
                   <FormControl>
-                    <Input placeholder="(11) 99999-9999" {...field} />
+                    <PhoneInput 
+                      placeholder="(11) 99999-9999" 
+                      value={field.value || ''}
+                      onChange={field.onChange}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

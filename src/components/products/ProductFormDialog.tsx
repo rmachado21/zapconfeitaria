@@ -29,6 +29,8 @@ import { Button } from '@/components/ui/button';
 import { Loader2 } from 'lucide-react';
 import { Product, ProductFormData } from '@/hooks/useProducts';
 import { ImageUpload } from '@/components/shared/ImageUpload';
+import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { formatCurrency } from '@/lib/masks';
 
 const productSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres').max(100),
@@ -152,12 +154,10 @@ export function ProductFormDialog({
                   <FormItem>
                     <FormLabel>Preço de Custo *</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0,00"
-                        {...field}
+                      <CurrencyInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="R$ 0,00"
                       />
                     </FormControl>
                     <FormMessage />
@@ -172,12 +172,10 @@ export function ProductFormDialog({
                   <FormItem>
                     <FormLabel>Preço de Venda *</FormLabel>
                     <FormControl>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        placeholder="0,00"
-                        {...field}
+                      <CurrencyInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="R$ 0,00"
                       />
                     </FormControl>
                     <FormMessage />
@@ -189,7 +187,7 @@ export function ProductFormDialog({
             {salePrice > 0 && (
               <div className="p-3 rounded-lg bg-success/10 border border-success/20">
                 <p className="text-sm text-success font-medium">
-                  Lucro: R$ {profit.toFixed(2)} ({profitMargin}% de margem)
+                  Lucro: {formatCurrency(profit)} ({profitMargin}% de margem)
                 </p>
               </div>
             )}
