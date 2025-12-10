@@ -25,6 +25,7 @@ export function ProductCard({ product, onClick, onDelete }: ProductCardProps) {
 
   const profit = product.salePrice - product.costPrice;
   const profitMargin = product.salePrice > 0 ? ((profit / product.salePrice) * 100).toFixed(0) : '0';
+  const unitLabel = product.unitType === 'kg' ? 'Kg' : product.unitType === 'cento' ? 'Cento' : 'Un';
 
   return (
     <Card 
@@ -50,14 +51,9 @@ export function ProductCard({ product, onClick, onDelete }: ProductCardProps) {
           {/* Info */}
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
             <div>
-              <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-foreground leading-tight line-clamp-2">
-                  {product.name}
-                </h3>
-                <Badge variant="cream" className="text-[10px] flex-shrink-0">
-                  {product.unitType === 'kg' ? 'Kg' : product.unitType === 'cento' ? 'Cento' : 'Un'}
-                </Badge>
-              </div>
+              <h3 className="font-semibold text-foreground leading-tight line-clamp-2">
+                {product.name}
+              </h3>
               {product.description && (
                 <p className="text-xs text-muted-foreground line-clamp-1 mt-0.5">
                   {product.description}
@@ -74,9 +70,12 @@ export function ProductCard({ product, onClick, onDelete }: ProductCardProps) {
                   {profitMargin}%
                 </Badge>
               </div>
-              <span className="font-display font-bold text-lg text-primary">
-                {formatCurrency(product.salePrice)}
-              </span>
+              <div className="flex items-baseline gap-0.5">
+                <span className="font-display font-bold text-lg text-primary">
+                  {formatCurrency(product.salePrice)}
+                </span>
+                <span className="text-xs text-muted-foreground">/{unitLabel}</span>
+              </div>
             </div>
           </div>
 
