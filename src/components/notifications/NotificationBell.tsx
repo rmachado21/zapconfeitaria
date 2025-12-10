@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Cake, Truck, X } from 'lucide-react';
+import { Bell, Cake, Truck, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -10,11 +10,13 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
+import { useClients } from '@/hooks/useClients';
 import { cn } from '@/lib/utils';
 
 export function NotificationBell() {
   const navigate = useNavigate();
   const { notifications, highPriorityCount, totalCount } = useNotifications();
+  const { clients } = useClients();
   const [open, setOpen] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
@@ -24,6 +26,30 @@ export function NotificationBell() {
     } else if (notification.type === 'birthday') {
       navigate('/clients');
     }
+  };
+
+  const handleWhatsAppBirthday = (e: React.MouseEvent, notification: Notification) => {
+    e.stopPropagation();
+    
+    // Find the client to get their phone number
+    const client = clients.find(c => c.name === notification.clientName);
+    if (!client?.phone) {
+      return;
+    }
+
+    // Clean phone number (remove non-digits)
+    const cleanPhone = client.phone.replace(/\D/g, '');
+    
+    // Birthday message template
+    const message = encodeURIComponent(
+      `🎂 Feliz Aniversário, ${client.name}! 🎉\n\n` +
+      `Desejamos a você um dia maravilhoso, repleto de alegrias e realizações!\n\n` +
+      `Com carinho,\n` +
+      `Sua Confeitaria ❤️`
+    );
+
+    // Open WhatsApp with the message
+    window.open(`https://wa.me/55${cleanPhone}?text=${message}`, '_blank');
   };
 
   const getPriorityColor = (priority: Notification['priority']) => {
@@ -44,6 +70,12 @@ export function NotificationBell() {
       case 'truck':
         return <Truck className="h-4 w-4" />;
     }
+  };
+
+  const getClientPhone = (clientName: string | undefined) => {
+    if (!clientName) return null;
+    const client = clients.find(c => c.name === clientName);
+    return client?.phone;
   };
 
   return (
@@ -83,32 +115,49 @@ export function NotificationBell() {
           ) : (
             <div className="divide-y divide-border">
               {notifications.map((notification) => (
-                <button
+                <div
                   key={notification.id}
-                  onClick={() => handleNotificationClick(notification)}
                   className={cn(
-                    "w-full p-4 text-left hover:bg-muted/50 transition-colors flex items-start gap-3",
+                    "w-full p-4 hover:bg-muted/50 transition-colors flex items-start gap-3",
                     notification.priority === 'high' && "bg-destructive/5"
                   )}
                 >
-                  <div className={cn(
-                    "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border",
-                    getPriorityColor(notification.priority)
-                  )}>
-                    {getIcon(notification.icon)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{notification.title}</p>
-                    <p className={cn(
-                      "text-xs mt-0.5",
-                      notification.priority === 'high' 
-                        ? "text-destructive font-medium" 
-                        : "text-muted-foreground"
+                  <button
+                    onClick={() => handleNotificationClick(notification)}
+                    className="flex items-start gap-3 flex-1 text-left"
+                  >
+                    <div className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border",
+                      getPriorityColor(notification.priority)
                     )}>
-                      {notification.description}
-                    </p>
-                  </div>
-                </button>
+                      {getIcon(notification.icon)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{notification.title}</p>
+                      <p className={cn(
+                        "text-xs mt-0.5",
+                        notification.priority === 'high' 
+                          ? "text-destructive font-medium" 
+                          : "text-muted-foreground"
+                      )}>
+                        {notification.description}
+                      </p>
+                    </div>
+                  </button>
+                  
+                  {/* WhatsApp button for birthday notifications */}
+                  {notification.type === 'birthday' && getClientPhone(notification.clientName) && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="flex-shrink-0 text-success hover:text-success hover:bg-success/10"
+                      onClick={(e) => handleWhatsAppBirthday(e, notification)}
+                      title="Enviar felicitação por WhatsApp"
+                    >
+                      <MessageCircle className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               ))}
             </div>
           )}
