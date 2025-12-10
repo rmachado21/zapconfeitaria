@@ -55,7 +55,7 @@ export function ProductCard({ product, onClick, onDelete }: ProductCardProps) {
                   {product.name}
                 </h3>
                 <Badge variant="cream" className="text-[10px] flex-shrink-0">
-                  {product.unitType === 'kg' ? 'Por Kg' : 'Unidade'}
+                  {product.unitType === 'kg' ? 'Kg' : product.unitType === 'cento' ? 'Cento' : 'Un'}
                 </Badge>
               </div>
               {product.description && (

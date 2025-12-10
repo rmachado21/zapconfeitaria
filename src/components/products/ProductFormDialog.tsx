@@ -37,7 +37,7 @@ const productSchema = z.object({
   description: z.string().max(500).optional(),
   cost_price: z.coerce.number().min(0, 'Preço deve ser positivo'),
   sale_price: z.coerce.number().min(0, 'Preço deve ser positivo'),
-  unit_type: z.enum(['kg', 'unit']),
+  unit_type: z.enum(['kg', 'unit', 'cento']),
   photo_url: z.string().url().optional().or(z.literal('')),
 });
 
@@ -77,7 +77,7 @@ export function ProductFormDialog({
         description: product.description || '',
         cost_price: product.cost_price,
         sale_price: product.sale_price,
-        unit_type: product.unit_type as 'kg' | 'unit',
+        unit_type: product.unit_type as 'kg' | 'unit' | 'cento',
         photo_url: product.photo_url || '',
       });
     } else {
@@ -205,8 +205,9 @@ export function ProductFormDialog({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="unit">Por Unidade</SelectItem>
+                      <SelectItem value="unit">Por Unidade (Un)</SelectItem>
                       <SelectItem value="kg">Por Kg</SelectItem>
+                      <SelectItem value="cento">Por Cento</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
