@@ -7,7 +7,7 @@ import { useOrders } from '@/hooks/useOrders';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderStatus } from '@/types';
-import { ShoppingBag, TrendingUp, Clock, Plus, CakeSlice, Loader2 } from 'lucide-react';
+import { ShoppingBag, TrendingUp, Clock, Plus, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
@@ -47,12 +47,6 @@ const Index = () => {
         {/* Header */}
         <header className="flex items-center justify-between">
           <div>
-            <div className="flex items-center gap-2 mb-1 md:hidden">
-              <div className="w-8 h-8 rounded-lg gradient-warm flex items-center justify-center shadow-warm">
-                <CakeSlice className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <h1 className="font-display font-semibold text-lg">Confeitaria Pro</h1>
-            </div>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
               Olá! 👋
             </h2>
@@ -155,7 +149,7 @@ const Index = () => {
           variant="warm"
           size="icon-lg"
           className="fixed bottom-20 right-4 md:hidden shadow-warm rounded-full z-40"
-          onClick={() => navigate('/orders')}
+          onClick={() => navigate('/orders', { state: { openNewOrder: true } })}
         >
           <Plus className="h-6 w-6" />
         </Button>
