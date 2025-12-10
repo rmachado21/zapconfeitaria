@@ -58,7 +58,7 @@ const Index = () => {
     <AppLayout>
       <div className="px-5 py-4 md:px-8 md:py-6 space-y-6">
         {/* Header */}
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between animate-fade-in">
           <div>
             <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
               {getGreeting()}{firstName ? `, ${firstName}` : ''}! 👋
@@ -74,7 +74,7 @@ const Index = () => {
           <Button 
             variant="warm" 
             size="lg" 
-            className="hidden md:flex"
+            className="hidden md:flex animate-fade-in"
             onClick={() => navigate('/orders')}
           >
             <Plus className="h-5 w-5" />
@@ -84,36 +84,44 @@ const Index = () => {
 
         {/* Stats Grid */}
         <section className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-          <StatsCard
-            title="Faturamento do Mês"
-            value={formatCurrency(monthlyIncome)}
-            subtitle={`${orders.filter(o => o.status === 'delivered').length} pedidos entregues`}
-            icon={TrendingUp}
-            variant="primary"
-          />
-          <StatsCard
-            title="Pedidos Ativos"
-            value={activeOrders.length}
-            subtitle="Em andamento"
-            icon={ShoppingBag}
-          />
-          <StatsCard
-            title="Sinais Pendentes"
-            value={formatCurrency(pendingDeposits)}
-            subtitle="Aguardando pagamento"
-            icon={Clock}
-            variant="warning"
-          />
-          <StatsCard
-            title="Cadastros"
-            value={`${clients.length} / ${products.length}`}
-            subtitle="Clientes / Produtos"
-            icon={TrendingUp}
-          />
+          <div className="animate-fade-in stagger-1">
+            <StatsCard
+              title="Faturamento do Mês"
+              value={formatCurrency(monthlyIncome)}
+              subtitle={`${orders.filter(o => o.status === 'delivered').length} pedidos entregues`}
+              icon={TrendingUp}
+              variant="primary"
+            />
+          </div>
+          <div className="animate-fade-in stagger-2">
+            <StatsCard
+              title="Pedidos Ativos"
+              value={activeOrders.length}
+              subtitle="Em andamento"
+              icon={ShoppingBag}
+            />
+          </div>
+          <div className="animate-fade-in stagger-3">
+            <StatsCard
+              title="Sinais Pendentes"
+              value={formatCurrency(pendingDeposits)}
+              subtitle="Aguardando pagamento"
+              icon={Clock}
+              variant="warning"
+            />
+          </div>
+          <div className="animate-fade-in stagger-4">
+            <StatsCard
+              title="Cadastros"
+              value={`${clients.length} / ${products.length}`}
+              subtitle="Clientes / Produtos"
+              icon={TrendingUp}
+            />
+          </div>
         </section>
 
         {/* Orders Section */}
-        <section>
+        <section className="animate-fade-in stagger-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-display font-semibold">Seus Pedidos</h3>
             <Button 
