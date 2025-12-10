@@ -1,4 +1,5 @@
 import { NavLink } from '@/components/NavLink';
+import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { Home, ShoppingBag, Users, Wallet, User, CakeSlice, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -19,16 +20,19 @@ export function Sidebar() {
   return (
     <aside className="hidden md:flex flex-col w-64 h-screen bg-card border-r border-border fixed left-0 top-0">
       {/* Logo */}
-      <div className="flex items-center gap-3 px-6 py-5 border-b border-border">
-        <div className="w-10 h-10 rounded-xl gradient-warm flex items-center justify-center shadow-warm">
-          <CakeSlice className="h-5 w-5 text-primary-foreground" />
+      <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl gradient-warm flex items-center justify-center shadow-warm">
+            <CakeSlice className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div>
+            <h1 className="font-display font-semibold text-lg text-foreground">
+              Confeitaria Pro
+            </h1>
+            <p className="text-xs text-muted-foreground">Gestão de Pedidos</p>
+          </div>
         </div>
-        <div>
-          <h1 className="font-display font-semibold text-lg text-foreground">
-            Confeitaria Pro
-          </h1>
-          <p className="text-xs text-muted-foreground">Gestão de Pedidos</p>
-        </div>
+        <NotificationBell />
       </div>
 
       {/* Navigation */}
