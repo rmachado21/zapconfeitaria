@@ -88,19 +88,31 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
           {order.clientName}
         </h3>
 
-        {/* Items preview with icon */}
+        {/* Items list */}
         <div className="flex items-start gap-2 mb-3">
           <div className="flex-shrink-0 w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center">
             <Package className="h-3.5 w-3.5 text-primary" />
           </div>
-          <p className="text-sm text-muted-foreground line-clamp-2 pt-0.5">
+          <div className="flex flex-col gap-0.5 pt-0.5">
             {order.items.length > 0 
-              ? order.items.map(item => {
-                  const unitLabel = item.unitType === 'kg' ? 'Kg' : item.unitType === 'cento' ? ' Cento' : 'Un';
-                  return `${item.quantity}${unitLabel} ${item.productName}`;
-                }).join(', ')
-              : 'Nenhum item'}
-          </p>
+              ? order.items.slice(0, 3).map((item, index) => {
+                  const formatQuantity = (qty: number, unit: string) => {
+                    if (unit === 'kg') return `${qty.toLocaleString('pt-BR')}Kg`;
+                    if (unit === 'cento') return qty === 1 ? '1 cento' : `${qty} centos`;
+                    return qty === 1 ? '1 un' : `${qty} un`;
+                  };
+                  return (
+                    <p key={index} className="text-sm text-muted-foreground">
+                      {formatQuantity(item.quantity, item.unitType)} {item.productName}
+                    </p>
+                  );
+                })
+              : <p className="text-sm text-muted-foreground">Nenhum item</p>
+            }
+            {order.items.length > 3 && (
+              <p className="text-xs text-muted-foreground/70">+{order.items.length - 3} mais...</p>
+            )}
+          </div>
         </div>
 
         {/* Meta info with icons */}
