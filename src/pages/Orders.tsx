@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout';
 import { KanbanBoard } from '@/components/orders/KanbanBoard';
 import { OrdersList } from '@/components/orders/OrdersList';
 import { OrderFormDialog } from '@/components/orders/OrderFormDialog';
+import { OrderDetailDialog } from '@/components/orders/OrderDetailDialog';
 import { Button } from '@/components/ui/button';
 import { useOrders, OrderFormData, Order } from '@/hooks/useOrders';
 import { OrderStatus } from '@/types';
@@ -10,6 +11,7 @@ import { Plus, Loader2 } from 'lucide-react';
 
 const Orders = () => {
   const [formOpen, setFormOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
 
   const { 
@@ -27,7 +29,7 @@ const Orders = () => {
 
   const handleOrderClick = (order: Order) => {
     setSelectedOrder(order);
-    // TODO: Open order detail/edit dialog
+    setDetailOpen(true);
   };
 
   const handleSubmit = async (data: OrderFormData) => {
@@ -108,6 +110,13 @@ const Orders = () => {
         onOpenChange={setFormOpen}
         onSubmit={handleSubmit}
         isLoading={createOrder.isPending}
+      />
+
+      {/* Detail Dialog */}
+      <OrderDetailDialog
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        order={selectedOrder}
       />
     </AppLayout>
   );
