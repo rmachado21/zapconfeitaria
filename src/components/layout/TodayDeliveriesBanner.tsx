@@ -15,11 +15,17 @@ export function TodayDeliveriesBanner() {
   
   const today = format(new Date(), 'yyyy-MM-dd');
   
-  const todayOrders = orders?.filter(order => {
+  const todayOrders = (orders?.filter(order => {
     if (!order.delivery_date) return false;
     const orderDate = format(new Date(order.delivery_date), 'yyyy-MM-dd');
     return orderDate === today && order.status !== 'delivered';
-  }) || [];
+  }) || []).sort((a, b) => {
+    // Sort by delivery time (orders without time go to the end)
+    if (!a.delivery_time && !b.delivery_time) return 0;
+    if (!a.delivery_time) return 1;
+    if (!b.delivery_time) return -1;
+    return a.delivery_time.localeCompare(b.delivery_time);
+  });
   
   if (dismissed || todayOrders.length === 0) {
     return null;
