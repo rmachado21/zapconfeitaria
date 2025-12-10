@@ -49,6 +49,7 @@ interface OrderItem {
   product_name: string;
   quantity: number;
   unit_price: number;
+  unit_type: string;
 }
 
 interface OrderFormDialogProps {
@@ -108,6 +109,7 @@ export function OrderFormDialog({
         product_name: product.name,
         quantity,
         unit_price: product.sale_price,
+        unit_type: product.unit_type,
       }]);
     }
 
@@ -231,7 +233,7 @@ export function OrderFormDialog({
                           <div className="flex-1">
                             <span className="font-medium">{item.product_name}</span>
                             <span className="text-muted-foreground ml-2">
-                              {item.quantity}x {formatCurrency(item.unit_price)}
+                              {item.quantity}{item.unit_type === 'kg' ? 'Kg' : 'UN'} × {formatCurrency(item.unit_price)}
                             </span>
                           </div>
                           <div className="flex items-center gap-2">

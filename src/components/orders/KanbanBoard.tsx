@@ -60,6 +60,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
       productName: item.product_name,
       quantity: item.quantity,
       unitPrice: item.unit_price,
+      unitType: (item.unit_type === 'kg' ? 'kg' : 'unit') as 'kg' | 'unit',
       total: item.quantity * item.unit_price,
     })),
     status: dbOrder.status as OrderStatus,

@@ -13,6 +13,7 @@ export interface OrderItem {
   product_name: string;
   quantity: number;
   unit_price: number;
+  unit_type: string;
   created_at: string;
 }
 
@@ -49,6 +50,7 @@ export interface OrderFormData {
     product_name: string;
     quantity: number;
     unit_price: number;
+    unit_type: string;
   }[];
 }
 
@@ -114,6 +116,7 @@ export function useOrders() {
               product_name: item.product_name,
               quantity: item.quantity,
               unit_price: item.unit_price,
+              unit_type: item.unit_type,
             }))
           );
 
