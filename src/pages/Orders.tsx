@@ -40,8 +40,8 @@ const Orders = () => {
     updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount });
   };
 
-  const handleDepositChange = (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number) => {
-    updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount });
+  const handleDepositChange = (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => {
+    updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount, currentStatus });
   };
 
   return (
