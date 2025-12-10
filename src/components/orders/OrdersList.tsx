@@ -1,0 +1,69 @@
+import { Order, OrderStatus, ORDER_STATUS_CONFIG } from '@/types';
+import { OrderCard } from './OrderCard';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+
+interface OrdersListProps {
+  orders: Order[];
+  onOrderClick?: (order: Order) => void;
+}
+
+const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
+  { value: 'all', label: 'Todos' },
+  { value: 'quote', label: 'Orçamento' },
+  { value: 'awaiting_deposit', label: 'Aguardando' },
+  { value: 'in_production', label: 'Produção' },
+  { value: 'ready', label: 'Pronto' },
+];
+
+export function OrdersList({ orders, onOrderClick }: OrdersListProps) {
+  const getFilteredOrders = (status: 'all' | OrderStatus) => {
+    if (status === 'all') return orders.filter(o => o.status !== 'delivered');
+    return orders.filter((order) => order.status === status);
+  };
+
+  return (
+    <div className="md:hidden">
+      <Tabs defaultValue="all" className="w-full">
+        <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1">
+          {STATUS_TABS.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
+              className={cn(
+                "flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium",
+                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
+                "data-[state=active]:shadow-warm"
+              )}
+            >
+              {tab.label}
+              <span className="ml-1.5 text-[10px] opacity-70">
+                ({getFilteredOrders(tab.value).length})
+              </span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {STATUS_TABS.map((tab) => (
+          <TabsContent key={tab.value} value={tab.value} className="mt-4 space-y-3">
+            {getFilteredOrders(tab.value).length === 0 ? (
+              <div className="text-center py-12 text-muted-foreground">
+                <p>Nenhum pedido encontrado</p>
+              </div>
+            ) : (
+              getFilteredOrders(tab.value).map((order, index) => (
+                <div
+                  key={order.id}
+                  className={cn("animate-slide-up", `stagger-${Math.min(index + 1, 5)}`)}
+                  style={{ opacity: 0, animationFillMode: 'forwards' }}
+                >
+                  <OrderCard order={order} onClick={() => onOrderClick?.(order)} />
+                </div>
+              ))
+            )}
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  );
+}
