@@ -1,0 +1,235 @@
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { Database } from '@/integrations/supabase/types';
+
+type OrderStatus = Database['public']['Enums']['order_status'];
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string | null;
+  product_name: string;
+  quantity: number;
+  unit_price: number;
+  created_at: string;
+}
+
+export interface Order {
+  id: string;
+  user_id: string;
+  client_id: string | null;
+  status: OrderStatus;
+  delivery_date: string | null;
+  delivery_address: string | null;
+  delivery_fee: number;
+  total_amount: number;
+  deposit_paid: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined data
+  client?: {
+    id: string;
+    name: string;
+    phone: string | null;
+  } | null;
+  order_items?: OrderItem[];
+}
+
+export interface OrderFormData {
+  client_id: string;
+  delivery_date?: string;
+  delivery_address?: string;
+  delivery_fee?: number;
+  notes?: string;
+  items: {
+    product_id: string;
+    product_name: string;
+    quantity: number;
+    unit_price: number;
+  }[];
+}
+
+export function useOrders() {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const { data: orders = [], isLoading, error } = useQuery({
+    queryKey: ['orders', user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          *,
+          client:clients(id, name, phone),
+          order_items(*)
+        `)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      return data as Order[];
+    },
+    enabled: !!user,
+  });
+
+  const createOrder = useMutation({
+    mutationFn: async (formData: OrderFormData) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const totalItems = formData.items.reduce((sum, item) => sum + (item.quantity * item.unit_price), 0);
+      const totalAmount = totalItems + (formData.delivery_fee || 0);
+
+      // Create order
+      const { data: order, error: orderError } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          client_id: formData.client_id,
+          delivery_date: formData.delivery_date || null,
+          delivery_address: formData.delivery_address || null,
+          delivery_fee: formData.delivery_fee || 0,
+          total_amount: totalAmount,
+          notes: formData.notes || null,
+          status: 'quote',
+          deposit_paid: false,
+        })
+        .select()
+        .single();
+
+      if (orderError) throw orderError;
+
+      // Create order items
+      if (formData.items.length > 0) {
+        const { error: itemsError } = await supabase
+          .from('order_items')
+          .insert(
+            formData.items.map(item => ({
+              order_id: order.id,
+              product_id: item.product_id,
+              product_name: item.product_name,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+            }))
+          );
+
+        if (itemsError) throw itemsError;
+      }
+
+      return order;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: 'Pedido criado!',
+        description: 'O pedido foi criado com sucesso.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao criar pedido',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const updateOrderStatus = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ status })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao atualizar status',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const updateDepositPaid = useMutation({
+    mutationFn: async ({ id, depositPaid }: { id: string; depositPaid: boolean }) => {
+      const { data, error } = await supabase
+        .from('orders')
+        .update({ deposit_paid: depositPaid })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: variables.depositPaid ? 'Sinal marcado como pago!' : 'Sinal desmarcado',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao atualizar sinal',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const deleteOrder = useMutation({
+    mutationFn: async (id: string) => {
+      // Delete order items first
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', id);
+
+      if (itemsError) throw itemsError;
+
+      // Delete order
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      toast({
+        title: 'Pedido excluído!',
+        description: 'O pedido foi removido com sucesso.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao excluir pedido',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  return {
+    orders,
+    isLoading,
+    error,
+    createOrder,
+    updateOrderStatus,
+    updateDepositPaid,
+    deleteOrder,
+  };
+}

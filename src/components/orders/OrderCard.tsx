@@ -2,7 +2,8 @@ import { Order, ORDER_STATUS_CONFIG } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Phone, MessageCircle, ChevronRight } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Calendar, MapPin, MessageCircle, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -10,9 +11,10 @@ import { ptBR } from 'date-fns/locale';
 interface OrderCardProps {
   order: Order;
   onClick?: () => void;
+  onDepositChange?: (depositPaid: boolean) => void;
 }
 
-export function OrderCard({ order, onClick }: OrderCardProps) {
+export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
   const statusConfig = ORDER_STATUS_CONFIG[order.status];
 
   const formatCurrency = (value: number) => {
@@ -23,16 +25,28 @@ export function OrderCard({ order, onClick }: OrderCardProps) {
   };
 
   const formatDate = (dateString: string) => {
-    return format(parseISO(dateString), "dd 'de' MMM", { locale: ptBR });
+    if (!dateString) return 'Sem data';
+    try {
+      return format(parseISO(dateString), "dd 'de' MMM", { locale: ptBR });
+    } catch {
+      return 'Data inválida';
+    }
   };
 
   const openWhatsApp = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!order.clientPhone) return;
+    
     const phone = order.clientPhone.replace(/\D/g, '');
+    const formattedPhone = phone.startsWith('55') ? phone : `55${phone}`;
     const message = encodeURIComponent(
       `Olá ${order.clientName}! Aqui é da Confeitaria Pro. Sobre seu pedido para o dia ${formatDate(order.deliveryDate)}...`
     );
-    window.open(`https://wa.me/55${phone}?text=${message}`, '_blank');
+    window.open(`https://wa.me/${formattedPhone}?text=${message}`, '_blank');
+  };
+
+  const handleDepositChange = (e: React.MouseEvent) => {
+    e.stopPropagation();
   };
 
   return (
@@ -56,7 +70,9 @@ export function OrderCard({ order, onClick }: OrderCardProps) {
 
             {/* Items preview */}
             <p className="text-sm text-muted-foreground mb-3 line-clamp-1">
-              {order.items.map(item => `${item.quantity}x ${item.productName}`).join(', ')}
+              {order.items.length > 0 
+                ? order.items.map(item => `${item.quantity}x ${item.productName}`).join(', ')
+                : 'Nenhum item'}
             </p>
 
             {/* Meta info */}
@@ -80,14 +96,16 @@ export function OrderCard({ order, onClick }: OrderCardProps) {
               {formatCurrency(order.totalAmount)}
             </span>
             <div className="flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                className="text-success hover:text-success hover:bg-success/10"
-                onClick={openWhatsApp}
-              >
-                <MessageCircle className="h-4 w-4" />
-              </Button>
+              {order.clientPhone && (
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-success hover:text-success hover:bg-success/10"
+                  onClick={openWhatsApp}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                </Button>
+              )}
               <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
           </div>
@@ -97,9 +115,18 @@ export function OrderCard({ order, onClick }: OrderCardProps) {
         {order.status !== 'delivered' && (
           <div className="mt-3 pt-3 border-t border-border">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-muted-foreground">
-                Sinal de 50%: {formatCurrency(order.depositAmount)}
-              </span>
+              <div 
+                className="flex items-center gap-2"
+                onClick={handleDepositChange}
+              >
+                <Checkbox 
+                  checked={order.depositPaid}
+                  onCheckedChange={(checked) => onDepositChange?.(!!checked)}
+                />
+                <span className="text-muted-foreground">
+                  Sinal 50%: {formatCurrency(order.depositAmount)}
+                </span>
+              </div>
               {order.depositPaid ? (
                 <Badge variant="success" className="text-[10px]">Pago</Badge>
               ) : (
