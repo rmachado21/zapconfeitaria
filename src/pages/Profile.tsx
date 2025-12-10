@@ -20,6 +20,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useProfile, ProfileFormData } from '@/hooks/useProfile';
 import { useClients } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
+import { ImageUpload } from '@/components/shared/ImageUpload';
 import { 
   User, 
   Building2, 
@@ -27,7 +28,6 @@ import {
   Loader2,
   Save,
   CreditCard,
-  Image,
   Crown,
   CakeSlice,
 } from 'lucide-react';
@@ -179,15 +179,13 @@ const Profile = () => {
                   name="logo_url"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="flex items-center gap-2">
-                        <Image className="h-4 w-4" />
-                        URL do Logo
-                      </FormLabel>
+                      <FormLabel>Logo da Empresa</FormLabel>
                       <FormControl>
-                        <Input 
-                          type="url" 
-                          placeholder="https://exemplo.com/logo.png" 
-                          {...field} 
+                        <ImageUpload
+                          bucket="company-logos"
+                          currentUrl={field.value}
+                          onUpload={(url) => field.onChange(url)}
+                          onRemove={() => field.onChange('')}
                         />
                       </FormControl>
                       <FormMessage />
