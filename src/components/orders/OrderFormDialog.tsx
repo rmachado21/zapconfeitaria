@@ -495,94 +495,101 @@ export function OrderFormDialog({
                 {/* Items List */}
                 {items.length > 0 && (
                   <Card>
-                    <CardContent className="p-3 space-y-3">
+                    <CardContent className="p-2 sm:p-3 space-y-2">
                       {items.map((item, index) => {
                         const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
                         const isGift = item.is_gift;
                         return (
                         <div key={index} className={cn(
-                          "flex items-center gap-2 text-sm p-2 rounded-md transition-colors",
+                          "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors",
                           isGift && "bg-success/10 border border-success/20"
                         )}>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-1.5">
-                              {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
-                              <span className={cn(
-                                "font-medium block truncate",
-                                isGift && "text-success"
-                              )}>
-                                {item.product_name}
+                          {/* Linha 1: Nome + Preço */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
+                                <span className={cn(
+                                  "font-medium",
+                                  isGift && "text-success"
+                                )}>
+                                  {item.product_name}
+                                </span>
+                                {isGift && <Badge variant="success" className="text-[9px] px-1 py-0">BRINDE</Badge>}
+                              </div>
+                              <span className="text-muted-foreground text-xs">
+                                {formatCurrency(item.unit_price)}/{unitLabel}
                               </span>
-                              {isGift && <Badge variant="success" className="text-[9px] px-1 py-0">BRINDE</Badge>}
                             </div>
-                            <span className="text-muted-foreground text-xs">
-                              {formatCurrency(item.unit_price)}/{unitLabel}
-                            </span>
-                          </div>
-                          
-                          {/* Quantity Controls */}
-                          <div className="flex items-center gap-1">
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon-sm"
-                              onClick={() => handleUpdateItemQuantity(index, -1)}
-                              disabled={item.quantity <= (item.unit_type === 'kg' ? 0.5 : 1)}
-                            >
-                              <Minus className="h-3 w-3" />
-                            </Button>
-                            <span className="w-14 text-center font-medium text-xs">
-                              {item.quantity} {unitLabel}
-                            </span>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="icon-sm"
-                              onClick={() => handleUpdateItemQuantity(index, 1)}
-                            >
-                              <Plus className="h-3 w-3" />
-                            </Button>
-                          </div>
-
-                          <div className="w-20 text-right">
-                            {isGift ? (
-                              <div className="flex flex-col items-end">
-                                <span className="text-[10px] line-through text-muted-foreground">
+                            <div className="text-right shrink-0">
+                              {isGift ? (
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[10px] line-through text-muted-foreground">
+                                    {formatCurrency(item.quantity * item.unit_price)}
+                                  </span>
+                                  <span className="font-medium text-success text-xs">R$ 0,00</span>
+                                </div>
+                              ) : (
+                                <span className="font-medium">
                                   {formatCurrency(item.quantity * item.unit_price)}
                                 </span>
-                                <span className="font-medium text-success text-xs">R$ 0,00</span>
-                              </div>
-                            ) : (
-                              <span className="font-medium">
-                                {formatCurrency(item.quantity * item.unit_price)}
-                              </span>
-                            )}
+                              )}
+                            </div>
                           </div>
-
-                          {/* Gift Toggle */}
-                          <Button
-                            type="button"
-                            variant={isGift ? "default" : "outline"}
-                            size="icon-sm"
-                            className={cn(
-                              "flex-shrink-0",
-                              isGift && "bg-success hover:bg-success/90"
-                            )}
-                            onClick={() => handleToggleGift(index)}
-                            title={isGift ? "Remover brinde" : "Marcar como brinde"}
-                          >
-                            <Gift className="h-3 w-3" />
-                          </Button>
                           
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            className="text-destructive flex-shrink-0"
-                            onClick={() => handleRemoveItem(index)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          {/* Linha 2: Quantidade + Ações */}
+                          <div className="flex items-center justify-between gap-2">
+                            {/* Quantity Controls */}
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => handleUpdateItemQuantity(index, -1)}
+                                disabled={item.quantity <= (item.unit_type === 'kg' ? 0.5 : 1)}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="min-w-[3.5rem] text-center font-medium text-xs">
+                                {item.quantity} {unitLabel}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => handleUpdateItemQuantity(index, 1)}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant={isGift ? "default" : "outline"}
+                                size="icon-sm"
+                                className={cn(
+                                  "flex-shrink-0",
+                                  isGift && "bg-success hover:bg-success/90"
+                                )}
+                                onClick={() => handleToggleGift(index)}
+                                title={isGift ? "Remover brinde" : "Marcar como brinde"}
+                              >
+                                <Gift className="h-3 w-3" />
+                              </Button>
+                              
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-destructive flex-shrink-0"
+                                onClick={() => handleRemoveItem(index)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
                       )})}
                     </CardContent>
@@ -597,7 +604,7 @@ export function OrderFormDialog({
               </div>
 
               {/* Delivery Date & Time */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField
                   control={form.control}
                   name="delivery_date"
