@@ -227,19 +227,20 @@ const handler = async (req: Request): Promise<Response> => {
     const col3W = tableWidth * 0.52; // Descrição
     const col4W = tableWidth * 0.24; // Valor
     const rowHeight = 8;
-    const headerHeight = 10;
+    const headerHeight = 12;
 
     // Header row
     doc.setFillColor(180, 100, 70);
     doc.roundedRect(margin, yPos, tableWidth, headerHeight, 1.5, 1.5, "F");
     
-    doc.setFontSize(8);
+    doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
-    doc.text("Data", margin + 3, yPos + 6.5);
-    doc.text("Tipo", margin + col1W + 3, yPos + 6.5);
-    doc.text("Descrição", margin + col1W + col2W + 3, yPos + 6.5);
-    doc.text("Valor", margin + col1W + col2W + col3W + 3, yPos + 6.5);
+    const headerTextY = yPos + 8;
+    doc.text("Data", margin + 3, headerTextY);
+    doc.text("Tipo", margin + col1W + 3, headerTextY);
+    doc.text("Descrição", margin + col1W + col2W + 3, headerTextY);
+    doc.text("Valor", margin + col1W + col2W + col3W + 3, headerTextY);
     yPos += headerHeight + 1;
 
     doc.setFont("helvetica", "normal");
@@ -319,15 +320,16 @@ const handler = async (req: Request): Promise<Response> => {
       const catCol3W = catTableWidth * 0.20;
 
       doc.setFillColor(100, 100, 100);
-      doc.roundedRect(margin, yPos, catTableWidth, 10, 1.5, 1.5, "F");
+      doc.roundedRect(margin, yPos, catTableWidth, 12, 1.5, 1.5, "F");
       
-      doc.setFontSize(8);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 255, 255);
-      doc.text("Categoria", margin + 3, yPos + 6.5);
-      doc.text("Valor", margin + catCol1W + 3, yPos + 6.5);
-      doc.text("%", margin + catCol1W + catCol2W + 3, yPos + 6.5);
-      yPos += 11;
+      const catHeaderTextY = yPos + 8;
+      doc.text("Categoria", margin + 3, catHeaderTextY);
+      doc.text("Valor", margin + catCol1W + 3, catHeaderTextY);
+      doc.text("%", margin + catCol1W + catCol2W + 3, catHeaderTextY);
+      yPos += 13;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
