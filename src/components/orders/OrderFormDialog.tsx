@@ -29,6 +29,9 @@ import {
   Package,
   CalendarDays,
   Clock,
+  MapPin,
+  Truck,
+  FileText,
 } from "lucide-react";
 import { useClients, ClientFormData } from "@/hooks/useClients";
 import { useProducts } from "@/hooks/useProducts";
@@ -900,7 +903,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                 name="delivery_address"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Endereço de Entrega</FormLabel>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <MapPin className="h-4 w-4" />
+                      Endereço de Entrega
+                    </FormLabel>
                     <FormControl>
                       <Input placeholder="Rua, número, bairro..." {...field} />
                     </FormControl>
@@ -915,7 +921,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                 name="delivery_fee"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Taxa de Entrega</FormLabel>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Truck className="h-4 w-4" />
+                      Taxa de Entrega
+                    </FormLabel>
                     <FormControl>
                       <CurrencyInput value={field.value || 0} onChange={field.onChange} placeholder="R$ 0,00" />
                     </FormControl>
@@ -930,7 +939,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Observações</FormLabel>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <FileText className="h-4 w-4" />
+                      Observações
+                    </FormLabel>
                     <FormControl>
                       <Textarea
                         placeholder="Detalhes sobre decoração, restrições alimentares..."
