@@ -399,7 +399,22 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                   </div>
                 </div>
                 {displayDepositPaid ? (
-                  <Badge variant="success">Pago</Badge>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="success">Pago</Badge>
+                    {onDepositChange && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                        onClick={() => {
+                          setDisplayDepositPaid(false);
+                          onDepositChange(order.id, false, order.client?.name, order.total_amount, order.status as OrderStatus);
+                        }}
+                      >
+                        Desfazer
+                      </Button>
+                    )}
+                  </div>
                 ) : onDepositChange ? (
                   <Button
                     size="sm"
