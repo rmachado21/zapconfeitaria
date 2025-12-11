@@ -738,36 +738,73 @@ export function OrderFormDialog({
                     value={additionalItemName}
                     onChange={(e) => setAdditionalItemName(e.target.value)}
                   />
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <div className="relative flex-1">
-                      <Input
-                        type="number"
-                        min="1"
-                        step="1"
-                        value={additionalItemQty}
-                        onChange={(e) => setAdditionalItemQty(parseInt(e.target.value) || 1)}
-                        className="pr-10"
-                        placeholder="Qtd"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                        Un
-                      </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Stepper de quantidade */}
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setAdditionalItemQty(Math.max(1, additionalItemQty - 1))}
+                        disabled={additionalItemQty <= 1}
+                        className="h-9 w-9 shrink-0"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={additionalItemQty}
+                          onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            if (!isNaN(value) && value >= 1) {
+                              setAdditionalItemQty(value);
+                            } else if (e.target.value === '') {
+                              setAdditionalItemQty(1);
+                            }
+                          }}
+                          className="w-16 pr-7 text-center"
+                          placeholder="Qtd"
+                        />
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                          Un
+                        </span>
+                      </div>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setAdditionalItemQty(additionalItemQty + 1)}
+                        className="h-9 w-9 shrink-0"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
-                    <div className="flex-1">
+                    
+                    {/* Campo de preço */}
+                    <div className="flex-1 min-w-[120px]">
                       <CurrencyInput
                         value={additionalItemPrice}
                         onChange={setAdditionalItemPrice}
                         placeholder="Valor unitário"
                       />
                     </div>
+                    
+                    {/* Botão Adicionar */}
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="default"
                       onClick={handleAddAdditionalItem}
-                      className="w-full sm:w-auto gap-2"
+                      disabled={!additionalItemName.trim()}
+                      className="shrink-0 gap-1.5"
                     >
                       <Plus className="h-4 w-4" />
-                      <span className="sm:hidden">Adicionar Item</span>
+                      <span className="hidden sm:inline">Adicionar</span>
+                      <span className="sm:hidden">Add</span>
                     </Button>
                   </div>
                 </div>
