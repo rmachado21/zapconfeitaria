@@ -22,7 +22,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { 
   TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, 
   Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, Download,
-  ChevronLeft, ChevronRight
+  ChevronLeft, ChevronRight, Filter, X
 } from 'lucide-react';
 import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -35,6 +35,21 @@ const periodLabels: Record<PeriodFilter, string> = {
   all: 'Todo Período',
 };
 
+const ALL_CATEGORIES = [
+  'Insumos',
+  'Embalagens',
+  'Combustível',
+  'Equipamentos',
+  'Marketing',
+  'Aluguel',
+  'Sinal',
+  'Pagamento Final',
+  'Venda Avulsa',
+  'Outros',
+];
+
+type TypeFilter = 'all' | 'income' | 'expense';
+
 const ITEMS_PER_PAGE = 20;
 
 const Finances = () => {
@@ -45,6 +60,8 @@ const Finances = () => {
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [period, setPeriod] = useState<PeriodFilter>('month');
   const [currentPage, setCurrentPage] = useState(1);
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
 
   const { 
     transactions,
@@ -120,17 +137,63 @@ const Finances = () => {
     return map;
   }, [orders]);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+  // Extract category from description
+  const extractCategory = (description: string | null) => {
+    if (!description) return null;
+    const dashIndex = description.indexOf(' - ');
+    if (dashIndex > 0) {
+      const category = description.substring(0, dashIndex);
+      if (ALL_CATEGORIES.includes(category)) {
+        return category;
+      }
+    }
+    return null;
+  };
+
+  // Filter transactions by type and category
+  const listFilteredTransactions = useMemo(() => {
+    return filteredTransactions.filter(t => {
+      // Filter by type
+      if (typeFilter !== 'all' && t.type !== typeFilter) return false;
+      
+      // Filter by category
+      if (categoryFilter !== 'all') {
+        const category = extractCategory(t.description);
+        if (category !== categoryFilter) return false;
+      }
+      
+      return true;
+    });
+  }, [filteredTransactions, typeFilter, categoryFilter]);
+
+  // Pagination - now uses listFilteredTransactions
+  const totalPages = Math.ceil(listFilteredTransactions.length / ITEMS_PER_PAGE);
   const paginatedTransactions = useMemo(() => {
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredTransactions, currentPage]);
+    return listFilteredTransactions.slice(start, start + ITEMS_PER_PAGE);
+  }, [listFilteredTransactions, currentPage]);
 
-  // Reset page when period changes
+  // Reset page when filters change
   useMemo(() => {
     setCurrentPage(1);
-  }, [period]);
+  }, [period, typeFilter, categoryFilter]);
+
+  // Get available categories from current transactions
+  const availableCategories = useMemo(() => {
+    const categories = new Set<string>();
+    filteredTransactions.forEach(t => {
+      const category = extractCategory(t.description);
+      if (category) categories.add(category);
+    });
+    return Array.from(categories).sort();
+  }, [filteredTransactions]);
+
+  const hasActiveFilters = typeFilter !== 'all' || categoryFilter !== 'all';
+
+  const clearFilters = () => {
+    setTypeFilter('all');
+    setCategoryFilter('all');
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -286,23 +349,85 @@ const Finances = () => {
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              disabled={filteredTransactions.length === 0}
+              disabled={listFilteredTransactions.length === 0}
             >
               <Download className="h-4 w-4 mr-2" />
               Exportar CSV
             </Button>
           </CardHeader>
+          
+          {/* Filters */}
+          <div className="px-4 pb-3 flex flex-wrap items-center gap-2 border-b border-border">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as TypeFilter)}>
+              <SelectTrigger className="w-[130px] h-8 text-sm">
+                <SelectValue placeholder="Tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os tipos</SelectItem>
+                <SelectItem value="income">
+                  <span className="flex items-center gap-2">
+                    <TrendingUp className="h-3.5 w-3.5 text-success" />
+                    Receitas
+                  </span>
+                </SelectItem>
+                <SelectItem value="expense">
+                  <span className="flex items-center gap-2">
+                    <TrendingDown className="h-3.5 w-3.5 text-destructive" />
+                    Despesas
+                  </span>
+                </SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+              <SelectTrigger className="w-[150px] h-8 text-sm">
+                <SelectValue placeholder="Categoria" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas categorias</SelectItem>
+                {availableCategories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={clearFilters}
+                className="h-8 px-2 text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4 mr-1" />
+                Limpar
+              </Button>
+            )}
+
+            <span className="text-xs text-muted-foreground ml-auto">
+              {listFilteredTransactions.length} resultado{listFilteredTransactions.length !== 1 ? 's' : ''}
+            </span>
+          </div>
+
           <CardContent className="p-0">
             {isLoading ? (
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : filteredTransactions.length === 0 ? (
+            ) : listFilteredTransactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>Nenhuma transação no período</p>
-                <Button variant="link" className="mt-2" onClick={handleCreate}>
-                  Registrar primeira transação
-                </Button>
+                <p>{hasActiveFilters ? 'Nenhuma transação encontrada com esses filtros' : 'Nenhuma transação no período'}</p>
+                {hasActiveFilters ? (
+                  <Button variant="link" className="mt-2" onClick={clearFilters}>
+                    Limpar filtros
+                  </Button>
+                ) : (
+                  <Button variant="link" className="mt-2" onClick={handleCreate}>
+                    Registrar primeira transação
+                  </Button>
+                )}
               </div>
             ) : (
               <>
@@ -384,7 +509,7 @@ const Finances = () => {
                 {totalPages > 1 && (
                   <div className="flex items-center justify-between px-4 py-3 border-t border-border">
                     <p className="text-sm text-muted-foreground">
-                      {filteredTransactions.length} transações
+                      Página {currentPage} de {totalPages}
                     </p>
                     <div className="flex items-center gap-2">
                       <Button
