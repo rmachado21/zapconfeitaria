@@ -233,6 +233,7 @@ const Orders = () => {
         onOpenChange={setDetailOpen}
         order={selectedOrder}
         onStatusChange={handleStatusChange}
+        onDepositChange={handleDepositChange}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />

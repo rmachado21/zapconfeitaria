@@ -58,13 +58,14 @@ interface OrderDetailDialogProps {
   onOpenChange: (open: boolean) => void;
   order: Order | null;
   onStatusChange?: (orderId: string, status: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => void;
+  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => void;
   onEdit?: (order: Order) => void;
   onDelete?: (orderId: string) => void;
 }
 
 const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered', 'cancelled'];
 
-export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onEdit, onDelete }: OrderDetailDialogProps) {
+export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onDepositChange, onEdit, onDelete }: OrderDetailDialogProps) {
   const { downloadPdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -74,13 +75,17 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
   
   // Local optimistic state for status
   const [displayStatus, setDisplayStatus] = useState<OrderStatus | null>(null);
+  
+  // Local optimistic state for deposit
+  const [displayDepositPaid, setDisplayDepositPaid] = useState<boolean>(false);
 
-  // Sync displayStatus with order.status when order changes
+  // Sync displayStatus and displayDepositPaid with order when order changes
   useEffect(() => {
     if (order) {
       setDisplayStatus(order.status as OrderStatus);
+      setDisplayDepositPaid(order.deposit_paid ?? false);
     }
-  }, [order?.status, order?.id]);
+  }, [order?.status, order?.id, order?.deposit_paid]);
 
   if (!order) return null;
 
@@ -383,9 +388,9 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
           </Card>
 
           {/* Deposit Status */}
-          <Card className={order.deposit_paid ? 'bg-success/5 border-success/20' : 'bg-warning/5 border-warning/20'}>
+          <Card className={displayDepositPaid ? 'bg-success/5 border-success/20' : 'bg-warning/5 border-warning/20'}>
             <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <Banknote className="h-5 w-5" />
                   <div>
@@ -393,9 +398,27 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
                     <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
                   </div>
                 </div>
-                <Badge variant={order.deposit_paid ? 'success' : 'warning'}>
-                  {order.deposit_paid ? 'Pago' : 'Pendente'}
-                </Badge>
+                {displayDepositPaid ? (
+                  <Badge variant="success">Pago</Badge>
+                ) : onDepositChange ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+                    onClick={() => {
+                      setDisplayDepositPaid(true);
+                      // Also update status optimistically if it will change
+                      if (currentStatus === 'quote' || currentStatus === 'awaiting_deposit') {
+                        setDisplayStatus('in_production');
+                      }
+                      onDepositChange(order.id, true, order.client?.name, order.total_amount, order.status as OrderStatus);
+                    }}
+                  >
+                    Marcar como Pago
+                  </Button>
+                ) : (
+                  <Badge variant="warning">Pendente</Badge>
+                )}
               </div>
             </CardContent>
           </Card>
