@@ -184,10 +184,10 @@ const Index = () => {
               </Button>
             </div> : <>
               {/* Kanban for Desktop */}
-              <KanbanBoard orders={orders} onOrderClick={() => navigate('/orders')} onStatusChange={handleStatusChange} onDepositChange={handleDepositChange} hiddenColumns={hiddenColumns} />
+              <KanbanBoard orders={orders} onOrderClick={(order) => navigate('/orders', { state: { openOrderId: order.id } })} onStatusChange={handleStatusChange} onDepositChange={handleDepositChange} hiddenColumns={hiddenColumns} />
 
               {/* List for Mobile */}
-              <OrdersList orders={orders} onOrderClick={() => navigate('/orders')} onDepositChange={handleDepositChange} />
+              <OrdersList orders={orders} onOrderClick={(order) => navigate('/orders', { state: { openOrderId: order.id } })} onDepositChange={handleDepositChange} />
             </>}
         </section>
 
