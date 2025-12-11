@@ -342,11 +342,12 @@ const Finances = () => {
             variant="warning"
           />
           <StatsCard
-            title="Lucro Estimado"
+            title="Lucro Bruto"
             value={formatCurrency(estimatedProfit.profit)}
             subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
             icon={PiggyBank}
             variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
+            tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais."
           />
         </section>
 
