@@ -1,10 +1,5 @@
-import { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { useState, useEffect } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,28 +9,22 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Order, formatOrderNumber } from "@/hooks/useOrders";
+import { useQuotePdf } from "@/hooks/useQuotePdf";
+import { useProfile } from "@/hooks/useProfile";
+import { openWhatsApp } from "@/lib/whatsapp";
+import { ORDER_STATUS_CONFIG, OrderStatus } from "@/types";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Order, formatOrderNumber } from '@/hooks/useOrders';
-import { useQuotePdf } from '@/hooks/useQuotePdf';
-import { useProfile } from '@/hooks/useProfile';
-import { openWhatsApp } from '@/lib/whatsapp';
-import { ORDER_STATUS_CONFIG, OrderStatus } from '@/types';
-import { 
-  Calendar, 
-  MapPin, 
-  Phone, 
-  FileText, 
+  Calendar,
+  MapPin,
+  Phone,
+  FileText,
   Loader2,
   User,
   Package,
@@ -46,36 +35,56 @@ import {
   Trash2,
   AlertTriangle,
   Gift,
-  PackagePlus
-} from 'lucide-react';
-import { format, parseISO, differenceInDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
-import { formatPhone } from '@/lib/masks';
+  PackagePlus,
+} from "lucide-react";
+import { format, parseISO, differenceInDays } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
+import { formatPhone } from "@/lib/masks";
 
 interface OrderDetailDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   order: Order | null;
-  onStatusChange?: (orderId: string, status: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => void;
-  onDepositChange?: (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => void;
+  onStatusChange?: (
+    orderId: string,
+    status: OrderStatus,
+    clientName?: string,
+    totalAmount?: number,
+    previousStatus?: OrderStatus,
+  ) => void;
+  onDepositChange?: (
+    orderId: string,
+    depositPaid: boolean,
+    clientName?: string,
+    totalAmount?: number,
+    currentStatus?: OrderStatus,
+  ) => void;
   onEdit?: (order: Order) => void;
   onDelete?: (orderId: string) => void;
 }
 
-const ALL_STATUSES: OrderStatus[] = ['quote', 'awaiting_deposit', 'in_production', 'ready', 'delivered', 'cancelled'];
+const ALL_STATUSES: OrderStatus[] = ["quote", "awaiting_deposit", "in_production", "ready", "delivered", "cancelled"];
 
-export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, onDepositChange, onEdit, onDelete }: OrderDetailDialogProps) {
+export function OrderDetailDialog({
+  open,
+  onOpenChange,
+  order,
+  onStatusChange,
+  onDepositChange,
+  onEdit,
+  onDelete,
+}: OrderDetailDialogProps) {
   const { downloadPdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
-  
+
   // Local optimistic state for status
   const [displayStatus, setDisplayStatus] = useState<OrderStatus | null>(null);
-  
+
   // Local optimistic state for deposit
   const [displayDepositPaid, setDisplayDepositPaid] = useState<boolean>(false);
 
@@ -91,7 +100,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
 
   const currentStatus = displayStatus || (order.status as OrderStatus);
   const statusConfig = ORDER_STATUS_CONFIG[currentStatus];
-  const canEditOrDelete = order.status === 'quote' || order.status === 'awaiting_deposit';
+  const canEditOrDelete = order.status === "quote" || order.status === "awaiting_deposit";
 
   const handleDelete = () => {
     if (onDelete) {
@@ -105,12 +114,12 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
     if (newStatus !== currentStatus && onStatusChange) {
       // Update display immediately (optimistic update)
       setDisplayStatus(newStatus);
-      
+
       // If changing to delivered, show confirmation dialog
-      if (newStatus === 'delivered') {
+      if (newStatus === "delivered") {
         setPendingStatus(newStatus);
         setDeliveredConfirmOpen(true);
-      } else if (newStatus === 'cancelled') {
+      } else if (newStatus === "cancelled") {
         setPendingStatus(newStatus);
         setCancelConfirmOpen(true);
       } else {
@@ -150,14 +159,14 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
   const formatDate = (dateString: string | null, timeString?: string | null) => {
-    if (!dateString) return 'A definir';
+    if (!dateString) return "A definir";
     try {
       const formatted = format(parseISO(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
       if (timeString) {
@@ -165,7 +174,7 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
       }
       return formatted;
     } catch {
-      return 'Data inválida';
+      return "Data inválida";
     }
   };
 
@@ -177,17 +186,17 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
       today.setHours(0, 0, 0, 0);
       deliveryDate.setHours(0, 0, 0, 0);
       const diff = differenceInDays(deliveryDate, today);
-      
-      if (diff < 0) return { text: 'Atrasado', urgent: true };
-      if (diff === 0) return { text: 'Hoje!', urgent: true };
-      if (diff === 1) return { text: 'Amanhã', urgent: true };
+
+      if (diff < 0) return { text: "Atrasado", urgent: true };
+      if (diff === 0) return { text: "Hoje!", urgent: true };
+      if (diff === 1) return { text: "Amanhã", urgent: true };
       return { text: `faltam ${diff} dias`, urgent: diff <= 3 };
     } catch {
       return null;
     }
   };
 
-  const daysRemaining = order.status !== 'delivered' ? getDaysRemaining(order.delivery_date) : null;
+  const daysRemaining = order.status !== "delivered" ? getDaysRemaining(order.delivery_date) : null;
 
   const handleDownloadPdf = async () => {
     await downloadPdf(order.id);
@@ -198,7 +207,6 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
     openWhatsApp(order.client.phone);
   };
 
-
   const depositAmount = order.total_amount / 2;
 
   return (
@@ -207,308 +215,324 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-3">
             <Package className="h-5 w-5 text-primary" />
-            {order.order_number 
-              ? `Pedido ${formatOrderNumber(order.order_number)}`
-              : 'Detalhes do Pedido'
-            }
+            {order.order_number ? `Pedido ${formatOrderNumber(order.order_number)}` : "Detalhes do Pedido"}
           </DialogTitle>
         </DialogHeader>
 
         <div className="max-h-[75dvh] overflow-y-auto space-y-4 pr-1">
-        {/* Status Selector */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-          <span className="text-sm text-muted-foreground">Status:</span>
-          {onStatusChange ? (
-            <Select
-              value={currentStatus}
-              onValueChange={(value) => handleStatusChange(value as OrderStatus)}
-            >
-              <SelectTrigger className={cn(
-                "w-full sm:w-auto h-10 sm:h-9 px-3 gap-2 text-sm font-semibold border shadow-sm",
-                statusConfig.bgColor,
-                statusConfig.color,
-                "hover:opacity-90 transition-opacity"
-              )}>
-                <div className="flex items-center gap-2">
-                  <div className={cn("w-2.5 h-2.5 rounded-full", statusConfig.dotColor)} />
-                  <span>{statusConfig.label}</span>
-                </div>
-              </SelectTrigger>
-              <SelectContent className="min-w-[240px]">
-                {ALL_STATUSES.map((status) => {
-                  const config = ORDER_STATUS_CONFIG[status];
-                  const isSelected = status === currentStatus;
-                  return (
-                    <SelectItem 
-                      key={status} 
-                      value={status}
-                      className={cn(
-                        "py-3 cursor-pointer",
-                        isSelected && "bg-muted/50"
-                      )}
-                    >
-                      <div className="flex items-center gap-3 w-full">
-                        <div className={cn(
-                          "w-3 h-3 rounded-full shrink-0",
-                          config.dotColor,
-                          isSelected && "ring-2 ring-offset-2 ring-primary/30"
-                        )} />
-                        <div className="flex flex-col gap-0.5">
-                          <span className={cn(
-                            "font-semibold text-sm",
-                            isSelected ? "text-primary" : "text-foreground"
-                          )}>
-                            {config.label}
-                          </span>
-                          <span className="text-xs text-muted-foreground leading-tight">
-                            {config.description}
-                          </span>
+          {/* Status Selector */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+            <span className="text-sm text-muted-foreground">Status:</span>
+            {onStatusChange ? (
+              <Select value={currentStatus} onValueChange={(value) => handleStatusChange(value as OrderStatus)}>
+                <SelectTrigger
+                  className={cn(
+                    "w-full sm:w-auto h-10 sm:h-9 px-3 gap-2 text-sm font-semibold border shadow-sm",
+                    statusConfig.bgColor,
+                    statusConfig.color,
+                    "hover:opacity-90 transition-opacity",
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className={cn("w-2.5 h-2.5 rounded-full", statusConfig.dotColor)} />
+                    <span>{statusConfig.label}</span>
+                  </div>
+                </SelectTrigger>
+                <SelectContent className="min-w-[240px]">
+                  {ALL_STATUSES.map((status) => {
+                    const config = ORDER_STATUS_CONFIG[status];
+                    const isSelected = status === currentStatus;
+                    return (
+                      <SelectItem
+                        key={status}
+                        value={status}
+                        className={cn("py-3 cursor-pointer", isSelected && "bg-muted/50")}
+                      >
+                        <div className="flex items-center gap-3 w-full">
+                          <div
+                            className={cn(
+                              "w-3 h-3 rounded-full shrink-0",
+                              config.dotColor,
+                              isSelected && "ring-2 ring-offset-2 ring-primary/30",
+                            )}
+                          />
+                          <div className="flex flex-col gap-0.5">
+                            <span
+                              className={cn("font-semibold text-sm", isSelected ? "text-primary" : "text-foreground")}
+                            >
+                              {config.label}
+                            </span>
+                            <span className="text-xs text-muted-foreground leading-tight">{config.description}</span>
+                          </div>
                         </div>
-                      </div>
-                    </SelectItem>
-                  );
-                })}
-              </SelectContent>
-            </Select>
-          ) : (
-            <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-xs font-semibold")}>
-              {statusConfig.label}
-            </Badge>
-          )}
-        </div>
-
-        <div className="space-y-4">
-          {/* Client Info */}
-          <Card>
-            <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <User className="h-5 w-5 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-semibold">{order.client?.name || 'Cliente não encontrado'}</p>
-                  {order.client?.phone && (
-                    <p className="text-sm text-muted-foreground flex items-center gap-1">
-                      <Phone className="h-3 w-3" />
-                      {formatPhone(order.client.phone)}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Delivery Info */}
-          <div className={cn("grid gap-3", order.delivery_address ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
-            <Card>
-              <CardContent className="p-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
-                    Data de Entrega
-                  </div>
-                  {daysRemaining && (
-                    <span className={cn(
-                      "text-xs font-medium",
-                      daysRemaining.urgent ? "text-destructive" : "text-muted-foreground"
-                    )}>
-                      ({daysRemaining.text})
-                    </span>
-                  )}
-                </div>
-                <p className="font-medium text-sm mt-1">{formatDate(order.delivery_date, order.delivery_time)}</p>
-              </CardContent>
-            </Card>
-            {order.delivery_address && (
-              <Card>
-                <CardContent className="p-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    Endereço
-                  </div>
-                  <p className="font-medium text-sm mt-1 truncate">{order.delivery_address}</p>
-                </CardContent>
-              </Card>
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            ) : (
+              <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-xs font-semibold")}>
+                {statusConfig.label}
+              </Badge>
             )}
           </div>
 
-          {/* Items */}
-          <Card>
-            <CardContent className="p-4">
-              <p className="font-semibold mb-3 flex items-center gap-2">
-                <Package className="h-4 w-4" />
-                Itens do Pedido
-              </p>
-              <div className="space-y-2">
+          <div className="space-y-4">
+            {/* Client Info */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <User className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="font-semibold">{order.client?.name || "Cliente não encontrado"}</p>
+                    {order.client?.phone && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Phone className="h-3 w-3" />
+                        {formatPhone(order.client.phone)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Delivery Info */}
+            <div className={cn("grid gap-3", order.delivery_address ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
+              <Card>
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Calendar className="h-4 w-4" />
+                      Data de Entrega
+                    </div>
+                    {daysRemaining && (
+                      <span
+                        className={cn(
+                          "text-xs font-medium",
+                          daysRemaining.urgent ? "text-destructive" : "text-muted-foreground",
+                        )}
+                      >
+                        ({daysRemaining.text})
+                      </span>
+                    )}
+                  </div>
+                  <p className="font-medium text-sm mt-1">{formatDate(order.delivery_date, order.delivery_time)}</p>
+                </CardContent>
+              </Card>
+              {order.delivery_address && (
+                <Card>
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      Endereço
+                    </div>
+                    <p className="font-medium text-sm mt-1 truncate">{order.delivery_address}</p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Items */}
+            <Card>
+              <CardContent className="p-4">
+                <p className="font-semibold mb-3 flex items-center gap-2">
+                  <Package className="h-4 w-4" />
+                  Itens do Pedido
+                </p>
+                <div className="space-y-2">
                   {(order.order_items || []).map((item, index) => {
-                    const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
+                    const unitLabel = item.unit_type === "kg" ? "Kg" : item.unit_type === "cento" ? "Cento" : "Un";
                     const isGift = item.is_gift;
                     const isAdditional = item.product_id === null;
                     return (
-                    <div key={index} className={cn(
-                      "flex justify-between text-sm",
-                      isGift && "text-success",
-                      isAdditional && !isGift && "text-blue-700 dark:text-blue-300"
-                    )}>
-                      <span className="flex items-center gap-1.5">
-                        {isGift && <Gift className="h-3.5 w-3.5" />}
-                        {isAdditional && !isGift && <PackagePlus className="h-3.5 w-3.5" />}
-                        {item.quantity} {unitLabel} {item.product_name}
-                        {isGift && <Badge variant="success" className="text-[9px] px-1 py-0 ml-1">BRINDE</Badge>}
-                        {isAdditional && !isGift && <Badge className="text-[9px] px-1 py-0 ml-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">ADICIONAL</Badge>}
-                      </span>
-                      {isGift ? (
-                        <span className="flex items-center gap-2">
-                          <span className="line-through text-muted-foreground text-xs">
-                            {formatCurrency(item.quantity * item.unit_price)}
-                          </span>
-                          <span className="font-medium">R$ 0,00</span>
-                        </span>
-                      ) : (
-                        <span className="font-medium">
-                          {formatCurrency(item.quantity * item.unit_price)}
-                        </span>
-                      )}
-                    </div>
-                  )})}
-              </div>
-              
-              <Separator className="my-3" />
-              
-              <div className="space-y-1 text-sm">
-                {order.delivery_fee > 0 && (
-                  <div className="flex justify-between text-muted-foreground">
-                    <span>Taxa de entrega</span>
-                    <span>{formatCurrency(order.delivery_fee)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between font-semibold text-base">
-                  <span>Total</span>
-                  <span className="text-primary">{formatCurrency(order.total_amount)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Deposit Status */}
-          <Card className={displayDepositPaid ? 'bg-success/5 border-success/20' : 'bg-warning/5 border-warning/20'}>
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <Banknote className="h-5 w-5" />
-                  <div>
-                    <p className="font-medium">Sinal 50%</p>
-                    <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
-                  </div>
-                </div>
-                {displayDepositPaid ? (
-                  <div className="flex items-center gap-2">
-                    <Badge variant="success">Pago</Badge>
-                    {onDepositChange && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                        onClick={() => {
-                          setDisplayDepositPaid(false);
-                          onDepositChange(order.id, false, order.client?.name, order.total_amount, order.status as OrderStatus);
-                        }}
+                      <div
+                        key={index}
+                        className={cn(
+                          "flex justify-between text-sm",
+                          isGift && "text-success",
+                          isAdditional && !isGift && "text-blue-700 dark:text-blue-300",
+                        )}
                       >
-                        Desfazer
-                      </Button>
-                    )}
-                  </div>
-                ) : onDepositChange ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
-                    onClick={() => {
-                      setDisplayDepositPaid(true);
-                      // Also update status optimistically if it will change
-                      if (currentStatus === 'quote' || currentStatus === 'awaiting_deposit') {
-                        setDisplayStatus('in_production');
-                      }
-                      onDepositChange(order.id, true, order.client?.name, order.total_amount, order.status as OrderStatus);
-                    }}
-                  >
-                    Marcar como Pago
-                  </Button>
-                ) : (
-                  <Badge variant="warning">Pendente</Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                        <span className="flex items-center gap-1.5">
+                          {isGift && <Gift className="h-3.5 w-3.5" />}
+                          {isAdditional && !isGift && <PackagePlus className="h-3.5 w-3.5" />}
+                          {item.quantity} {unitLabel} {item.product_name}
+                          {isGift && (
+                            <Badge variant="success" className="text-[9px] px-1 py-0 ml-1">
+                              BRINDE
+                            </Badge>
+                          )}
+                          {isAdditional && !isGift && (
+                            <Badge className="text-[9px] px-1 py-0 ml-1 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                              ADICIONAL
+                            </Badge>
+                          )}
+                        </span>
+                        {isGift ? (
+                          <span className="flex items-center gap-2">
+                            <span className="line-through text-muted-foreground text-xs">
+                              {formatCurrency(item.quantity * item.unit_price)}
+                            </span>
+                            <span className="font-medium">R$ 0,00</span>
+                          </span>
+                        ) : (
+                          <span className="font-medium">{formatCurrency(item.quantity * item.unit_price)}</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
 
-          {/* Notes */}
-          {order.notes && (
-            <Card>
-              <CardContent className="p-4">
-                <p className="text-sm text-muted-foreground mb-1">Observações</p>
-                <p className="text-sm">{order.notes}</p>
+                <Separator className="my-3" />
+
+                <div className="space-y-1 text-sm">
+                  {order.delivery_fee > 0 && (
+                    <div className="flex justify-between text-muted-foreground">
+                      <span>Taxa de entrega</span>
+                      <span>{formatCurrency(order.delivery_fee)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-semibold text-base">
+                    <span>Total</span>
+                    <span className="text-primary">{formatCurrency(order.total_amount)}</span>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Actions */}
-          <div className="flex flex-col gap-3 pt-2">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Button 
-                variant="outline" 
-                className="flex-1 h-11 sm:h-10"
-                onClick={handleDownloadPdf}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <FileText className="mr-2 h-4 w-4" />
-                )}
-                Baixar PDF
-              </Button>
-              <Button 
-                className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white"
-                onClick={handleOpenWhatsApp}
-                disabled={!order.client?.phone}
-              >
-                <Send className="mr-2 h-4 w-4" />
-                Abrir WhatsApp
-              </Button>
-            </div>
-            
-            {/* Edit/Delete buttons for quote and awaiting_deposit */}
-            {canEditOrDelete && (
-              <div className="flex justify-center sm:justify-start gap-4 pt-1">
-                {onEdit && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-muted-foreground hover:text-foreground h-10 px-4"
-                    onClick={() => {
-                      onEdit(order);
-                      onOpenChange(false);
-                    }}
-                  >
-                    <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                    Editar
-                  </Button>
-                )}
-                {onDelete && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    className="text-muted-foreground hover:text-destructive h-10 px-4"
-                    onClick={() => setDeleteDialogOpen(true)}
-                  >
-                    <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                    Excluir
-                  </Button>
-                )}
-              </div>
+            {/* Deposit Status */}
+            <Card className={displayDepositPaid ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20"}>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <Banknote className="h-5 w-5" />
+                    <div>
+                      <p className="font-medium">Sinal 50%</p>
+                      <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
+                    </div>
+                  </div>
+                  {displayDepositPaid ? (
+                    <div className="flex items-center gap-2">
+                      <Badge variant="success">Pago</Badge>
+                      {onDepositChange && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                          onClick={() => {
+                            setDisplayDepositPaid(false);
+                            onDepositChange(
+                              order.id,
+                              false,
+                              order.client?.name,
+                              order.total_amount,
+                              order.status as OrderStatus,
+                            );
+                          }}
+                        >
+                          Desfazer
+                        </Button>
+                      )}
+                    </div>
+                  ) : onDepositChange ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+                      onClick={() => {
+                        setDisplayDepositPaid(true);
+                        // Also update status optimistically if it will change
+                        if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
+                          setDisplayStatus("in_production");
+                        }
+                        onDepositChange(
+                          order.id,
+                          true,
+                          order.client?.name,
+                          order.total_amount,
+                          order.status as OrderStatus,
+                        );
+                      }}
+                    >
+                      Marcar como Pago
+                    </Button>
+                  ) : (
+                    <Badge variant="warning">Pendente</Badge>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Notes */}
+            {order.notes && (
+              <Card>
+                <CardContent className="p-4">
+                  <p className="text-sm text-muted-foreground mb-1">Observações</p>
+                  <p className="text-sm">{order.notes}</p>
+                </CardContent>
+              </Card>
             )}
+
+            {/* Actions */}
+            <div className="flex flex-col gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button
+                  variant="outline"
+                  className="flex-1 h-11 sm:h-10"
+                  onClick={handleDownloadPdf}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <FileText className="mr-2 h-4 w-4" />
+                  )}
+                  Orçamento em PDF
+                </Button>
+                <Button
+                  className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white"
+                  onClick={handleOpenWhatsApp}
+                  disabled={!order.client?.phone}
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  Abrir WhatsApp
+                </Button>
+              </div>
+
+              {/* Edit/Delete buttons for quote and awaiting_deposit */}
+              {canEditOrDelete && (
+                <div className="flex justify-center sm:justify-start gap-4 pt-1">
+                  {onEdit && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-foreground h-10 px-4"
+                      onClick={() => {
+                        onEdit(order);
+                        onOpenChange(false);
+                      }}
+                    >
+                      <Pencil className="mr-1.5 h-3.5 w-3.5" />
+                      Editar
+                    </Button>
+                  )}
+                  {onDelete && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-muted-foreground hover:text-destructive h-10 px-4"
+                      onClick={() => setDeleteDialogOpen(true)}
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      Excluir
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
         </div>
       </DialogContent>
 
@@ -523,13 +547,13 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               <AlertDialogTitle>Excluir Pedido</AlertDialogTitle>
             </div>
             <AlertDialogDescription className="pt-2">
-              Tem certeza que deseja excluir este pedido de <strong>{order.client?.name}</strong>? 
-              Esta ação não pode ser desfeita e todas as informações serão perdidas.
+              Tem certeza que deseja excluir este pedido de <strong>{order.client?.name}</strong>? Esta ação não pode
+              ser desfeita e todas as informações serão perdidas.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
             <AlertDialogCancel className="w-full sm:w-auto">Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogAction
               onClick={handleDelete}
               className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -550,14 +574,19 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               <AlertDialogTitle>Confirmar Entrega</AlertDialogTitle>
             </div>
             <AlertDialogDescription className="pt-2">
-              Ao marcar como <strong>Entregue</strong>, o sistema registrará automaticamente o pagamento restante de <strong>{formatCurrency((order.total_amount || 0) - (order.total_amount || 0) / 2)}</strong> no financeiro.
-              <br /><br />
+              Ao marcar como <strong>Entregue</strong>, o sistema registrará automaticamente o pagamento restante de{" "}
+              <strong>{formatCurrency((order.total_amount || 0) - (order.total_amount || 0) / 2)}</strong> no
+              financeiro.
+              <br />
+              <br />
               Deseja confirmar a entrega e registro do pagamento?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelDelivered}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelDelivered}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmDelivered}
               className="w-full sm:w-auto bg-success text-success-foreground hover:bg-success/90"
             >
@@ -578,14 +607,18 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
               <AlertDialogTitle>Cancelar Pedido</AlertDialogTitle>
             </div>
             <AlertDialogDescription className="pt-2">
-              Ao cancelar este pedido, <strong>todas as transações financeiras</strong> associadas (sinal e pagamento final) serão removidas automaticamente.
-              <br /><br />
+              Ao cancelar este pedido, <strong>todas as transações financeiras</strong> associadas (sinal e pagamento
+              final) serão removidas automaticamente.
+              <br />
+              <br />
               Deseja continuar com o cancelamento?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelCancelled}>Voltar</AlertDialogCancel>
-            <AlertDialogAction 
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelCancelled}>
+              Voltar
+            </AlertDialogCancel>
+            <AlertDialogAction
               onClick={confirmCancelled}
               className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
@@ -594,7 +627,6 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
     </Dialog>
   );
 }
