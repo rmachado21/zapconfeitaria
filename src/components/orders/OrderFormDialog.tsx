@@ -42,7 +42,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus, PackagePlus } from 'lucide-react';
+import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus, PackagePlus, User, Package } from 'lucide-react';
 import { useClients, ClientFormData } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
 import { OrderFormData, Order, formatOrderNumber } from '@/hooks/useOrders';
@@ -99,6 +99,7 @@ export function OrderFormDialog({
   const [additionalItemName, setAdditionalItemName] = useState('');
   const [additionalItemQty, setAdditionalItemQty] = useState<number>(1);
   const [additionalItemPrice, setAdditionalItemPrice] = useState<number>(0);
+  const [additionalItemError, setAdditionalItemError] = useState(false);
 
   const isEditMode = !!editOrder;
 
@@ -148,6 +149,7 @@ export function OrderFormDialog({
   // Handler for additional items
   const handleAddAdditionalItem = () => {
     if (!additionalItemName.trim()) {
+      setAdditionalItemError(true);
       toast({
         title: 'Descrição obrigatória',
         description: 'Informe a descrição do item adicional.',
@@ -174,10 +176,13 @@ export function OrderFormDialog({
       return;
     }
 
+    const itemName = additionalItemName.trim();
+    const itemQty = additionalItemQty;
+    
     setItems([...items, {
       product_id: null,
-      product_name: additionalItemName.trim(),
-      quantity: additionalItemQty,
+      product_name: itemName,
+      quantity: itemQty,
       unit_price: additionalItemPrice,
       unit_type: 'unit',
       is_gift: false,
@@ -187,6 +192,12 @@ export function OrderFormDialog({
     setAdditionalItemName('');
     setAdditionalItemQty(1);
     setAdditionalItemPrice(0);
+    setAdditionalItemError(false);
+    
+    toast({
+      title: 'Item adicional incluído',
+      description: `${itemQty}x ${itemName}`,
+    });
   };
 
   const selectedProductData = products.find(p => p.id === selectedProduct);
@@ -249,6 +260,11 @@ export function OrderFormDialog({
         is_gift: false,
       }]);
     }
+
+    toast({
+      title: 'Produto adicionado',
+      description: `${validQuantity} ${unitLabel} de ${selectedProductData.name}`,
+    });
 
     setSelectedProduct('');
     setQuantity(1);
@@ -347,7 +363,10 @@ export function OrderFormDialog({
                   const selectedClient = clients.find(c => c.id === field.value);
                   return (
                     <FormItem className="flex flex-col">
-                      <FormLabel>Cliente *</FormLabel>
+                      <FormLabel className="flex items-center gap-2">
+                        <User className="h-4 w-4 text-muted-foreground" />
+                        Cliente *
+                      </FormLabel>
                       <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
                         <PopoverTrigger asChild>
                           <FormControl>
@@ -445,7 +464,10 @@ export function OrderFormDialog({
 
               {/* Products Section */}
               <div className="space-y-3">
-                <FormLabel>Produtos *</FormLabel>
+                <FormLabel className="flex items-center gap-2">
+                  <Package className="h-4 w-4 text-muted-foreground" />
+                  Produtos *
+                </FormLabel>
                 
                 {/* Add Product Row */}
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -736,7 +758,11 @@ export function OrderFormDialog({
                   <Input
                     placeholder="Descrição do item (ex: Topper personalizado)"
                     value={additionalItemName}
-                    onChange={(e) => setAdditionalItemName(e.target.value)}
+                    onChange={(e) => {
+                      setAdditionalItemName(e.target.value);
+                      if (additionalItemError) setAdditionalItemError(false);
+                    }}
+                    className={cn(additionalItemError && "border-destructive focus-visible:ring-destructive")}
                   />
                   <div className="flex flex-wrap items-center gap-2">
                     {/* Stepper de quantidade */}
