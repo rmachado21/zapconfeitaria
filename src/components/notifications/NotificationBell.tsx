@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Cake, Truck } from 'lucide-react';
+import { Bell, Cake, Truck, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -23,7 +23,7 @@ export function NotificationBell() {
 
   const handleNotificationClick = (notification: Notification) => {
     setOpen(false);
-    if (notification.type === 'delivery' && notification.orderId) {
+    if ((notification.type === 'delivery' || notification.type === 'deposit_overdue') && notification.orderId) {
       navigate('/orders');
     } else if (notification.type === 'birthday') {
       navigate('/clients');
@@ -57,6 +57,8 @@ export function NotificationBell() {
         return <Cake className="h-4 w-4" />;
       case 'truck':
         return <Truck className="h-4 w-4" />;
+      case 'alert':
+        return <AlertTriangle className="h-4 w-4" />;
     }
   };
 
