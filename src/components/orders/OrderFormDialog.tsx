@@ -824,13 +824,12 @@ export function OrderFormDialog({
                     <Button
                       type="button"
                       variant="default"
+                      size="icon"
                       onClick={handleAddAdditionalItem}
                       disabled={!additionalItemName.trim()}
-                      className="shrink-0 gap-1.5"
+                      className="shrink-0 h-9 w-9"
                     >
                       <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Adicionar</span>
-                      <span className="sm:hidden">Add</span>
                     </Button>
                   </div>
                 </div>
