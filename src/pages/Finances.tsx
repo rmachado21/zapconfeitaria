@@ -353,6 +353,7 @@ const Finances = () => {
             icon={PiggyBank}
             variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
             tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais. Clique para ver detalhes."
+            mobileDescription="Vendas - Custo dos produtos. Toque para detalhes."
             onClick={() => setGrossProfitDialogOpen(true)}
           />
         </section>
