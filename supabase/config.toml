@@ -2,3 +2,6 @@ project_id = "izlokpafxhknkaheznxr"
 
 [functions.generate-quote-pdf]
 verify_jwt = true
+
+[functions.generate-finance-report-pdf]
+verify_jwt = true
