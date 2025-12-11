@@ -255,7 +255,7 @@ const handler = async (req: Request): Promise<Response> => {
     const rowHeight = 10;
 
     // Table header with terracotta color and rounded top corners
-    const cornerRadius = 3;
+    const cornerRadius = 1.5;
     doc.setFillColor(180, 100, 70);
     
     // Draw header with rounded top corners
@@ -290,9 +290,6 @@ const handler = async (req: Request): Promise<Response> => {
       if (isGift) {
         doc.setFillColor(220, 252, 231); // Green tint for gifts
         doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
-      } else if (isAdditional) {
-        doc.setFillColor(239, 246, 255); // Light blue tint for additional items
-        doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
       } else if (i % 2 === 0) {
         doc.setFillColor(255, 255, 255);
         doc.rect(margin, yPos - 5, tableWidth, rowHeight, "F");
@@ -306,7 +303,7 @@ const handler = async (req: Request): Promise<Response> => {
         doc.setTextColor(22, 163, 74); // Green for gifts
         doc.text(`${item.product_name.substring(0, 28)} [BRINDE]`, margin + 5, yPos + 1);
       } else if (isAdditional) {
-        doc.setTextColor(37, 99, 235); // Blue for additional items
+        doc.setTextColor(100, 100, 100); // Muted gray for additional items
         doc.text(`${item.product_name.substring(0, 26)} [ADICIONAL]`, margin + 5, yPos + 1);
       } else {
         doc.setTextColor(60, 60, 60);
