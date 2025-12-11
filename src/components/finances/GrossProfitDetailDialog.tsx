@@ -84,7 +84,7 @@ export function GrossProfitDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg mx-4 max-h-[90dvh]" onInteractOutside={(e) => e.preventDefault()}>
+      <DialogContent className="max-w-lg max-h-[90dvh]" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-success" />
