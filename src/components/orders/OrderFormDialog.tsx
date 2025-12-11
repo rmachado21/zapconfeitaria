@@ -478,7 +478,7 @@ export function OrderFormDialog({
                         role="combobox"
                         aria-expanded={productSearchOpen}
                         className={cn(
-                          "w-full sm:flex-1 justify-between font-normal",
+                          "w-full sm:flex-1 sm:min-w-0 justify-between font-normal overflow-hidden",
                           !selectedProduct && "text-muted-foreground"
                         )}
                       >
@@ -541,7 +541,7 @@ export function OrderFormDialog({
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  <div className="flex gap-2 items-center">
+                  <div className="flex gap-2 items-center shrink-0">
                     {/* Stepper de quantidade */}
                     <div className="flex items-center gap-1">
                       <Button
