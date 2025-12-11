@@ -39,7 +39,7 @@ interface Order {
 
 const formatOrderNumber = (n: number | null): string => {
   if (n === null) return '';
-  return `#${n.toString().padStart(5, '0')}`;
+  return `#${n.toString().padStart(4, '0')}`;
 };
 
 interface Profile {

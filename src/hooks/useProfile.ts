@@ -13,6 +13,7 @@ export interface Profile {
   include_terms_in_pdf: boolean;
   custom_terms: string | null;
   hidden_kanban_columns: string[] | null;
+  order_number_start: number;
   created_at: string;
   updated_at: string;
 }
@@ -25,6 +26,7 @@ export interface ProfileFormData {
   include_terms_in_pdf?: boolean;
   custom_terms?: string;
   hidden_kanban_columns?: string[];
+  order_number_start?: number;
 }
 
 export function useProfile() {
@@ -68,6 +70,7 @@ export function useProfile() {
       if (formData.include_terms_in_pdf !== undefined) updateData.include_terms_in_pdf = formData.include_terms_in_pdf;
       if (formData.custom_terms !== undefined) updateData.custom_terms = formData.custom_terms || null;
       if (formData.hidden_kanban_columns !== undefined) updateData.hidden_kanban_columns = formData.hidden_kanban_columns;
+      if (formData.order_number_start !== undefined) updateData.order_number_start = formData.order_number_start;
 
       const { data, error } = await supabase
         .from('profiles')
