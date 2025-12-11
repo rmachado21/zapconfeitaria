@@ -841,15 +841,15 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
               </div>
 
               {/* Delivery Date & Time */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-hidden">
                 <FormField
                   control={form.control}
                   name="delivery_date"
                   render={({ field }) => (
-                    <FormItem>
+                    <FormItem className="overflow-hidden">
                       <FormLabel>Data de Entrega</FormLabel>
                       <FormControl>
-                        <Input type="date" {...field} />
+                        <Input type="date" {...field} className="max-w-full" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
