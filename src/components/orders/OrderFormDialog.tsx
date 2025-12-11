@@ -354,7 +354,7 @@ export function OrderFormDialog({
 
         <ScrollArea className="max-h-[75dvh] pr-4">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 overflow-hidden">
               {/* Client Selection with Search */}
               <FormField
                 control={form.control}
@@ -463,7 +463,7 @@ export function OrderFormDialog({
               />
 
               {/* Products Section */}
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-hidden min-w-0">
                 <FormLabel className="flex items-center gap-2">
                   <Package className="h-4 w-4 text-muted-foreground" />
                   Produtos *
@@ -478,7 +478,7 @@ export function OrderFormDialog({
                         role="combobox"
                         aria-expanded={productSearchOpen}
                         className={cn(
-                          "w-full sm:flex-1 sm:min-w-0 justify-between font-normal overflow-hidden",
+                          "w-full sm:flex-1 sm:min-w-0 max-w-full justify-between font-normal overflow-hidden",
                           !selectedProduct && "text-muted-foreground"
                         )}
                       >
@@ -745,7 +745,7 @@ export function OrderFormDialog({
               </div>
 
               {/* Additional Items Section */}
-              <div className="space-y-3">
+              <div className="space-y-3 overflow-hidden min-w-0">
                 <FormLabel className="flex items-center gap-2">
                   <PackagePlus className="h-4 w-4 text-blue-600" />
                   Itens Adicionais
@@ -762,9 +762,9 @@ export function OrderFormDialog({
                       setAdditionalItemName(e.target.value);
                       if (additionalItemError) setAdditionalItemError(false);
                     }}
-                    className={cn(additionalItemError && "border-destructive focus-visible:ring-destructive")}
+                    className={cn("min-w-0 w-full", additionalItemError && "border-destructive focus-visible:ring-destructive")}
                   />
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 overflow-hidden">
                     {/* Stepper de quantidade */}
                     <div className="flex items-center gap-1">
                       <Button
