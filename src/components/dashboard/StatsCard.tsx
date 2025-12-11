@@ -1,7 +1,13 @@
 import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { LucideIcon } from 'lucide-react';
+import { LucideIcon, Info } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface StatsCardProps {
   title: string;
@@ -14,6 +20,7 @@ interface StatsCardProps {
   };
   variant?: 'default' | 'primary' | 'success' | 'warning';
   className?: string;
+  tooltip?: string;
 }
 
 export function StatsCard({
@@ -24,6 +31,7 @@ export function StatsCard({
   trend,
   variant = 'default',
   className,
+  tooltip,
 }: StatsCardProps) {
   const variantStyles = {
     default: 'bg-card',
@@ -50,12 +58,29 @@ export function StatsCard({
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
           <div className="flex-1">
-            <p className={cn(
-              "text-xs font-medium mb-1",
-              variant === 'primary' ? 'text-primary-foreground/80' : 'text-muted-foreground'
-            )}>
-              {title}
-            </p>
+            <div className="flex items-center gap-1.5 mb-1">
+              <p className={cn(
+                "text-xs font-medium",
+                variant === 'primary' ? 'text-primary-foreground/80' : 'text-muted-foreground'
+              )}>
+                {title}
+              </p>
+              {tooltip && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className={cn(
+                        "h-3.5 w-3.5 cursor-help",
+                        variant === 'primary' ? 'text-primary-foreground/60' : 'text-muted-foreground/60'
+                      )} />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[250px] text-xs">
+                      <p>{tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+            </div>
             <p className={cn(
               "text-2xl font-display font-bold",
               variant === 'primary' ? 'text-primary-foreground' : 'text-foreground'
