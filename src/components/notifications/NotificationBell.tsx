@@ -40,6 +40,15 @@ export function NotificationBell() {
     openWhatsApp(client.phone);
   };
 
+  const handleWhatsAppDeposit = (e: React.MouseEvent, notification: Notification) => {
+    e.stopPropagation();
+    
+    const client = clients.find(c => c.name === notification.clientName);
+    if (!client?.phone) return;
+
+    openWhatsApp(client.phone);
+  };
+
   const getPriorityColor = (priority: Notification['priority']) => {
     switch (priority) {
       case 'high':
@@ -143,6 +152,19 @@ export function NotificationBell() {
                       className="flex-shrink-0 text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
                       onClick={(e) => handleWhatsAppBirthday(e, notification)}
                       title="Enviar felicitação por WhatsApp"
+                    >
+                      <WhatsAppIcon />
+                    </Button>
+                  )}
+
+                  {/* WhatsApp button for deposit overdue notifications */}
+                  {notification.type === 'deposit_overdue' && getClientPhone(notification.clientName) && (
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      className="flex-shrink-0 text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
+                      onClick={(e) => handleWhatsAppDeposit(e, notification)}
+                      title="Cobrar sinal via WhatsApp"
                     >
                       <WhatsAppIcon />
                     </Button>
