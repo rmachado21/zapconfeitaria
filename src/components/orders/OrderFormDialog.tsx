@@ -615,20 +615,20 @@ export function OrderFormDialog({
 
                 {/* Items List */}
                 {items.length > 0 && (
-                  <Card>
-                    <CardContent className="p-2 sm:p-3 space-y-2">
+                  <Card className="overflow-hidden">
+                    <CardContent className="p-2 sm:p-3 space-y-2 overflow-hidden">
                       {items.map((item, index) => {
                         const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
                         const isGift = item.is_gift;
                         const isAdditional = item.product_id === null;
                         return (
                         <div key={index} className={cn(
-                          "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors",
+                          "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors overflow-hidden max-w-full",
                           isGift && "bg-success/10 border border-success/20",
                           isAdditional && !isGift && "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30"
                         )}>
                           {/* Linha 1: Nome + Preço */}
-                          <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-start justify-between gap-2 min-w-0">
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
@@ -679,7 +679,7 @@ export function OrderFormDialog({
                           </div>
                           
                           {/* Linha 2: Quantidade + Ações */}
-                          <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center justify-between gap-2 min-w-0">
                             {/* Quantity Controls */}
                             <div className="flex items-center gap-1">
                               <Button
@@ -705,7 +705,7 @@ export function OrderFormDialog({
                             </div>
 
                             {/* Actions */}
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 shrink-0">
                               <Button
                                 type="button"
                                 variant={isGift ? "default" : "outline"}

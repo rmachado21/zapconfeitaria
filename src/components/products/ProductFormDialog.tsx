@@ -30,6 +30,7 @@ import { Loader2 } from 'lucide-react';
 import { Product, ProductFormData } from '@/hooks/useProducts';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { formatCurrency } from '@/lib/masks';
 
 const productSchema = z.object({
@@ -112,9 +113,10 @@ export function ProductFormDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
+        <ScrollArea className="max-h-[70dvh] pr-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -235,22 +237,23 @@ export function ProductFormDialog({
               )}
             />
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? 'Salvar' : 'Cadastrar'}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isEditing ? 'Salvar' : 'Cadastrar'}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
