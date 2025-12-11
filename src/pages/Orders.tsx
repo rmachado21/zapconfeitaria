@@ -24,15 +24,6 @@ const Orders = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
-
-  // Open form automatically if navigated with openNewOrder state
-  useEffect(() => {
-    if (location.state?.openNewOrder) {
-      setFormOpen(true);
-      // Clear the state to prevent reopening on refresh
-      navigate(location.pathname, { replace: true, state: {} });
-    }
-  }, [location.state, navigate, location.pathname]);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -47,6 +38,24 @@ const Orders = () => {
     updateDepositPaid,
     deleteOrder,
   } = useOrders();
+
+  // Open form or detail dialog automatically based on navigation state
+  useEffect(() => {
+    if (location.state?.openNewOrder) {
+      setFormOpen(true);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+    
+    // Open order detail if navigated from dashboard
+    if (location.state?.openOrderId && orders.length > 0) {
+      const order = orders.find(o => o.id === location.state.openOrderId);
+      if (order) {
+        setSelectedOrder(order);
+        setDetailOpen(true);
+      }
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state, navigate, location.pathname, orders]);
 
   const { profile, updateProfile } = useProfile();
 
