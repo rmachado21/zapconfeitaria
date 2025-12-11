@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,8 +17,10 @@ import { DeleteTransactionDialog } from '@/components/finances/DeleteTransaction
 import { FinanceChart } from '@/components/finances/FinanceChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter } from '@/hooks/useTransactions';
-import { TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, Trash2, Loader2, Calendar } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
+import { useProducts } from '@/hooks/useProducts';
+import { TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, Trash2, Loader2, Calendar, ExternalLink, PiggyBank } from 'lucide-react';
+import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -29,6 +32,7 @@ const periodLabels: Record<PeriodFilter, string> = {
 };
 
 const Finances = () => {
+  const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
@@ -44,6 +48,68 @@ const Finances = () => {
     totalExpenses,
     balance,
   } = useTransactions(period);
+
+  const { orders } = useOrders();
+  const { products } = useProducts();
+
+  // Calculate estimated profit based on delivered orders in the period
+  const estimatedProfit = useMemo(() => {
+    // Filter orders by period and delivered status
+    const now = new Date();
+    let startDate: Date | null = null;
+    
+    switch (period) {
+      case 'week':
+        startDate = startOfWeek(now, { weekStartsOn: 0 });
+        break;
+      case 'month':
+        startDate = startOfMonth(now);
+        break;
+      case 'year':
+        startDate = startOfYear(now);
+        break;
+    }
+
+    const deliveredOrders = orders.filter(order => {
+      if (order.status !== 'delivered') return false;
+      if (!startDate) return true;
+      
+      const orderDate = parseISO(order.updated_at);
+      return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
+    });
+
+    // Calculate revenue (total_amount from delivered orders)
+    const revenue = deliveredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+    // Calculate product costs
+    const costs = deliveredOrders.reduce((orderSum, order) => {
+      const itemsCost = (order.order_items || []).reduce((itemSum, item) => {
+        if (item.is_gift) return itemSum;
+        
+        // Find product to get cost_price
+        const product = products.find(p => p.id === item.product_id);
+        const costPrice = product?.cost_price || 0;
+        
+        return itemSum + (costPrice * item.quantity);
+      }, 0);
+      
+      return orderSum + itemsCost;
+    }, 0);
+
+    const profit = revenue - costs;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+
+    return { profit, margin, revenue, costs };
+  }, [orders, products, period]);
+
+  // Map transactions to order numbers for display
+  const orderNumberMap = useMemo(() => {
+    const map: Record<string, number | null> = {};
+    orders.forEach(order => {
+      map[order.id] = order.order_number;
+    });
+    return map;
+  }, [orders]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -81,6 +147,10 @@ const Finances = () => {
     }
   };
 
+  const handleOrderClick = (orderId: string) => {
+    navigate('/orders', { state: { openOrderId: orderId } });
+  };
+
   return (
     <AppLayout>
       <div className="px-5 py-4 md:px-8 md:py-6 space-y-6">
@@ -116,7 +186,7 @@ const Finances = () => {
         </header>
 
         {/* Stats */}
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
             title={`Saldo (${periodLabels[period]})`}
             value={formatCurrency(balance)}
@@ -134,6 +204,13 @@ const Finances = () => {
             value={formatCurrency(totalExpenses)}
             icon={TrendingDown}
             variant="warning"
+          />
+          <StatsCard
+            title="Lucro Estimado"
+            value={formatCurrency(estimatedProfit.profit)}
+            subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
+            icon={PiggyBank}
+            variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
           />
         </section>
 
@@ -189,8 +266,15 @@ const Finances = () => {
                         <p className="font-medium text-sm">{transaction.description || 'Sem descrição'}</p>
                         <div className="flex items-center gap-2 mt-0.5">
                           {transaction.order_id && (
-                            <Badge variant="muted" className="text-[10px]">
-                              Pedido
+                            <Badge 
+                              variant="muted" 
+                              className="text-[10px] cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                              onClick={() => handleOrderClick(transaction.order_id!)}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              {orderNumberMap[transaction.order_id] 
+                                ? formatOrderNumber(orderNumberMap[transaction.order_id])
+                                : 'Pedido'}
                             </Badge>
                           )}
                           <span className="text-xs text-muted-foreground">
