@@ -27,6 +27,8 @@ import {
   PackagePlus,
   User,
   Package,
+  CalendarDays,
+  Clock,
 } from "lucide-react";
 import { useClients, ClientFormData } from "@/hooks/useClients";
 import { useProducts } from "@/hooks/useProducts";
@@ -847,7 +849,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                   name="delivery_date"
                   render={({ field }) => (
                     <FormItem className="overflow-hidden">
-                      <FormLabel>Data de Entrega</FormLabel>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <CalendarDays className="h-4 w-4" />
+                        Data de Entrega
+                      </FormLabel>
                       <FormControl>
                         <Input type="date" {...field} className="max-w-full" />
                       </FormControl>
@@ -860,7 +865,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                   name="delivery_time"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Horário</FormLabel>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <Clock className="h-4 w-4" />
+                        Horário
+                      </FormLabel>
                       <Select value={field.value || ""} onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger>
