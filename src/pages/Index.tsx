@@ -14,24 +14,34 @@ import { OrderStatus } from '@/types';
 import { ShoppingBag, TrendingUp, Clock, Plus, Loader2, CalendarDays } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { subDays, subMonths, subYears, isAfter, parseISO } from 'date-fns';
-
 type PeriodFilter = 'week' | 'month' | 'year' | 'all';
-
 const periodLabels: Record<PeriodFilter, string> = {
   week: 'Última Semana',
   month: 'Último Mês',
   year: 'Último Ano',
-  all: 'Todo Período',
+  all: 'Todo Período'
 };
-
 const Index = () => {
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodFilter>('month');
-  const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
-  const { clients, isLoading: clientsLoading } = useClients();
-  const { products, isLoading: productsLoading } = useProducts();
-  const { profile, isLoading: profileLoading } = useProfile();
-
+  const {
+    orders,
+    isLoading: ordersLoading,
+    updateOrderStatus,
+    updateDepositPaid
+  } = useOrders();
+  const {
+    clients,
+    isLoading: clientsLoading
+  } = useClients();
+  const {
+    products,
+    isLoading: productsLoading
+  } = useProducts();
+  const {
+    profile,
+    isLoading: profileLoading
+  } = useProfile();
   const isLoading = ordersLoading || clientsLoading || productsLoading || profileLoading;
 
   // Extract first name from company name
@@ -52,10 +62,14 @@ const Index = () => {
   const getCutoffDate = (p: PeriodFilter): Date | null => {
     const now = new Date();
     switch (p) {
-      case 'week': return subDays(now, 7);
-      case 'month': return subMonths(now, 1);
-      case 'year': return subYears(now, 1);
-      case 'all': return null;
+      case 'week':
+        return subDays(now, 7);
+      case 'month':
+        return subMonths(now, 1);
+      case 'year':
+        return subYears(now, 1);
+      case 'all':
+        return null;
     }
   };
 
@@ -68,52 +82,48 @@ const Index = () => {
 
   // Calculate stats from filtered data
   const activeOrders = filteredOrders.filter(o => o.status !== 'delivered' && o.status !== 'cancelled');
-  const pendingDeposits = filteredOrders
-    .filter(o => !o.deposit_paid && o.status !== 'delivered' && o.status !== 'cancelled')
-    .reduce((sum, o) => sum + (o.total_amount / 2), 0);
-  
-  const periodIncome = filteredOrders
-    .filter(o => o.status === 'delivered')
-    .reduce((sum, o) => sum + o.total_amount, 0);
-
+  const pendingDeposits = filteredOrders.filter(o => !o.deposit_paid && o.status !== 'delivered' && o.status !== 'cancelled').reduce((sum, o) => sum + o.total_amount / 2, 0);
+  const periodIncome = filteredOrders.filter(o => o.status === 'delivered').reduce((sum, o) => sum + o.total_amount, 0);
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
-      currency: 'BRL',
+      currency: 'BRL'
     }).format(value);
   };
-
   const handleStatusChange = (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number) => {
-    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount });
+    updateOrderStatus.mutate({
+      id: orderId,
+      status: newStatus,
+      clientName,
+      totalAmount
+    });
   };
-
   const handleDepositChange = (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => {
-    updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount, currentStatus });
+    updateDepositPaid.mutate({
+      id: orderId,
+      depositPaid,
+      clientName,
+      totalAmount,
+      currentStatus
+    });
   };
-
-  return (
-    <AppLayout>
+  return <AppLayout>
       <div className="px-5 py-4 md:px-8 md:py-6 space-y-6">
         {/* Header */}
         <header className="flex items-center justify-between animate-fade-in">
           <div>
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+            <h2 className="text-2xl font-display font-bold text-foreground md:text-2xl">
               {getGreeting()}{firstName ? `, ${firstName}` : ''}! 👋
             </h2>
             <p className="text-muted-foreground text-sm mt-1">
-              {new Date().toLocaleDateString('pt-BR', { 
-                weekday: 'long', 
-                day: 'numeric', 
-                month: 'long' 
-              })}
+              {new Date().toLocaleDateString('pt-BR', {
+              weekday: 'long',
+              day: 'numeric',
+              month: 'long'
+            })}
             </p>
           </div>
-          <Button 
-            variant="warm" 
-            size="lg" 
-            className="hidden md:flex animate-fade-in"
-            onClick={() => navigate('/orders')}
-          >
+          <Button variant="warm" size="lg" className="hidden md:flex animate-fade-in" onClick={() => navigate('/orders')}>
             <Plus className="h-5 w-5" />
             Novo Pedido
           </Button>
@@ -123,64 +133,36 @@ const Index = () => {
         <section className="space-y-4">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
+            <Select value={period} onValueChange={v => setPeriod(v as PeriodFilter)}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {Object.entries(periodLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>{label}</SelectItem>
-                ))}
+                {Object.entries(periodLabels).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}
               </SelectContent>
             </Select>
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            {isLoading ? (
-              <>
+            {isLoading ? <>
                 <StatsCardSkeleton />
                 <StatsCardSkeleton />
                 <StatsCardSkeleton />
                 <StatsCardSkeleton />
-              </>
-            ) : (
-              <>
+              </> : <>
                 <div className="animate-fade-in stagger-1">
-                  <StatsCard
-                    title={`Faturamento (${periodLabels[period]})`}
-                    value={formatCurrency(periodIncome)}
-                    subtitle={`${filteredOrders.filter(o => o.status === 'delivered').length} pedidos entregues`}
-                    icon={TrendingUp}
-                    variant="primary"
-                  />
+                  <StatsCard title={`Faturamento (${periodLabels[period]})`} value={formatCurrency(periodIncome)} subtitle={`${filteredOrders.filter(o => o.status === 'delivered').length} pedidos entregues`} icon={TrendingUp} variant="primary" />
                 </div>
               <div className="animate-fade-in stagger-2">
-                <StatsCard
-                  title="Pedidos Ativos"
-                  value={activeOrders.length}
-                  subtitle="Em andamento"
-                  icon={ShoppingBag}
-                />
+                <StatsCard title="Pedidos Ativos" value={activeOrders.length} subtitle="Em andamento" icon={ShoppingBag} />
               </div>
               <div className="animate-fade-in stagger-3">
-                <StatsCard
-                  title="Sinais Pendentes"
-                  value={formatCurrency(pendingDeposits)}
-                  subtitle="Aguardando pagamento"
-                  icon={Clock}
-                  variant="warning"
-                />
+                <StatsCard title="Sinais Pendentes" value={formatCurrency(pendingDeposits)} subtitle="Aguardando pagamento" icon={Clock} variant="warning" />
               </div>
               <div className="animate-fade-in stagger-4">
-                <StatsCard
-                  title="Cadastros"
-                  value={`${clients.length} / ${products.length}`}
-                  subtitle="Clientes / Produtos"
-                  icon={TrendingUp}
-                />
+                <StatsCard title="Cadastros" value={`${clients.length} / ${products.length}`} subtitle="Clientes / Produtos" icon={TrendingUp} />
               </div>
-            </>
-          )}
+            </>}
           </div>
         </section>
 
@@ -188,60 +170,36 @@ const Index = () => {
         <section className="animate-fade-in stagger-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-display font-semibold">Seus Pedidos</h3>
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => navigate('/orders')}
-              className="text-primary"
-            >
+            <Button variant="ghost" size="sm" onClick={() => navigate('/orders')} className="text-primary">
               Ver todos
             </Button>
           </div>
 
-          {ordersLoading ? (
-            <div className="flex items-center justify-center py-12">
+          {ordersLoading ? <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            </div>
-          ) : orders.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
+            </div> : orders.length === 0 ? <div className="text-center py-12 text-muted-foreground">
               <p>Nenhum pedido cadastrado</p>
               <Button variant="link" className="mt-2" onClick={() => navigate('/orders')}>
                 Criar primeiro pedido
               </Button>
-            </div>
-          ) : (
-            <>
+            </div> : <>
               {/* Kanban for Desktop */}
-              <KanbanBoard 
-                orders={orders} 
-                onOrderClick={() => navigate('/orders')}
-                onStatusChange={handleStatusChange}
-                onDepositChange={handleDepositChange}
-                hiddenColumns={hiddenColumns}
-              />
+              <KanbanBoard orders={orders} onOrderClick={() => navigate('/orders')} onStatusChange={handleStatusChange} onDepositChange={handleDepositChange} hiddenColumns={hiddenColumns} />
 
               {/* List for Mobile */}
-              <OrdersList 
-                orders={orders} 
-                onOrderClick={() => navigate('/orders')}
-                onDepositChange={handleDepositChange}
-              />
-            </>
-          )}
+              <OrdersList orders={orders} onOrderClick={() => navigate('/orders')} onDepositChange={handleDepositChange} />
+            </>}
         </section>
 
         {/* Mobile FAB */}
-        <Button
-          variant="warm"
-          size="icon-lg"
-          className="fixed bottom-20 right-4 md:hidden shadow-warm rounded-full z-40"
-          onClick={() => navigate('/orders', { state: { openNewOrder: true } })}
-        >
+        <Button variant="warm" size="icon-lg" className="fixed bottom-20 right-4 md:hidden shadow-warm rounded-full z-40" onClick={() => navigate('/orders', {
+        state: {
+          openNewOrder: true
+        }
+      })}>
           <Plus className="h-6 w-6" />
         </Button>
       </div>
-    </AppLayout>
-  );
+    </AppLayout>;
 };
-
 export default Index;
