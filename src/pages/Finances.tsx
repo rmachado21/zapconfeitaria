@@ -16,6 +16,7 @@ import { TransactionFormDialog } from '@/components/finances/TransactionFormDial
 import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
 import { FinanceChart } from '@/components/finances/FinanceChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
+import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
@@ -76,6 +77,7 @@ const Finances = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
 
   const { 
     transactions,
@@ -93,7 +95,7 @@ const Finances = () => {
   const { products } = useProducts();
 
   // Calculate estimated profit based on delivered orders in the period
-  const estimatedProfit = useMemo(() => {
+  const { estimatedProfit, deliveredOrdersForProfit } = useMemo(() => {
     // Filter orders by period and delivered status
     const now = new Date();
     let startDate: Date | null = null;
@@ -139,7 +141,10 @@ const Finances = () => {
     const profit = revenue - costs;
     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
 
-    return { profit, margin, revenue, costs };
+    return { 
+      estimatedProfit: { profit, margin, revenue, costs },
+      deliveredOrdersForProfit: deliveredOrders 
+    };
   }, [orders, products, period]);
 
   // Map transactions to order numbers for display
@@ -347,7 +352,8 @@ const Finances = () => {
             subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
             icon={PiggyBank}
             variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
-            tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais."
+            tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais. Clique para ver detalhes."
+            onClick={() => setGrossProfitDialogOpen(true)}
           />
         </section>
 
@@ -603,6 +609,15 @@ const Finances = () => {
         description={selectedTransaction?.description || ''}
         onConfirm={handleConfirmDelete}
         isLoading={deleteTransaction.isPending}
+      />
+
+      {/* Gross Profit Detail Dialog */}
+      <GrossProfitDetailDialog
+        open={grossProfitDialogOpen}
+        onOpenChange={setGrossProfitDialogOpen}
+        orders={deliveredOrdersForProfit}
+        products={products}
+        totals={estimatedProfit}
       />
     </AppLayout>
   );

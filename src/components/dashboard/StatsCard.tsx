@@ -21,6 +21,7 @@ interface StatsCardProps {
   variant?: 'default' | 'primary' | 'success' | 'warning';
   className?: string;
   tooltip?: string;
+  onClick?: () => void;
 }
 
 export function StatsCard({
@@ -32,6 +33,7 @@ export function StatsCard({
   variant = 'default',
   className,
   tooltip,
+  onClick,
 }: StatsCardProps) {
   const variantStyles = {
     default: 'bg-card',
@@ -52,8 +54,10 @@ export function StatsCard({
       className={cn(
         "border transition-all duration-200 hover:shadow-medium",
         variantStyles[variant],
+        onClick && "cursor-pointer hover:scale-[1.02] active:scale-[0.98]",
         className
       )}
+      onClick={onClick}
     >
       <CardContent className="p-4">
         <div className="flex items-start justify-between">
