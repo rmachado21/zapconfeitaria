@@ -112,6 +112,7 @@ export type Database = {
           deposit_paid: boolean | null
           id: string
           notes: string | null
+          order_number: number | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number | null
           updated_at: string
@@ -127,6 +128,7 @@ export type Database = {
           deposit_paid?: boolean | null
           id?: string
           notes?: string | null
+          order_number?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number | null
           updated_at?: string
@@ -142,6 +144,7 @@ export type Database = {
           deposit_paid?: boolean | null
           id?: string
           notes?: string | null
+          order_number?: number | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number | null
           updated_at?: string

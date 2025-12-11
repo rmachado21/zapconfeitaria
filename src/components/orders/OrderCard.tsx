@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
+import { formatOrderNumber } from '@/hooks/useOrders';
 interface OrderCardProps {
   order: Order;
   onClick?: () => void;
@@ -92,11 +92,18 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
       onClick={onClick}
     >
       <CardContent className="p-4">
-        {/* Header: Status + Price */}
+        {/* Header: Order Number + Status + Price */}
         <div className="flex items-center justify-between mb-3">
-          <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-[10px] font-semibold")}>
-            {statusConfig.label}
-          </Badge>
+          <div className="flex items-center gap-2">
+            {order.orderNumber && (
+              <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                {formatOrderNumber(order.orderNumber)}
+              </span>
+            )}
+            <Badge className={cn(statusConfig.bgColor, statusConfig.color, "text-[10px] font-semibold")}>
+              {statusConfig.label}
+            </Badge>
+          </div>
           <span className="font-bold text-lg text-primary">
             {formatCurrency(order.totalAmount)}
           </span>
