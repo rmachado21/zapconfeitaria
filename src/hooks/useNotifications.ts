@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useClients } from './useClients';
 import { useOrders } from './useOrders';
-import { parseISO, isToday, isTomorrow, addDays, isBefore, isAfter, format, differenceInDays, getMonth, getDate } from 'date-fns';
+import { parseISO, isToday, isTomorrow, addDays, isBefore, format, differenceInDays, getMonth, getDate, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export interface Notification {
@@ -22,7 +22,7 @@ export function useNotifications() {
 
   const notifications = useMemo(() => {
     const notifs: Notification[] = [];
-    const today = new Date();
+    const today = startOfDay(new Date());
     const nextWeek = addDays(today, 7);
 
     // Check birthdays
@@ -82,7 +82,7 @@ export function useNotifications() {
     // Check upcoming deliveries
     orders.forEach(order => {
       if (!order.delivery_date) return;
-      if (order.status === 'delivered') return; // Skip delivered orders
+      if (order.status === 'delivered' || order.status === 'cancelled') return; // Skip delivered/cancelled orders
 
       try {
         const deliveryDate = parseISO(order.delivery_date);
