@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { StatsCard } from '@/components/dashboard/StatsCard';
@@ -19,7 +19,11 @@ import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
-import { TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, Trash2, Loader2, Calendar, ExternalLink, PiggyBank } from 'lucide-react';
+import { 
+  TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, 
+  Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, Download,
+  ChevronLeft, ChevronRight
+} from 'lucide-react';
 import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -31,18 +35,23 @@ const periodLabels: Record<PeriodFilter, string> = {
   all: 'Todo Período',
 };
 
+const ITEMS_PER_PAGE = 20;
+
 const Finances = () => {
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
   const [period, setPeriod] = useState<PeriodFilter>('month');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { 
     transactions,
     filteredTransactions,
     isLoading, 
-    createTransaction, 
+    createTransaction,
+    updateTransaction,
     deleteTransaction,
     totalIncome,
     totalExpenses,
@@ -111,6 +120,18 @@ const Finances = () => {
     return map;
   }, [orders]);
 
+  // Pagination
+  const totalPages = Math.ceil(filteredTransactions.length / ITEMS_PER_PAGE);
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredTransactions.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredTransactions, currentPage]);
+
+  // Reset page when period changes
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [period]);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
       style: 'currency',
@@ -127,6 +148,12 @@ const Finances = () => {
   };
 
   const handleCreate = () => {
+    setEditingTransaction(null);
+    setFormOpen(true);
+  };
+
+  const handleEdit = (transaction: Transaction) => {
+    setEditingTransaction(transaction);
     setFormOpen(true);
   };
 
@@ -136,7 +163,12 @@ const Finances = () => {
   };
 
   const handleSubmit = async (data: TransactionFormData) => {
-    await createTransaction.mutateAsync(data);
+    if (editingTransaction) {
+      await updateTransaction.mutateAsync({ id: editingTransaction.id, formData: data });
+    } else {
+      await createTransaction.mutateAsync(data);
+    }
+    setEditingTransaction(null);
   };
 
   const handleConfirmDelete = async () => {
@@ -150,6 +182,32 @@ const Finances = () => {
   const handleOrderClick = (orderId: string) => {
     navigate('/orders', { state: { openOrderId: orderId } });
   };
+
+  const handleExportCSV = useCallback(() => {
+    const headers = ['Data', 'Tipo', 'Descrição', 'Valor', 'Pedido Vinculado'];
+    const rows = filteredTransactions.map(t => [
+      t.date,
+      t.type === 'income' ? 'Receita' : 'Despesa',
+      t.description || '',
+      t.amount.toFixed(2).replace('.', ','),
+      t.order_id ? (orderNumberMap[t.order_id] ? formatOrderNumber(orderNumberMap[t.order_id]) : 'Sim') : '',
+    ]);
+
+    const csvContent = [
+      headers.join(';'),
+      ...rows.map(row => row.map(cell => `"${cell}"`).join(';'))
+    ].join('\n');
+
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `transacoes_${format(new Date(), 'yyyy-MM-dd')}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [filteredTransactions, orderNumberMap]);
 
   return (
     <AppLayout>
@@ -222,8 +280,17 @@ const Finances = () => {
 
         {/* Transactions List */}
         <Card>
-          <CardHeader>
-            <CardTitle>Últimas Transações</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Transações</CardTitle>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleExportCSV}
+              disabled={filteredTransactions.length === 0}
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Exportar CSV
+            </Button>
           </CardHeader>
           <CardContent className="p-0">
             {isLoading ? (
@@ -238,71 +305,111 @@ const Finances = () => {
                 </Button>
               </div>
             ) : (
-              <div className="divide-y divide-border">
-                {filteredTransactions.map((transaction, index) => (
-                  <div
-                    key={transaction.id}
-                    className={cn(
-                      "flex items-center justify-between p-4 hover:bg-muted/50 transition-colors group",
-                      "animate-slide-up",
-                      `stagger-${Math.min(index + 1, 5)}`
-                    )}
-                    style={{ opacity: 0, animationFillMode: 'forwards' }}
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center",
-                        transaction.type === 'income' 
-                          ? 'bg-success/10 text-success' 
-                          : 'bg-destructive/10 text-destructive'
-                      )}>
-                        {transaction.type === 'income' ? (
-                          <ArrowUpRight className="h-5 w-5" />
-                        ) : (
-                          <ArrowDownRight className="h-5 w-5" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-medium text-sm">{transaction.description || 'Sem descrição'}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {transaction.order_id && (
-                            <Badge 
-                              variant="muted" 
-                              className="text-[10px] cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
-                              onClick={() => handleOrderClick(transaction.order_id!)}
-                            >
-                              <ExternalLink className="h-3 w-3 mr-1" />
-                              {orderNumberMap[transaction.order_id] 
-                                ? formatOrderNumber(orderNumberMap[transaction.order_id])
-                                : 'Pedido'}
-                            </Badge>
+              <>
+                <div className="divide-y divide-border">
+                  {paginatedTransactions.map((transaction, index) => (
+                    <div
+                      key={transaction.id}
+                      className={cn(
+                        "flex items-center justify-between p-4 hover:bg-muted/50 transition-colors group",
+                        "animate-slide-up",
+                        `stagger-${Math.min(index + 1, 5)}`
+                      )}
+                      style={{ opacity: 0, animationFillMode: 'forwards' }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={cn(
+                          "w-10 h-10 rounded-full flex items-center justify-center",
+                          transaction.type === 'income' 
+                            ? 'bg-success/10 text-success' 
+                            : 'bg-destructive/10 text-destructive'
+                        )}>
+                          {transaction.type === 'income' ? (
+                            <ArrowUpRight className="h-5 w-5" />
+                          ) : (
+                            <ArrowDownRight className="h-5 w-5" />
                           )}
-                          <span className="text-xs text-muted-foreground">
-                            {formatDate(transaction.date)}
-                          </span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-sm">{transaction.description || 'Sem descrição'}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {transaction.order_id && (
+                              <Badge 
+                                variant="muted" 
+                                className="text-[10px] cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
+                                onClick={() => handleOrderClick(transaction.order_id!)}
+                              >
+                                <ExternalLink className="h-3 w-3 mr-1" />
+                                {orderNumberMap[transaction.order_id] 
+                                  ? formatOrderNumber(orderNumberMap[transaction.order_id])
+                                  : 'Pedido'}
+                              </Badge>
+                            )}
+                            <span className="text-xs text-muted-foreground">
+                              {formatDate(transaction.date)}
+                            </span>
+                          </div>
                         </div>
                       </div>
+                      <div className="flex items-center gap-2">
+                        <span className={cn(
+                          "font-semibold",
+                          transaction.type === 'income' ? 'text-success' : 'text-destructive'
+                        )}>
+                          {transaction.type === 'income' ? '+' : '-'}
+                          {formatCurrency(transaction.amount)}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          onClick={() => handleEdit(transaction)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => handleDelete(transaction)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+                    <p className="text-sm text-muted-foreground">
+                      {filteredTransactions.length} transações
+                    </p>
                     <div className="flex items-center gap-2">
-                      <span className={cn(
-                        "font-semibold",
-                        transaction.type === 'income' ? 'text-success' : 'text-destructive'
-                      )}>
-                        {transaction.type === 'income' ? '+' : '-'}
-                        {formatCurrency(transaction.amount)}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <span className="text-sm text-muted-foreground">
+                        {currentPage} de {totalPages}
                       </span>
                       <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => handleDelete(transaction)}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <ChevronRight className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -321,9 +428,13 @@ const Finances = () => {
       {/* Form Dialog */}
       <TransactionFormDialog
         open={formOpen}
-        onOpenChange={setFormOpen}
+        onOpenChange={(open) => {
+          setFormOpen(open);
+          if (!open) setEditingTransaction(null);
+        }}
         onSubmit={handleSubmit}
-        isLoading={createTransaction.isPending}
+        isLoading={createTransaction.isPending || updateTransaction.isPending}
+        transaction={editingTransaction}
       />
 
       {/* Delete Dialog */}

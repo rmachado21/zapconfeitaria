@@ -114,6 +114,41 @@ export function useTransactions(period: PeriodFilter = 'all') {
     },
   });
 
+  const updateTransaction = useMutation({
+    mutationFn: async ({ id, formData }: { id: string; formData: TransactionFormData }) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .update({
+          type: formData.type,
+          description: formData.description,
+          amount: formData.amount,
+          date: formData.date || new Date().toISOString().split('T')[0],
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast({
+        title: 'Transação atualizada!',
+        description: `${variables.formData.description} - R$ ${variables.formData.amount.toFixed(2)}`,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao atualizar transação',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const deleteTransaction = useMutation({
     mutationFn: async (id: string) => {
       const { error } = await supabase
@@ -155,6 +190,7 @@ export function useTransactions(period: PeriodFilter = 'all') {
     isLoading,
     error,
     createTransaction,
+    updateTransaction,
     deleteTransaction,
     totalIncome,
     totalExpenses,
