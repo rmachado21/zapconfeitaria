@@ -213,7 +213,7 @@ export function OrderFormDialog({
     // Validate based on unit type
     const unitType = selectedProductData.unit_type;
     const getMinQuantity = (type: string) => {
-      if (type === 'kg') return 0.1;
+      if (type === 'kg') return 0.5;
       return 1;
     };
     const minQuantity = getMinQuantity(unitType);
@@ -264,7 +264,7 @@ export function OrderFormDialog({
       return 1;
     };
     const getMinQty = (type: string) => {
-      if (type === 'kg') return 0.1;
+      if (type === 'kg') return 0.5;
       return 1;
     };
     
@@ -496,6 +496,8 @@ export function OrderFormDialog({
                                   value={product.name}
                                   onSelect={() => {
                                     setSelectedProduct(product.id);
+                                    // Define quantidade inicial baseada no tipo de produto
+                                    setQuantity(product.unit_type === 'kg' ? 0.5 : 1);
                                     setProductSearchOpen(false);
                                   }}
                                 >
@@ -520,12 +522,22 @@ export function OrderFormDialog({
                   <div className="flex gap-2">
                     <div className="relative flex-1 sm:flex-none">
                       <Input
-                        type="number"
-                        min={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
-                        step={selectedProductData?.unit_type === 'kg' ? '0.1' : '1'}
+                        type="text"
+                        inputMode="decimal"
+                        pattern="[0-9]*[.,]?[0-9]*"
+                        min={selectedProductData?.unit_type === 'kg' ? '0.5' : '1'}
+                        step={selectedProductData?.unit_type === 'kg' ? '0.5' : '1'}
                         value={quantity}
-                        onChange={(e) => setQuantity(parseFloat(e.target.value) || 1)}
-                        className="w-full sm:w-28 pr-12"
+                        onChange={(e) => {
+                          const value = e.target.value.replace(',', '.');
+                          const numValue = parseFloat(value);
+                          if (!isNaN(numValue) && numValue >= 0) {
+                            setQuantity(numValue);
+                          } else if (value === '' || value === '.') {
+                            setQuantity(0);
+                          }
+                        }}
+                        className="w-full sm:w-24 pr-12 text-center"
                         placeholder="Qtd"
                       />
                       {selectedProductData && (
@@ -536,13 +548,13 @@ export function OrderFormDialog({
                     </div>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="icon"
+                      variant="default"
                       onClick={handleAddItem}
                       disabled={!selectedProduct}
-                      className="shrink-0"
+                      className="shrink-0 gap-1.5"
                     >
                       <Plus className="h-4 w-4" />
+                      <span className="hidden sm:inline">Adicionar</span>
                     </Button>
                   </div>
                 </div>
