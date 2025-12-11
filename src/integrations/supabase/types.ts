@@ -209,6 +209,7 @@ export type Database = {
           id: string
           include_terms_in_pdf: boolean
           logo_url: string | null
+          order_number_start: number
           pix_key: string | null
           updated_at: string
           user_id: string
@@ -222,6 +223,7 @@ export type Database = {
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null
+          order_number_start?: number
           pix_key?: string | null
           updated_at?: string
           user_id: string
@@ -235,6 +237,7 @@ export type Database = {
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null
+          order_number_start?: number
           pix_key?: string | null
           updated_at?: string
           user_id?: string

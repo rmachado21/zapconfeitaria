@@ -44,7 +44,7 @@ export interface Order {
 
 export const formatOrderNumber = (n: number | null | undefined): string => {
   if (n === null || n === undefined) return '';
-  return `#${n.toString().padStart(5, '0')}`;
+  return `#${n.toString().padStart(4, '0')}`;
 };
 
 export interface OrderFormData {
@@ -100,6 +100,13 @@ export function useOrders() {
       }, 0);
       const totalAmount = totalItems + (formData.delivery_fee || 0);
 
+      // Get user's profile for order_number_start
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('order_number_start')
+        .eq('user_id', user.id)
+        .single();
+
       // Get next order number for this user
       const { data: maxOrderNumber } = await supabase
         .from('orders')
@@ -109,7 +116,10 @@ export function useOrders() {
         .limit(1)
         .single();
       
-      const nextOrderNumber = (maxOrderNumber?.order_number || 0) + 1;
+      const orderNumberStart = profile?.order_number_start || 1;
+      const nextOrderNumber = maxOrderNumber?.order_number 
+        ? maxOrderNumber.order_number + 1 
+        : orderNumberStart;
 
       // Create order
       const { data: order, error: orderError } = await supabase

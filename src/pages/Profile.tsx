@@ -32,6 +32,7 @@ import {
   Crown,
   CakeSlice,
   FileText,
+  Hash,
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
@@ -42,6 +43,7 @@ const profileSchema = z.object({
   bank_details: z.string().max(500).optional().or(z.literal('')),
   include_terms_in_pdf: z.boolean().optional(),
   custom_terms: z.string().max(1000).optional().or(z.literal('')),
+  order_number_start: z.coerce.number().min(1, 'Número deve ser no mínimo 1').optional(),
 });
 
 const Profile = () => {
@@ -60,6 +62,7 @@ const Profile = () => {
       bank_details: '',
       include_terms_in_pdf: true,
       custom_terms: '',
+      order_number_start: 1,
     },
   });
 
@@ -72,6 +75,7 @@ const Profile = () => {
         bank_details: profile.bank_details || '',
         include_terms_in_pdf: profile.include_terms_in_pdf ?? true,
         custom_terms: profile.custom_terms || '',
+        order_number_start: profile.order_number_start || 1,
       });
     }
   }, [profile, form]);
@@ -251,9 +255,35 @@ const Profile = () => {
 
                   <FormField
                     control={form.control}
+                    name="order_number_start"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-2">
+                          <Hash className="h-4 w-4" />
+                          Pedidos iniciam em
+                        </FormLabel>
+                        <FormControl>
+                          <Input 
+                            type="number" 
+                            min={1}
+                            placeholder="1"
+                            {...field}
+                            onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : 1)}
+                          />
+                        </FormControl>
+                        <p className="text-xs text-muted-foreground">
+                          Ex: 100 para começar em #0100
+                        </p>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="include_terms_in_pdf"
                     render={({ field }) => (
-                      <FormItem className="flex items-center justify-between rounded-lg border p-3">
+                      <FormItem className="flex items-center justify-between rounded-lg border p-3 mt-4">
                         <div className="space-y-0.5">
                           <FormLabel className="text-sm font-medium">
                             Incluir Termos de Serviço
