@@ -123,7 +123,7 @@ const Index = () => {
             })}
             </p>
           </div>
-          <Button variant="warm" size="lg" className="hidden md:flex animate-fade-in" onClick={() => navigate('/orders')}>
+          <Button variant="warm" size="lg" className="hidden md:flex animate-fade-in" onClick={() => navigate('/orders', { state: { openNewOrder: true } })}>
             <Plus className="h-5 w-5" />
             Novo Pedido
           </Button>
