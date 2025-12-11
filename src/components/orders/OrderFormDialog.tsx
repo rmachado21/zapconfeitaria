@@ -519,33 +519,65 @@ export function OrderFormDialog({
                       </Command>
                     </PopoverContent>
                   </Popover>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1 sm:flex-none">
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*[.,]?[0-9]*"
-                        min={selectedProductData?.unit_type === 'kg' ? '0.5' : '1'}
-                        step={selectedProductData?.unit_type === 'kg' ? '0.5' : '1'}
-                        value={quantity}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(',', '.');
-                          const numValue = parseFloat(value);
-                          if (!isNaN(numValue) && numValue >= 0) {
-                            setQuantity(numValue);
-                          } else if (value === '' || value === '.') {
-                            setQuantity(0);
-                          }
+                  <div className="flex gap-2 items-center">
+                    {/* Stepper de quantidade */}
+                    <div className="flex items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const step = selectedProductData?.unit_type === 'kg' ? 0.5 : 1;
+                          const min = selectedProductData?.unit_type === 'kg' ? 0.5 : 1;
+                          setQuantity(Math.max(min, quantity - step));
                         }}
-                        className="w-full sm:w-24 pr-12 text-center"
-                        placeholder="Qtd"
-                      />
-                      {selectedProductData && (
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                          {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cento' : 'Un'}
-                        </span>
-                      )}
+                        disabled={!selectedProduct || quantity <= (selectedProductData?.unit_type === 'kg' ? 0.5 : 1)}
+                        className="h-9 w-9 shrink-0"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9]*[.,]?[0-9]*"
+                          value={quantity}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(',', '.');
+                            const numValue = parseFloat(value);
+                            if (!isNaN(numValue) && numValue >= 0) {
+                              setQuantity(numValue);
+                            } else if (value === '' || value === '.') {
+                              setQuantity(0);
+                            }
+                          }}
+                          className="w-20 pr-8 text-center"
+                          placeholder="Qtd"
+                        />
+                        {selectedProductData && (
+                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                            {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cto' : 'Un'}
+                          </span>
+                        )}
+                      </div>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => {
+                          const step = selectedProductData?.unit_type === 'kg' ? 0.5 : 1;
+                          setQuantity(quantity + step);
+                        }}
+                        disabled={!selectedProduct}
+                        className="h-9 w-9 shrink-0"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
                     </div>
+                    
+                    {/* Botão Adicionar */}
                     <Button
                       type="button"
                       variant="default"
