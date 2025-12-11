@@ -48,6 +48,20 @@ const ALL_CATEGORIES = [
   'Outros',
 ];
 
+// Category colors for badges
+const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
+  'Insumos': { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
+  'Embalagens': { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
+  'Combustível': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' },
+  'Equipamentos': { bg: 'bg-slate-100 dark:bg-slate-800/50', text: 'text-slate-700 dark:text-slate-300' },
+  'Marketing': { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
+  'Aluguel': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300' },
+  'Sinal': { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300' },
+  'Pagamento Final': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' },
+  'Venda Avulsa': { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-700 dark:text-teal-300' },
+  'Outros': { bg: 'bg-gray-100 dark:bg-gray-800/50', text: 'text-gray-600 dark:text-gray-400' },
+};
+
 type TypeFilter = 'all' | 'income' | 'expense';
 
 const ITEMS_PER_PAGE = 20;
@@ -137,17 +151,18 @@ const Finances = () => {
     return map;
   }, [orders]);
 
-  // Extract category from description
-  const extractCategory = (description: string | null) => {
-    if (!description) return null;
+  // Extract category and clean description
+  const parseTransaction = (description: string | null) => {
+    if (!description) return { category: null, cleanDescription: 'Sem descrição' };
     const dashIndex = description.indexOf(' - ');
     if (dashIndex > 0) {
       const category = description.substring(0, dashIndex);
+      const cleanDescription = description.substring(dashIndex + 3);
       if (ALL_CATEGORIES.includes(category)) {
-        return category;
+        return { category, cleanDescription };
       }
     }
-    return null;
+    return { category: null, cleanDescription: description };
   };
 
   // Filter transactions by type and category
@@ -158,7 +173,7 @@ const Finances = () => {
       
       // Filter by category
       if (categoryFilter !== 'all') {
-        const category = extractCategory(t.description);
+        const { category } = parseTransaction(t.description);
         if (category !== categoryFilter) return false;
       }
       
@@ -182,7 +197,7 @@ const Finances = () => {
   const availableCategories = useMemo(() => {
     const categories = new Set<string>();
     filteredTransactions.forEach(t => {
-      const category = extractCategory(t.description);
+      const { category } = parseTransaction(t.description);
       if (category) categories.add(category);
     });
     return Array.from(categories).sort();
@@ -455,8 +470,26 @@ const Finances = () => {
                             <ArrowDownRight className="h-5 w-5" />
                           )}
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">{transaction.description || 'Sem descrição'}</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-sm truncate">
+                              {parseTransaction(transaction.description).cleanDescription}
+                            </p>
+                            {(() => {
+                              const { category } = parseTransaction(transaction.description);
+                              if (!category) return null;
+                              const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS['Outros'];
+                              return (
+                                <span className={cn(
+                                  "text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap",
+                                  colors.bg,
+                                  colors.text
+                                )}>
+                                  {category}
+                                </span>
+                              );
+                            })()}
+                          </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             {transaction.order_id && (
                               <Badge 
