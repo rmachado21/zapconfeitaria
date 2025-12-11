@@ -20,12 +20,13 @@ import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetail
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
+import { useFinanceReportPdf } from '@/hooks/useFinanceReportPdf';
 import { 
   TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, 
-  Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, Download,
+  Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, FileText,
   ChevronLeft, ChevronRight, Filter, X
 } from 'lucide-react';
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter } from 'date-fns';
+import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter, endOfWeek, endOfMonth, endOfYear } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -78,6 +79,8 @@ const Finances = () => {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
+
+  const { downloadPdf: downloadReportPdf, isGenerating: isGeneratingReport } = useFinanceReportPdf();
 
   const { 
     transactions,
@@ -266,31 +269,76 @@ const Finances = () => {
     navigate('/orders', { state: { openOrderId: orderId } });
   };
 
-  const handleExportCSV = useCallback(() => {
-    const headers = ['Data', 'Tipo', 'Descrição', 'Valor', 'Pedido Vinculado'];
-    const rows = filteredTransactions.map(t => [
-      t.date,
-      t.type === 'income' ? 'Receita' : 'Despesa',
-      t.description || '',
-      t.amount.toFixed(2).replace('.', ','),
-      t.order_id ? (orderNumberMap[t.order_id] ? formatOrderNumber(orderNumberMap[t.order_id]) : 'Sim') : '',
-    ]);
+  // Calculate period dates for PDF
+  const periodDates = useMemo(() => {
+    const now = new Date();
+    let start: Date;
+    let end: Date = now;
+    
+    switch (period) {
+      case 'week':
+        start = startOfWeek(now, { weekStartsOn: 0 });
+        end = endOfWeek(now, { weekStartsOn: 0 });
+        break;
+      case 'month':
+        start = startOfMonth(now);
+        end = endOfMonth(now);
+        break;
+      case 'year':
+        start = startOfYear(now);
+        end = endOfYear(now);
+        break;
+      default:
+        // For "all", use the oldest transaction date or current date
+        const dates = filteredTransactions.map(t => parseISO(t.date));
+        start = dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : now;
+        end = now;
+    }
+    
+    return {
+      start: format(start, 'dd/MM/yyyy', { locale: ptBR }),
+      end: format(end, 'dd/MM/yyyy', { locale: ptBR }),
+    };
+  }, [period, filteredTransactions]);
 
-    const csvContent = [
-      headers.join(';'),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(';'))
-    ].join('\n');
+  // Calculate expenses by category for PDF
+  const expensesByCategory = useMemo(() => {
+    const categoryTotals: Record<string, number> = {};
+    
+    filteredTransactions
+      .filter(t => t.type === 'expense')
+      .forEach(t => {
+        const { category } = parseTransaction(t.description);
+        const cat = category || 'Outros';
+        categoryTotals[cat] = (categoryTotals[cat] || 0) + t.amount;
+      });
+    
+    const total = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
+    
+    return Object.entries(categoryTotals)
+      .map(([category, amount]) => ({
+        category,
+        amount,
+        percentage: total > 0 ? (amount / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  }, [filteredTransactions]);
 
-    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `transacoes_${format(new Date(), 'yyyy-MM-dd')}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [filteredTransactions, orderNumberMap]);
+  const handleExportPDF = useCallback(() => {
+    downloadReportPdf({
+      period,
+      periodLabel: periodLabels[period],
+      periodDates,
+      summary: {
+        balance,
+        totalIncome,
+        totalExpenses,
+        grossProfit: estimatedProfit,
+      },
+      transactions: listFilteredTransactions,
+      expensesByCategory,
+    });
+  }, [period, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, downloadReportPdf]);
 
   return (
     <AppLayout>
@@ -371,11 +419,15 @@ const Finances = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={handleExportCSV}
-              disabled={listFilteredTransactions.length === 0}
+              onClick={handleExportPDF}
+              disabled={isGeneratingReport || listFilteredTransactions.length === 0}
             >
-              <Download className="h-4 w-4 mr-2" />
-              Exportar CSV
+              {isGeneratingReport ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <FileText className="h-4 w-4 mr-2" />
+              )}
+              Relatório PDF
             </Button>
           </CardHeader>
           
