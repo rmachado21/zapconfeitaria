@@ -6,12 +6,12 @@ import { ptBR } from 'date-fns/locale';
 
 export interface Notification {
   id: string;
-  type: 'birthday' | 'delivery';
+  type: 'birthday' | 'delivery' | 'deposit_overdue';
   title: string;
   description: string;
   date: Date;
   priority: 'high' | 'medium' | 'low';
-  icon: 'cake' | 'truck';
+  icon: 'cake' | 'truck' | 'alert';
   clientName?: string;
   orderId?: string;
 }
@@ -121,6 +121,36 @@ export function useNotifications() {
             date: deliveryDate,
             priority,
             icon: 'truck',
+            clientName,
+            orderId: order.id,
+          });
+        }
+      } catch (e) {
+        // Invalid date, skip
+      }
+    });
+
+    // Check overdue deposits (pending for more than 7 days)
+    orders.forEach(order => {
+      if (order.deposit_paid) return; // Skip if deposit already paid
+      if (order.status === 'delivered' || order.status === 'cancelled') return; // Skip finished orders
+      if (order.status !== 'quote' && order.status !== 'awaiting_deposit') return; // Only check early status orders
+
+      try {
+        const createdDate = parseISO(order.created_at);
+        const daysSinceCreation = differenceInDays(today, startOfDay(createdDate));
+
+        if (daysSinceCreation >= 7) {
+          const clientName = order.client?.name || 'Cliente não definido';
+
+          notifs.push({
+            id: `deposit-overdue-${order.id}`,
+            type: 'deposit_overdue',
+            title: `Pedido - ${clientName}`,
+            description: `Sinal pendente há ${daysSinceCreation} dias`,
+            date: createdDate,
+            priority: daysSinceCreation >= 14 ? 'high' : 'medium',
+            icon: 'alert',
             clientName,
             orderId: order.id,
           });
