@@ -3,8 +3,12 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
+import { useMemo } from 'react';
+import { startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from 'date-fns';
 
 type TransactionType = Database['public']['Enums']['transaction_type'];
+
+export type PeriodFilter = 'week' | 'month' | 'year' | 'all';
 
 export interface Transaction {
   id: string;
@@ -25,7 +29,7 @@ export interface TransactionFormData {
   order_id?: string;
 }
 
-export function useTransactions() {
+export function useTransactions(period: PeriodFilter = 'all') {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -45,6 +49,33 @@ export function useTransactions() {
     },
     enabled: !!user,
   });
+
+  // Filter transactions by period
+  const filteredTransactions = useMemo(() => {
+    if (period === 'all') return transactions;
+    
+    const now = new Date();
+    let startDate: Date;
+    
+    switch (period) {
+      case 'week':
+        startDate = startOfWeek(now, { weekStartsOn: 0 });
+        break;
+      case 'month':
+        startDate = startOfMonth(now);
+        break;
+      case 'year':
+        startDate = startOfYear(now);
+        break;
+      default:
+        return transactions;
+    }
+    
+    return transactions.filter(t => {
+      const transactionDate = parseISO(t.date);
+      return isAfter(transactionDate, startDate) || transactionDate.getTime() === startDate.getTime();
+    });
+  }, [transactions, period]);
 
   const createTransaction = useMutation({
     mutationFn: async (formData: TransactionFormData) => {
@@ -107,12 +138,12 @@ export function useTransactions() {
     },
   });
 
-  // Calculate totals
-  const totalIncome = transactions
+  // Calculate totals based on filtered transactions
+  const totalIncome = filteredTransactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const totalExpenses = transactions
+  const totalExpenses = filteredTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + t.amount, 0);
 
@@ -120,6 +151,7 @@ export function useTransactions() {
 
   return {
     transactions,
+    filteredTransactions,
     isLoading,
     error,
     createTransaction,

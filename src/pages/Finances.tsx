@@ -4,29 +4,46 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { TransactionFormDialog } from '@/components/finances/TransactionFormDialog';
 import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
 import { FinanceChart } from '@/components/finances/FinanceChart';
-import { useTransactions, Transaction, TransactionFormData } from '@/hooks/useTransactions';
-import { TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, Trash2, Loader2 } from 'lucide-react';
+import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
+import { useTransactions, Transaction, TransactionFormData, PeriodFilter } from '@/hooks/useTransactions';
+import { TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, Trash2, Loader2, Calendar } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+
+const periodLabels: Record<PeriodFilter, string> = {
+  week: 'Esta Semana',
+  month: 'Este Mês',
+  year: 'Este Ano',
+  all: 'Todo Período',
+};
 
 const Finances = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
+  const [period, setPeriod] = useState<PeriodFilter>('month');
 
   const { 
-    transactions, 
+    transactions,
+    filteredTransactions,
     isLoading, 
     createTransaction, 
     deleteTransaction,
     totalIncome,
     totalExpenses,
     balance,
-  } = useTransactions();
+  } = useTransactions(period);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -77,16 +94,31 @@ const Finances = () => {
               Acompanhe suas receitas e despesas
             </p>
           </div>
-          <Button variant="warm" onClick={handleCreate}>
-            <Plus className="h-5 w-5" />
-            Nova Transação
-          </Button>
+          <div className="flex items-center gap-3">
+            <Select value={period} onValueChange={(value) => setPeriod(value as PeriodFilter)}>
+              <SelectTrigger className="w-[160px]">
+                <Calendar className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {Object.entries(periodLabels).map(([value, label]) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="warm" onClick={handleCreate} className="hidden md:flex">
+              <Plus className="h-5 w-5" />
+              Nova Transação
+            </Button>
+          </div>
         </header>
 
         {/* Stats */}
         <section className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatsCard
-            title="Saldo do Mês"
+            title={`Saldo (${periodLabels[period]})`}
             value={formatCurrency(balance)}
             icon={Wallet}
             variant={balance >= 0 ? 'primary' : 'warning'}
@@ -105,8 +137,11 @@ const Finances = () => {
           />
         </section>
 
-        {/* Financial Chart */}
-        <FinanceChart transactions={transactions} />
+        {/* Charts Grid */}
+        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <FinanceChart transactions={filteredTransactions} />
+          <ExpenseCategoryChart transactions={filteredTransactions} />
+        </section>
 
         {/* Transactions List */}
         <Card>
@@ -118,16 +153,16 @@ const Finances = () => {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : transactions.length === 0 ? (
+            ) : filteredTransactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>Nenhuma transação registrada</p>
+                <p>Nenhuma transação no período</p>
                 <Button variant="link" className="mt-2" onClick={handleCreate}>
                   Registrar primeira transação
                 </Button>
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {transactions.map((transaction, index) => (
+                {filteredTransactions.map((transaction, index) => (
                   <div
                     key={transaction.id}
                     className={cn(
