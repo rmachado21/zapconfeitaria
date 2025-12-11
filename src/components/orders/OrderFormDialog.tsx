@@ -350,7 +350,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                   return (
                     <FormItem className="flex flex-col">
                       <FormLabel className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
+                        <User className="h-4 w-4 text-orange-600" />
                         Cliente *
                       </FormLabel>
                       <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
@@ -451,7 +451,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
               {/* Products Section */}
               <div className="space-y-3 overflow-hidden min-w-0">
                 <FormLabel className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-muted-foreground" />
+                  <Package className="h-4 w-4 text-red-600" />
                   Produtos *
                 </FormLabel>
 
