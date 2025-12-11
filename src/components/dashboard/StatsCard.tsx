@@ -1,7 +1,7 @@
 import { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { LucideIcon, Info } from 'lucide-react';
+import { LucideIcon, Info, ChevronRight } from 'lucide-react';
 import {
   Tooltip,
   TooltipContent,
@@ -61,7 +61,7 @@ export function StatsCard({
       )}
       onClick={onClick}
     >
-      <CardContent className="p-4">
+      <CardContent className="p-4 relative">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-1.5 mb-1">
@@ -126,6 +126,15 @@ export function StatsCard({
             <Icon className="h-5 w-5" />
           </div>
         </div>
+        {/* Mobile tap indicator */}
+        {onClick && (
+          <div className={cn(
+            "md:hidden absolute right-2 top-1/2 -translate-y-1/2",
+            variant === 'primary' ? 'text-primary-foreground/40' : 'text-muted-foreground/40'
+          )}>
+            <ChevronRight className="h-5 w-5" />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
