@@ -106,7 +106,7 @@ export function TransactionFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             {transactionType === 'income' ? (

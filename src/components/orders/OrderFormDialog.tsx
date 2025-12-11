@@ -325,7 +325,7 @@ export function OrderFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh]">
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh]" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />

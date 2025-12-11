@@ -88,7 +88,7 @@ export function ClientFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="font-display">
             {isEditing ? 'Editar Cliente' : 'Novo Cliente'}
