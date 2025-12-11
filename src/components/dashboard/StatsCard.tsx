@@ -21,6 +21,7 @@ interface StatsCardProps {
   variant?: 'default' | 'primary' | 'success' | 'warning';
   className?: string;
   tooltip?: string;
+  mobileDescription?: string;
   onClick?: () => void;
 }
 
@@ -33,6 +34,7 @@ export function StatsCard({
   variant = 'default',
   className,
   tooltip,
+  mobileDescription,
   onClick,
 }: StatsCardProps) {
   const variantStyles = {
@@ -74,7 +76,7 @@ export function StatsCard({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className={cn(
-                        "h-3.5 w-3.5 cursor-help",
+                        "hidden md:block h-3.5 w-3.5 cursor-help",
                         variant === 'primary' ? 'text-primary-foreground/60' : 'text-muted-foreground/60'
                       )} />
                     </TooltipTrigger>
@@ -107,6 +109,14 @@ export function StatsCard({
                 <span>{trend.isPositive ? '↑' : '↓'}</span>
                 <span>{Math.abs(trend.value)}% vs mês anterior</span>
               </div>
+            )}
+            {mobileDescription && (
+              <p className={cn(
+                "md:hidden text-[10px] mt-1.5 leading-tight",
+                variant === 'primary' ? 'text-primary-foreground/70' : 'text-muted-foreground'
+              )}>
+                {mobileDescription}
+              </p>
             )}
           </div>
           <div className={cn(
