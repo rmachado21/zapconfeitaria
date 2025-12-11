@@ -23,6 +23,7 @@ interface OrderItem {
 
 interface Order {
   id: string;
+  order_number: number | null;
   delivery_date: string | null;
   delivery_address: string | null;
   delivery_fee: number;
@@ -35,6 +36,11 @@ interface Order {
   } | null;
   order_items: OrderItem[];
 }
+
+const formatOrderNumber = (n: number | null): string => {
+  if (n === null) return '';
+  return `#${n.toString().padStart(5, '0')}`;
+};
 
 interface Profile {
   company_name: string | null;
@@ -217,10 +223,13 @@ const handler = async (req: Request): Promise<Response> => {
       yPos += 12;
     }
 
-    // Quote title
+    // Quote title with order number
     doc.setFontSize(14);
     doc.setTextColor(100, 100, 100);
-    doc.text("ORÇAMENTO", pageWidth / 2, yPos, { align: "center" });
+    const quoteTitle = typedOrder.order_number 
+      ? `ORÇAMENTO ${formatOrderNumber(typedOrder.order_number)}`
+      : "ORÇAMENTO";
+    doc.text(quoteTitle, pageWidth / 2, yPos, { align: "center" });
     yPos += 8;
 
     // Line separator

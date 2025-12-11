@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Order } from '@/hooks/useOrders';
+import { Order, formatOrderNumber } from '@/hooks/useOrders';
 import { useQuotePdf } from '@/hooks/useQuotePdf';
 import { useProfile } from '@/hooks/useProfile';
 import { openWhatsApp } from '@/lib/whatsapp';
@@ -207,7 +207,10 @@ export function OrderDetailDialog({ open, onOpenChange, order, onStatusChange, o
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-3">
             <Package className="h-5 w-5 text-primary" />
-            Detalhes do Pedido
+            {order.order_number 
+              ? `Pedido ${formatOrderNumber(order.order_number)}`
+              : 'Detalhes do Pedido'
+            }
           </DialogTitle>
         </DialogHeader>
 

@@ -71,12 +71,17 @@ const Orders = () => {
   const filteredOrders = useMemo(() => {
     let result = orders;
 
-    // Filter by client name
+    // Filter by client name or order number
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(order => 
-        order.client?.name?.toLowerCase().includes(query)
-      );
+      result = result.filter(order => {
+        // Match by client name
+        const matchesClient = order.client?.name?.toLowerCase().includes(query);
+        // Match by order number (with or without #)
+        const queryNumber = query.replace('#', '');
+        const matchesOrderNumber = order.order_number?.toString().includes(queryNumber);
+        return matchesClient || matchesOrderNumber;
+      });
     }
 
     // Sort by delivery date

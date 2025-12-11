@@ -22,6 +22,7 @@ export interface Order {
   id: string;
   user_id: string;
   client_id: string | null;
+  order_number: number | null;
   status: OrderStatus;
   delivery_date: string | null;
   delivery_time: string | null;
@@ -40,6 +41,11 @@ export interface Order {
   } | null;
   order_items?: OrderItem[];
 }
+
+export const formatOrderNumber = (n: number | null | undefined): string => {
+  if (n === null || n === undefined) return '';
+  return `#${n.toString().padStart(5, '0')}`;
+};
 
 export interface OrderFormData {
   client_id: string;
@@ -94,6 +100,17 @@ export function useOrders() {
       }, 0);
       const totalAmount = totalItems + (formData.delivery_fee || 0);
 
+      // Get next order number for this user
+      const { data: maxOrderNumber } = await supabase
+        .from('orders')
+        .select('order_number')
+        .eq('user_id', user.id)
+        .order('order_number', { ascending: false })
+        .limit(1)
+        .single();
+      
+      const nextOrderNumber = (maxOrderNumber?.order_number || 0) + 1;
+
       // Create order
       const { data: order, error: orderError } = await supabase
         .from('orders')
@@ -108,6 +125,7 @@ export function useOrders() {
           notes: formData.notes || null,
           status: 'quote',
           deposit_paid: false,
+          order_number: nextOrderNumber,
         })
         .select()
         .single();

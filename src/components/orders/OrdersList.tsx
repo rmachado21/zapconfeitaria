@@ -28,6 +28,7 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
 
   const convertToOrderType = (dbOrder: DBOrder): Order => ({
     id: dbOrder.id,
+    orderNumber: dbOrder.order_number ?? undefined,
     clientId: dbOrder.client_id || '',
     clientName: dbOrder.client?.name || 'Cliente não encontrado',
     clientPhone: dbOrder.client?.phone || '',

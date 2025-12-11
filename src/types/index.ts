@@ -39,6 +39,7 @@ export type OrderStatus =
 
 export interface Order {
   id: string;
+  orderNumber?: number;
   clientId: string;
   clientName: string;
   clientPhone: string;

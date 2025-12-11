@@ -55,6 +55,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
 
   const convertToOrderType = (dbOrder: DBOrder): OrderType => ({
     id: dbOrder.id,
+    orderNumber: dbOrder.order_number ?? undefined,
     clientId: dbOrder.client_id || '',
     clientName: dbOrder.client?.name || 'Cliente não encontrado',
     clientPhone: dbOrder.client?.phone || '',

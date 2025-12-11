@@ -45,7 +45,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus, PackagePlus } from 'lucide-react';
 import { useClients, ClientFormData } from '@/hooks/useClients';
 import { useProducts } from '@/hooks/useProducts';
-import { OrderFormData, Order } from '@/hooks/useOrders';
+import { OrderFormData, Order, formatOrderNumber } from '@/hooks/useOrders';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { formatCurrency } from '@/lib/masks';
 import { useToast } from '@/hooks/use-toast';
@@ -329,7 +329,10 @@ export function OrderFormDialog({
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
-            {isEditMode ? 'Editar Pedido' : 'Novo Pedido'}
+            {isEditMode 
+              ? `Editar Pedido ${editOrder?.order_number ? formatOrderNumber(editOrder.order_number) : ''}`
+              : 'Novo Pedido'
+            }
           </DialogTitle>
         </DialogHeader>
 
