@@ -165,10 +165,10 @@ export function ClientFormDialog({
               control={form.control}
               name="birthday"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="overflow-hidden">
                   <FormLabel>Data de Aniversário</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Input type="date" {...field} className="max-w-full" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
