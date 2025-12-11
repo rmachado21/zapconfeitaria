@@ -26,7 +26,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Package, FileText, DollarSign, Tag, Ruler, Image } from 'lucide-react';
 import { Product, ProductFormData } from '@/hooks/useProducts';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
@@ -121,7 +121,10 @@ export function ProductFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Package className="h-4 w-4" />
+                    Nome *
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nome do produto" {...field} />
                   </FormControl>
@@ -135,7 +138,10 @@ export function ProductFormDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4" />
+                    Descrição
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Descrição do produto..."
@@ -154,7 +160,10 @@ export function ProductFormDialog({
                 name="cost_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço de Custo *</FormLabel>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <DollarSign className="h-4 w-4" />
+                      Preço de Custo *
+                    </FormLabel>
                     <FormControl>
                       <CurrencyInput
                         value={field.value}
@@ -172,7 +181,10 @@ export function ProductFormDialog({
                 name="sale_price"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Preço de Venda *</FormLabel>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Tag className="h-4 w-4" />
+                      Preço de Venda *
+                    </FormLabel>
                     <FormControl>
                       <CurrencyInput
                         value={field.value}
@@ -199,7 +211,10 @@ export function ProductFormDialog({
               name="unit_type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo de Unidade *</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Ruler className="h-4 w-4" />
+                    Tipo de Unidade *
+                  </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -222,7 +237,10 @@ export function ProductFormDialog({
               name="photo_url"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Foto do Produto</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Image className="h-4 w-4" />
+                    Foto do Produto
+                  </FormLabel>
                   <FormControl>
                     <ImageUpload
                       bucket="product-images"

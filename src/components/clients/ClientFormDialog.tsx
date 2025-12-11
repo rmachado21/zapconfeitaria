@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, User, Phone, CreditCard, Mail, CalendarDays } from 'lucide-react';
 import { Client, ClientFormData } from '@/hooks/useClients';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { CpfCnpjInput } from '@/components/shared/CpfCnpjInput';
@@ -102,7 +102,10 @@ export function ClientFormDialog({
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome *</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <User className="h-4 w-4" />
+                    Nome *
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Nome do cliente" {...field} />
                   </FormControl>
@@ -116,7 +119,10 @@ export function ClientFormDialog({
               name="phone"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>WhatsApp</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Phone className="h-4 w-4" />
+                    WhatsApp
+                  </FormLabel>
                   <FormControl>
                     <PhoneInput 
                       placeholder="(11) 99999-9999" 
@@ -134,7 +140,10 @@ export function ClientFormDialog({
               name="cpf_cnpj"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CPF/CNPJ</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <CreditCard className="h-4 w-4" />
+                    CPF/CNPJ
+                  </FormLabel>
                   <FormControl>
                     <CpfCnpjInput 
                       placeholder="123.456.789-00" 
@@ -152,7 +161,10 @@ export function ClientFormDialog({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Mail className="h-4 w-4" />
+                    Email
+                  </FormLabel>
                   <FormControl>
                     <Input type="email" placeholder="email@exemplo.com" {...field} />
                   </FormControl>
@@ -166,7 +178,10 @@ export function ClientFormDialog({
               name="birthday"
               render={({ field }) => (
                 <FormItem className="overflow-hidden">
-                  <FormLabel>Data de Aniversário</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <CalendarDays className="h-4 w-4" />
+                    Data de Aniversário
+                  </FormLabel>
                   <FormControl>
                     <Input type="date" {...field} className="max-w-full" />
                   </FormControl>

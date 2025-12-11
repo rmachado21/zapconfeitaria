@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Loader2, TrendingUp, TrendingDown } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, ArrowUpDown, FolderOpen, FileText, DollarSign, CalendarDays } from 'lucide-react';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
 import { TransactionFormData } from '@/hooks/useTransactions';
 
@@ -125,7 +125,10 @@ export function TransactionFormDialog({
               name="type"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tipo *</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <ArrowUpDown className="h-4 w-4" />
+                    Tipo *
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -157,7 +160,10 @@ export function TransactionFormDialog({
               name="category"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <FolderOpen className="h-4 w-4" />
+                    Categoria
+                  </FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -182,7 +188,10 @@ export function TransactionFormDialog({
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Descrição *</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4" />
+                    Descrição *
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: Compra de chocolate belga" {...field} />
                   </FormControl>
@@ -196,7 +205,10 @@ export function TransactionFormDialog({
               name="amount"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Valor *</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <DollarSign className="h-4 w-4" />
+                    Valor *
+                  </FormLabel>
                   <FormControl>
                     <CurrencyInput
                       value={field.value}
@@ -214,7 +226,10 @@ export function TransactionFormDialog({
               name="date"
               render={({ field }) => (
                 <FormItem className="overflow-hidden">
-                  <FormLabel>Data</FormLabel>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <CalendarDays className="h-4 w-4" />
+                    Data
+                  </FormLabel>
                   <FormControl>
                     <Input type="date" {...field} className="max-w-full" />
                   </FormControl>
