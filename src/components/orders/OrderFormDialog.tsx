@@ -1,59 +1,44 @@
-import { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Plus, Trash2, ShoppingBag, Minus, Gift, Check, ChevronsUpDown, X, UserPlus, PackagePlus, User, Package } from 'lucide-react';
-import { useClients, ClientFormData } from '@/hooks/useClients';
-import { useProducts } from '@/hooks/useProducts';
-import { OrderFormData, Order, formatOrderNumber } from '@/hooks/useOrders';
-import { CurrencyInput } from '@/components/shared/CurrencyInput';
-import { formatCurrency } from '@/lib/masks';
-import { useToast } from '@/hooks/use-toast';
-import { ClientFormDialog } from '@/components/clients/ClientFormDialog';
-import { cn } from '@/lib/utils';
+  Loader2,
+  Plus,
+  Trash2,
+  ShoppingBag,
+  Minus,
+  Gift,
+  Check,
+  ChevronsUpDown,
+  X,
+  UserPlus,
+  PackagePlus,
+  User,
+  Package,
+} from "lucide-react";
+import { useClients, ClientFormData } from "@/hooks/useClients";
+import { useProducts } from "@/hooks/useProducts";
+import { OrderFormData, Order, formatOrderNumber } from "@/hooks/useOrders";
+import { CurrencyInput } from "@/components/shared/CurrencyInput";
+import { formatCurrency } from "@/lib/masks";
+import { useToast } from "@/hooks/use-toast";
+import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
+import { cn } from "@/lib/utils";
 
 const orderSchema = z.object({
-  client_id: z.string().min(1, 'Selecione um cliente'),
+  client_id: z.string().min(1, "Selecione um cliente"),
   delivery_date: z.string().optional(),
   delivery_time: z.string().optional(),
   delivery_address: z.string().max(200).optional(),
@@ -78,25 +63,19 @@ interface OrderFormDialogProps {
   editOrder?: Order | null;
 }
 
-export function OrderFormDialog({
-  open,
-  onOpenChange,
-  onSubmit,
-  isLoading,
-  editOrder,
-}: OrderFormDialogProps) {
+export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editOrder }: OrderFormDialogProps) {
   const { clients, createClient } = useClients();
   const { products } = useProducts();
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const { toast } = useToast();
   const [items, setItems] = useState<OrderItem[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
-  
+
   // Additional items state
-  const [additionalItemName, setAdditionalItemName] = useState('');
+  const [additionalItemName, setAdditionalItemName] = useState("");
   const [additionalItemQty, setAdditionalItemQty] = useState<number>(1);
   const [additionalItemPrice, setAdditionalItemPrice] = useState<number>(0);
   const [additionalItemError, setAdditionalItemError] = useState(false);
@@ -106,12 +85,12 @@ export function OrderFormDialog({
   const form = useForm({
     resolver: zodResolver(orderSchema),
     defaultValues: {
-      client_id: '',
-      delivery_date: '',
-      delivery_time: '',
-      delivery_address: '',
+      client_id: "",
+      delivery_date: "",
+      delivery_time: "",
+      delivery_address: "",
       delivery_fee: 0,
-      notes: '',
+      notes: "",
     },
   });
 
@@ -119,30 +98,32 @@ export function OrderFormDialog({
     if (!open) {
       form.reset();
       setItems([]);
-      setSelectedProduct('');
+      setSelectedProduct("");
       setQuantity(1);
-      setAdditionalItemName('');
+      setAdditionalItemName("");
       setAdditionalItemQty(1);
       setAdditionalItemPrice(0);
     } else if (editOrder) {
       // Populate form with existing order data
       form.reset({
-        client_id: editOrder.client_id || '',
-        delivery_date: editOrder.delivery_date || '',
-        delivery_time: editOrder.delivery_time || '',
-        delivery_address: editOrder.delivery_address || '',
+        client_id: editOrder.client_id || "",
+        delivery_date: editOrder.delivery_date || "",
+        delivery_time: editOrder.delivery_time || "",
+        delivery_address: editOrder.delivery_address || "",
         delivery_fee: editOrder.delivery_fee || 0,
-        notes: editOrder.notes || '',
+        notes: editOrder.notes || "",
       });
       // Populate items
-      setItems((editOrder.order_items || []).map(item => ({
-        product_id: item.product_id || null,
-        product_name: item.product_name,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        unit_type: item.unit_type || 'unit',
-        is_gift: item.is_gift || false,
-      })));
+      setItems(
+        (editOrder.order_items || []).map((item) => ({
+          product_id: item.product_id || null,
+          product_name: item.product_name,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          unit_type: item.unit_type || "unit",
+          is_gift: item.is_gift || false,
+        })),
+      );
     }
   }, [open, form, editOrder]);
 
@@ -151,62 +132,65 @@ export function OrderFormDialog({
     if (!additionalItemName.trim()) {
       setAdditionalItemError(true);
       toast({
-        title: 'Descrição obrigatória',
-        description: 'Informe a descrição do item adicional.',
-        variant: 'destructive',
+        title: "Descrição obrigatória",
+        description: "Informe a descrição do item adicional.",
+        variant: "destructive",
       });
       return;
     }
 
     if (additionalItemQty <= 0) {
       toast({
-        title: 'Quantidade inválida',
-        description: 'A quantidade deve ser maior que zero.',
-        variant: 'destructive',
+        title: "Quantidade inválida",
+        description: "A quantidade deve ser maior que zero.",
+        variant: "destructive",
       });
       return;
     }
 
     if (additionalItemPrice < 0) {
       toast({
-        title: 'Valor inválido',
-        description: 'O valor não pode ser negativo.',
-        variant: 'destructive',
+        title: "Valor inválido",
+        description: "O valor não pode ser negativo.",
+        variant: "destructive",
       });
       return;
     }
 
     const itemName = additionalItemName.trim();
     const itemQty = additionalItemQty;
-    
-    setItems([...items, {
-      product_id: null,
-      product_name: itemName,
-      quantity: itemQty,
-      unit_price: additionalItemPrice,
-      unit_type: 'unit',
-      is_gift: false,
-    }]);
+
+    setItems([
+      ...items,
+      {
+        product_id: null,
+        product_name: itemName,
+        quantity: itemQty,
+        unit_price: additionalItemPrice,
+        unit_type: "unit",
+        is_gift: false,
+      },
+    ]);
 
     // Reset additional item fields
-    setAdditionalItemName('');
+    setAdditionalItemName("");
     setAdditionalItemQty(1);
     setAdditionalItemPrice(0);
     setAdditionalItemError(false);
-    
+
     toast({
-      title: 'Item adicional incluído',
+      title: "Item adicional incluído",
       description: `${itemQty}x ${itemName}`,
     });
   };
 
-  const selectedProductData = products.find(p => p.id === selectedProduct);
+  const selectedProductData = products.find((p) => p.id === selectedProduct);
 
   const handleAddItem = () => {
     if (!selectedProduct || !selectedProductData) {
       toast({
-        title: 'Selecione um produto',
-        variant: 'destructive',
+        title: "Selecione um produto",
+        variant: "destructive",
       });
       return;
     }
@@ -214,9 +198,9 @@ export function OrderFormDialog({
     // Validate quantity - must be positive
     if (!quantity || quantity <= 0 || isNaN(quantity)) {
       toast({
-        title: 'Quantidade inválida',
-        description: 'A quantidade deve ser maior que zero.',
-        variant: 'destructive',
+        title: "Quantidade inválida",
+        description: "A quantidade deve ser maior que zero.",
+        variant: "destructive",
       });
       return;
     }
@@ -224,49 +208,50 @@ export function OrderFormDialog({
     // Validate based on unit type
     const unitType = selectedProductData.unit_type;
     const getMinQuantity = (type: string) => {
-      if (type === 'kg') return 0.5;
+      if (type === "kg") return 0.5;
       return 1;
     };
     const minQuantity = getMinQuantity(unitType);
-    const unitLabel = unitType === 'kg' ? 'Kg' : unitType === 'cento' ? 'Cento' : 'Un';
-    
+    const unitLabel = unitType === "kg" ? "Kg" : unitType === "cento" ? "Cento" : "Un";
+
     if (quantity < minQuantity) {
       toast({
-        title: 'Quantidade mínima',
+        title: "Quantidade mínima",
         description: `Mínimo de ${minQuantity} ${unitLabel}`,
-        variant: 'destructive',
+        variant: "destructive",
       });
       return;
     }
 
     // Normalize quantity: 2 decimals for Kg, integer for UN/Cento
-    const validQuantity = unitType === 'kg' 
-      ? Math.round(quantity * 100) / 100
-      : Math.floor(quantity);
+    const validQuantity = unitType === "kg" ? Math.round(quantity * 100) / 100 : Math.floor(quantity);
 
-    const existingIndex = items.findIndex(i => i.product_id === selectedProduct);
-    
+    const existingIndex = items.findIndex((i) => i.product_id === selectedProduct);
+
     if (existingIndex >= 0) {
       const newItems = [...items];
       newItems[existingIndex].quantity += validQuantity;
       setItems(newItems);
     } else {
-      setItems([...items, {
-        product_id: selectedProductData.id,
-        product_name: selectedProductData.name,
-        quantity: validQuantity,
-        unit_price: selectedProductData.sale_price,
-        unit_type: selectedProductData.unit_type,
-        is_gift: false,
-      }]);
+      setItems([
+        ...items,
+        {
+          product_id: selectedProductData.id,
+          product_name: selectedProductData.name,
+          quantity: validQuantity,
+          unit_price: selectedProductData.sale_price,
+          unit_type: selectedProductData.unit_type,
+          is_gift: false,
+        },
+      ]);
     }
 
     toast({
-      title: 'Produto adicionado',
+      title: "Produto adicionado",
       description: `${validQuantity} ${unitLabel} de ${selectedProductData.name}`,
     });
 
-    setSelectedProduct('');
+    setSelectedProduct("");
     setQuantity(1);
   };
 
@@ -274,22 +259,22 @@ export function OrderFormDialog({
     const newItems = [...items];
     const item = newItems[index];
     const unitType = item.unit_type;
-    
+
     const getStep = (type: string) => {
-      if (type === 'kg') return 0.5;
+      if (type === "kg") return 0.5;
       return 1;
     };
     const getMinQty = (type: string) => {
-      if (type === 'kg') return 0.5;
+      if (type === "kg") return 0.5;
       return 1;
     };
-    
+
     const step = getStep(unitType);
     const minQty = getMinQty(unitType);
-    const newQuantity = item.quantity + (delta * step);
-    
+    const newQuantity = item.quantity + delta * step;
+
     if (newQuantity >= minQty) {
-      newItems[index].quantity = unitType === 'kg' ? Math.round(newQuantity * 100) / 100 : Math.floor(newQuantity);
+      newItems[index].quantity = unitType === "kg" ? Math.round(newQuantity * 100) / 100 : Math.floor(newQuantity);
       setItems(newItems);
     }
   };
@@ -307,23 +292,23 @@ export function OrderFormDialog({
   // Only count non-gift items in total
   const totalItems = items.reduce((sum, item) => {
     if (item.is_gift) return sum;
-    return sum + (item.quantity * item.unit_price);
+    return sum + item.quantity * item.unit_price;
   }, 0);
   const giftDiscount = items.reduce((sum, item) => {
     if (!item.is_gift) return sum;
-    return sum + (item.quantity * item.unit_price);
+    return sum + item.quantity * item.unit_price;
   }, 0);
-  const deliveryFee = form.watch('delivery_fee') || 0;
+  const deliveryFee = form.watch("delivery_fee") || 0;
   const totalAmount = totalItems + deliveryFee;
 
   const handleSubmit = async (data: z.infer<typeof orderSchema>) => {
     if (items.length === 0) {
-      form.setError('client_id', { message: 'Adicione pelo menos um produto' });
+      form.setError("client_id", { message: "Adicione pelo menos um produto" });
       return;
     }
 
     if (!data.client_id) {
-      form.setError('client_id', { message: 'Selecione um cliente' });
+      form.setError("client_id", { message: "Selecione um cliente" });
       return;
     }
 
@@ -345,10 +330,9 @@ export function OrderFormDialog({
         <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
-            {isEditMode 
-              ? `Editar Pedido ${editOrder?.order_number ? formatOrderNumber(editOrder.order_number) : ''}`
-              : 'Novo Pedido'
-            }
+            {isEditMode
+              ? `Editar Pedido ${editOrder?.order_number ? formatOrderNumber(editOrder.order_number) : ""}`
+              : "Novo Pedido"}
           </DialogTitle>
         </DialogHeader>
 
@@ -360,7 +344,7 @@ export function OrderFormDialog({
                 control={form.control}
                 name="client_id"
                 render={({ field }) => {
-                  const selectedClient = clients.find(c => c.id === field.value);
+                  const selectedClient = clients.find((c) => c.id === field.value);
                   return (
                     <FormItem className="flex flex-col">
                       <FormLabel className="flex items-center gap-2">
@@ -376,7 +360,7 @@ export function OrderFormDialog({
                               aria-expanded={clientSearchOpen}
                               className={cn(
                                 "w-full justify-between font-normal",
-                                !field.value && "text-muted-foreground"
+                                !field.value && "text-muted-foreground",
                               )}
                             >
                               {selectedClient ? selectedClient.name : "Buscar cliente..."}
@@ -386,7 +370,7 @@ export function OrderFormDialog({
                                     className="h-4 w-4 opacity-50 hover:opacity-100"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      field.onChange('');
+                                      field.onChange("");
                                     }}
                                   />
                                 )}
@@ -430,7 +414,7 @@ export function OrderFormDialog({
                                     <Check
                                       className={cn(
                                         "mr-2 h-4 w-4",
-                                        field.value === client.id ? "opacity-100" : "opacity-0"
+                                        field.value === client.id ? "opacity-100" : "opacity-0",
                                       )}
                                     />
                                     {client.name}
@@ -468,7 +452,7 @@ export function OrderFormDialog({
                   <Package className="h-4 w-4 text-muted-foreground" />
                   Produtos *
                 </FormLabel>
-                
+
                 {/* Add Product Row */}
                 <div className="flex flex-col sm:flex-row gap-2 overflow-hidden">
                   <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
@@ -479,13 +463,17 @@ export function OrderFormDialog({
                         aria-expanded={productSearchOpen}
                         className={cn(
                           "w-full sm:flex-1 sm:min-w-0 max-w-full justify-between font-normal overflow-hidden",
-                          !selectedProduct && "text-muted-foreground"
+                          !selectedProduct && "text-muted-foreground",
                         )}
                       >
                         {selectedProductData ? (
                           <span className="truncate">
                             {selectedProductData.name} - {formatCurrency(selectedProductData.sale_price)}/
-                            {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cento' : 'Un'}
+                            {selectedProductData.unit_type === "kg"
+                              ? "Kg"
+                              : selectedProductData.unit_type === "cento"
+                                ? "Cento"
+                                : "Un"}
                           </span>
                         ) : (
                           "Buscar produto..."
@@ -496,7 +484,7 @@ export function OrderFormDialog({
                               className="h-4 w-4 opacity-50 hover:opacity-100"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setSelectedProduct('');
+                                setSelectedProduct("");
                               }}
                             />
                           )}
@@ -511,7 +499,8 @@ export function OrderFormDialog({
                           <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
                           <CommandGroup>
                             {products.map((product) => {
-                              const unitLabel = product.unit_type === 'kg' ? 'Kg' : product.unit_type === 'cento' ? 'Cento' : 'Un';
+                              const unitLabel =
+                                product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
                               return (
                                 <CommandItem
                                   key={product.id}
@@ -519,14 +508,14 @@ export function OrderFormDialog({
                                   onSelect={() => {
                                     setSelectedProduct(product.id);
                                     // Define quantidade inicial baseada no tipo de produto
-                                    setQuantity(product.unit_type === 'kg' ? 0.5 : 1);
+                                    setQuantity(product.unit_type === "kg" ? 0.5 : 1);
                                     setProductSearchOpen(false);
                                   }}
                                 >
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      selectedProduct === product.id ? "opacity-100" : "opacity-0"
+                                      selectedProduct === product.id ? "opacity-100" : "opacity-0",
                                     )}
                                   />
                                   <span className="flex-1 truncate">{product.name}</span>
@@ -549,16 +538,16 @@ export function OrderFormDialog({
                         variant="outline"
                         size="icon"
                         onClick={() => {
-                          const step = selectedProductData?.unit_type === 'kg' ? 0.5 : 1;
-                          const min = selectedProductData?.unit_type === 'kg' ? 0.5 : 1;
+                          const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
+                          const min = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
                           setQuantity(Math.max(min, quantity - step));
                         }}
-                        disabled={!selectedProduct || quantity <= (selectedProductData?.unit_type === 'kg' ? 0.5 : 1)}
+                        disabled={!selectedProduct || quantity <= (selectedProductData?.unit_type === "kg" ? 0.5 : 1)}
                         className="h-9 w-9 shrink-0"
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
-                      
+
                       <div className="relative">
                         <Input
                           type="text"
@@ -566,11 +555,11 @@ export function OrderFormDialog({
                           pattern="[0-9]*[.,]?[0-9]*"
                           value={quantity}
                           onChange={(e) => {
-                            const value = e.target.value.replace(',', '.');
+                            const value = e.target.value.replace(",", ".");
                             const numValue = parseFloat(value);
                             if (!isNaN(numValue) && numValue >= 0) {
                               setQuantity(numValue);
-                            } else if (value === '' || value === '.') {
+                            } else if (value === "" || value === ".") {
                               setQuantity(0);
                             }
                           }}
@@ -579,17 +568,21 @@ export function OrderFormDialog({
                         />
                         {selectedProductData && (
                           <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                            {selectedProductData.unit_type === 'kg' ? 'Kg' : selectedProductData.unit_type === 'cento' ? 'Cto' : 'Un'}
+                            {selectedProductData.unit_type === "kg"
+                              ? "Kg"
+                              : selectedProductData.unit_type === "cento"
+                                ? "Cto"
+                                : "Un"}
                           </span>
                         )}
                       </div>
-                      
+
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
                         onClick={() => {
-                          const step = selectedProductData?.unit_type === 'kg' ? 0.5 : 1;
+                          const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
                           setQuantity(quantity + step);
                         }}
                         disabled={!selectedProduct}
@@ -598,7 +591,7 @@ export function OrderFormDialog({
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    
+
                     {/* Botão Adicionar */}
                     <Button
                       type="button"
@@ -618,129 +611,140 @@ export function OrderFormDialog({
                   <Card className="overflow-hidden">
                     <CardContent className="p-2 sm:p-3 space-y-2 overflow-hidden">
                       {items.map((item, index) => {
-                        const unitLabel = item.unit_type === 'kg' ? 'Kg' : item.unit_type === 'cento' ? 'Cento' : 'Un';
+                        const unitLabel = item.unit_type === "kg" ? "Kg" : item.unit_type === "cento" ? "Cento" : "Un";
                         const isGift = item.is_gift;
                         const isAdditional = item.product_id === null;
                         return (
-                        <div key={index} className={cn(
-                          "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors overflow-hidden max-w-full",
-                          isGift && "bg-success/10 border border-success/20",
-                          isAdditional && !isGift && "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30"
-                        )}>
-                          {/* Linha 1: Nome + Preço */}
-                          <div className="flex items-start justify-between gap-2 min-w-0">
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
-                                {isAdditional && !isGift && <PackagePlus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />}
-                                <span className={cn(
-                                  "font-medium",
-                                  isGift && "text-success",
-                                  isAdditional && !isGift && "text-blue-700 dark:text-blue-300"
-                                )}>
-                                  {item.product_name}
-                                </span>
-                                {isGift && <Badge variant="success" className="text-[9px] px-1 py-0">BRINDE</Badge>}
-                                {isAdditional && !isGift && <Badge className="text-[9px] px-1 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">ADICIONAL</Badge>}
-                              </div>
-                              {isAdditional ? (
-                                <div className="flex items-center gap-1 mt-1">
-                                  <CurrencyInput
-                                    value={item.unit_price}
-                                    onChange={(value) => {
-                                      const newItems = [...items];
-                                      newItems[index].unit_price = value;
-                                      setItems(newItems);
-                                    }}
-                                    className="h-7 text-xs w-24"
-                                  />
-                                  <span className="text-muted-foreground text-xs">/{unitLabel}</span>
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-xs">
-                                  {formatCurrency(item.unit_price)}/{unitLabel}
-                                </span>
-                              )}
-                            </div>
-                            <div className="text-right shrink-0">
-                              {isGift ? (
-                                <div className="flex flex-col items-end">
-                                  <span className="text-[10px] line-through text-muted-foreground">
-                                    {formatCurrency(item.quantity * item.unit_price)}
+                          <div
+                            key={index}
+                            className={cn(
+                              "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors overflow-hidden max-w-full",
+                              isGift && "bg-success/10 border border-success/20",
+                              isAdditional &&
+                                !isGift &&
+                                "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30",
+                            )}
+                          >
+                            {/* Linha 1: Nome + Preço */}
+                            <div className="flex items-start justify-between gap-2 min-w-0">
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
+                                  {isAdditional && !isGift && (
+                                    <PackagePlus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                  )}
+                                  <span
+                                    className={cn(
+                                      "font-medium",
+                                      isGift && "text-success",
+                                      isAdditional && !isGift && "text-blue-700 dark:text-blue-300",
+                                    )}
+                                  >
+                                    {item.product_name}
                                   </span>
-                                  <span className="font-medium text-success text-xs">R$ 0,00</span>
+                                  {isGift && (
+                                    <Badge variant="success" className="text-[9px] px-1 py-0">
+                                      BRINDE
+                                    </Badge>
+                                  )}
+                                  {isAdditional && !isGift && (
+                                    <Badge className="text-[9px] px-1 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                                      ADICIONAL
+                                    </Badge>
+                                  )}
                                 </div>
-                              ) : (
-                                <span className="font-medium">
-                                  {formatCurrency(item.quantity * item.unit_price)}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          
-                          {/* Linha 2: Quantidade + Ações */}
-                          <div className="flex items-center justify-between gap-2 min-w-0">
-                            {/* Quantity Controls */}
-                            <div className="flex items-center gap-1">
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon-sm"
-                                onClick={() => handleUpdateItemQuantity(index, -1)}
-                                disabled={item.quantity <= (item.unit_type === 'kg' ? 0.5 : 1)}
-                              >
-                                <Minus className="h-3 w-3" />
-                              </Button>
-                              <span className="min-w-[3.5rem] text-center font-medium text-xs">
-                                {item.quantity} {unitLabel}
-                              </span>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon-sm"
-                                onClick={() => handleUpdateItemQuantity(index, 1)}
-                              >
-                                <Plus className="h-3 w-3" />
-                              </Button>
+                                {isAdditional ? (
+                                  <div className="flex items-center gap-1 mt-1">
+                                    <CurrencyInput
+                                      value={item.unit_price}
+                                      onChange={(value) => {
+                                        const newItems = [...items];
+                                        newItems[index].unit_price = value;
+                                        setItems(newItems);
+                                      }}
+                                      className="h-7 text-xs w-24"
+                                    />
+                                    <span className="text-muted-foreground text-xs">/{unitLabel}</span>
+                                  </div>
+                                ) : (
+                                  <span className="text-muted-foreground text-xs">
+                                    {formatCurrency(item.unit_price)}/{unitLabel}
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-right shrink-0">
+                                {isGift ? (
+                                  <div className="flex flex-col items-end">
+                                    <span className="text-[10px] line-through text-muted-foreground">
+                                      {formatCurrency(item.quantity * item.unit_price)}
+                                    </span>
+                                    <span className="font-medium text-success text-xs">R$ 0,00</span>
+                                  </div>
+                                ) : (
+                                  <span className="font-medium">{formatCurrency(item.quantity * item.unit_price)}</span>
+                                )}
+                              </div>
                             </div>
 
-                            {/* Actions */}
-                            <div className="flex items-center gap-1 shrink-0">
-                              <Button
-                                type="button"
-                                variant={isGift ? "default" : "outline"}
-                                size="icon-sm"
-                                className={cn(
-                                  "flex-shrink-0",
-                                  isGift && "bg-success hover:bg-success/90"
-                                )}
-                                onClick={() => handleToggleGift(index)}
-                                title={isGift ? "Remover brinde" : "Marcar como brinde"}
-                              >
-                                <Gift className="h-3 w-3" />
-                              </Button>
-                              
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                className="text-destructive flex-shrink-0"
-                                onClick={() => handleRemoveItem(index)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                            {/* Linha 2: Quantidade + Ações */}
+                            <div className="flex items-center justify-between gap-2 min-w-0">
+                              {/* Quantity Controls */}
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon-sm"
+                                  onClick={() => handleUpdateItemQuantity(index, -1)}
+                                  disabled={item.quantity <= (item.unit_type === "kg" ? 0.5 : 1)}
+                                >
+                                  <Minus className="h-3 w-3" />
+                                </Button>
+                                <span className="min-w-[3.5rem] text-center font-medium text-xs">
+                                  {item.quantity} {unitLabel}
+                                </span>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="icon-sm"
+                                  onClick={() => handleUpdateItemQuantity(index, 1)}
+                                >
+                                  <Plus className="h-3 w-3" />
+                                </Button>
+                              </div>
+
+                              {/* Actions */}
+                              <div className="flex items-center gap-1 shrink-0">
+                                <Button
+                                  type="button"
+                                  variant={isGift ? "default" : "outline"}
+                                  size="icon-sm"
+                                  className={cn("flex-shrink-0", isGift && "bg-success hover:bg-success/90")}
+                                  onClick={() => handleToggleGift(index)}
+                                  title={isGift ? "Remover brinde" : "Marcar como brinde"}
+                                >
+                                  <Gift className="h-3 w-3" />
+                                </Button>
+
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon-sm"
+                                  className="text-destructive flex-shrink-0"
+                                  onClick={() => handleRemoveItem(index)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      )})}
+                        );
+                      })}
                     </CardContent>
                   </Card>
                 )}
 
                 {items.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">
-                    Nenhum produto adicionado
-                  </p>
+                  <p className="text-sm text-muted-foreground text-center py-4">Nenhum produto adicionado</p>
                 )}
               </div>
 
@@ -750,19 +754,20 @@ export function OrderFormDialog({
                   <PackagePlus className="h-4 w-4 text-blue-600" />
                   Itens Adicionais
                 </FormLabel>
-                <p className="text-xs text-muted-foreground -mt-1">
-                  Para itens avulsos não cadastrados como produto
-                </p>
-                
+                <p className="text-xs text-muted-foreground -mt-1">Para itens avulsos não cadastrados como produto</p>
+
                 <div className="space-y-2">
                   <Input
-                    placeholder="Descrição do item (ex: Topper personalizado)"
+                    placeholder="Descrição do item"
                     value={additionalItemName}
                     onChange={(e) => {
                       setAdditionalItemName(e.target.value);
                       if (additionalItemError) setAdditionalItemError(false);
                     }}
-                    className={cn("min-w-0 w-full", additionalItemError && "border-destructive focus-visible:ring-destructive")}
+                    className={cn(
+                      "min-w-0 w-full",
+                      additionalItemError && "border-destructive focus-visible:ring-destructive",
+                    )}
                   />
                   <div className="flex flex-wrap items-center gap-2 overflow-hidden">
                     {/* Stepper de quantidade */}
@@ -777,7 +782,7 @@ export function OrderFormDialog({
                       >
                         <Minus className="h-4 w-4" />
                       </Button>
-                      
+
                       <div className="relative">
                         <Input
                           type="text"
@@ -788,7 +793,7 @@ export function OrderFormDialog({
                             const value = parseInt(e.target.value);
                             if (!isNaN(value) && value >= 1) {
                               setAdditionalItemQty(value);
-                            } else if (e.target.value === '') {
+                            } else if (e.target.value === "") {
                               setAdditionalItemQty(1);
                             }
                           }}
@@ -799,7 +804,7 @@ export function OrderFormDialog({
                           Un
                         </span>
                       </div>
-                      
+
                       <Button
                         type="button"
                         variant="outline"
@@ -810,7 +815,7 @@ export function OrderFormDialog({
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    
+
                     {/* Campo de preço */}
                     <div className="flex-1 min-w-[120px]">
                       <CurrencyInput
@@ -819,7 +824,7 @@ export function OrderFormDialog({
                         placeholder="Valor unitário"
                       />
                     </div>
-                    
+
                     {/* Botão Adicionar */}
                     <Button
                       type="button"
@@ -856,10 +861,7 @@ export function OrderFormDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Horário</FormLabel>
-                      <Select
-                        value={field.value || ''}
-                        onValueChange={field.onChange}
-                      >
+                      <Select value={field.value || ""} onValueChange={field.onChange}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Selecione..." />
@@ -869,7 +871,7 @@ export function OrderFormDialog({
                           {Array.from({ length: 36 }, (_, i) => {
                             const hour = Math.floor(i / 2) + 6;
                             const minute = (i % 2) * 30;
-                            const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+                            const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
                             return (
                               <SelectItem key={time} value={time}>
                                 {time}
@@ -907,11 +909,7 @@ export function OrderFormDialog({
                   <FormItem>
                     <FormLabel>Taxa de Entrega</FormLabel>
                     <FormControl>
-                      <CurrencyInput
-                        value={field.value || 0}
-                        onChange={field.onChange}
-                        placeholder="R$ 0,00"
-                      />
+                      <CurrencyInput value={field.value || 0} onChange={field.onChange} placeholder="R$ 0,00" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -982,14 +980,14 @@ export function OrderFormDialog({
                 >
                   Cancelar
                 </Button>
-                <Button 
-                  type="submit" 
-                  variant="warm" 
+                <Button
+                  type="submit"
+                  variant="warm"
                   className="w-full sm:w-auto"
                   disabled={isLoading || items.length === 0}
                 >
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEditMode ? 'Salvar Alterações' : 'Criar Pedido'}
+                  {isEditMode ? "Salvar Alterações" : "Criar Pedido"}
                 </Button>
               </div>
             </form>
@@ -1004,7 +1002,7 @@ export function OrderFormDialog({
         onSubmit={async (data) => {
           const result = await createClient.mutateAsync(data);
           if (result?.id) {
-            form.setValue('client_id', result.id);
+            form.setValue("client_id", result.id);
           }
         }}
         isLoading={createClient.isPending}
