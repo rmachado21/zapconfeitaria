@@ -6,7 +6,7 @@ import { ShoppingBag, Package, Clock, CheckCircle, FileText, XCircle } from "luc
 import { formatOrderNumber } from "@/hooks/useOrders";
 import { format, parseISO } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { OrderStatus } from "@/types";
+import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types";
 
 interface Order {
   id: string;
@@ -28,13 +28,13 @@ interface ActiveOrdersDialogProps {
   onOrderClick?: (order: Order) => void;
 }
 
-const statusConfig: Record<OrderStatus, { label: string; color: string; icon: React.ElementType }> = {
-  quote: { label: "Orçamento", color: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300", icon: FileText },
-  awaiting_deposit: { label: "Aguardando Sinal", color: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300", icon: Clock },
-  in_production: { label: "Em Produção", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300", icon: Package },
-  ready: { label: "Pronto", color: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300", icon: CheckCircle },
-  delivered: { label: "Entregue", color: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300", icon: CheckCircle },
-  cancelled: { label: "Cancelado", color: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300", icon: XCircle },
+const statusIcons: Record<OrderStatus, React.ElementType> = {
+  quote: FileText,
+  awaiting_deposit: Clock,
+  in_production: Package,
+  ready: CheckCircle,
+  delivered: CheckCircle,
+  cancelled: XCircle,
 };
 
 export function ActiveOrdersDialog({
@@ -65,7 +65,7 @@ export function ActiveOrdersDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-md mx-4"
+        className="max-w-md"
         onInteractOutside={(e) => e.preventDefault()}
       >
         <DialogHeader>
@@ -99,8 +99,8 @@ export function ActiveOrdersDialog({
             <ScrollArea className="max-h-[50vh]">
               <div className="space-y-3 pr-2">
                 {sortedOrders.map((order) => {
-                  const config = statusConfig[order.status];
-                  const StatusIcon = config.icon;
+                  const config = ORDER_STATUS_CONFIG[order.status];
+                  const StatusIcon = statusIcons[order.status];
 
                   return (
                     <Card
@@ -116,7 +116,7 @@ export function ActiveOrdersDialog({
                               <span className="font-semibold text-sm">
                                 {formatOrderNumber(order.order_number)}
                               </span>
-                              <Badge className={`text-xs px-1.5 py-0 ${config.color}`}>
+                              <Badge className={`text-xs px-1.5 py-0.5 ${config.bgColor} ${config.color}`}>
                                 <StatusIcon className="h-3 w-3 mr-1" />
                                 {config.label}
                               </Badge>
