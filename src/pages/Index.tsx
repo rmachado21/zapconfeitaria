@@ -3,6 +3,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StatsCardSkeleton } from "@/components/dashboard/StatsCardSkeleton";
 import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
+import { ActiveOrdersDialog } from "@/components/dashboard/ActiveOrdersDialog";
 import { KanbanBoard } from "@/components/orders/KanbanBoard";
 import { OrdersList } from "@/components/orders/OrdersList";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodFilter>("month");
   const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
+  const [activeOrdersOpen, setActiveOrdersOpen] = useState(false);
   const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
   const { clients, isLoading: clientsLoading } = useClients();
   const { products, isLoading: productsLoading } = useProducts();
@@ -178,6 +180,7 @@ const Index = () => {
                     value={activeOrders.length}
                     subtitle="Em andamento"
                     icon={ShoppingBag}
+                    onClick={() => setActiveOrdersOpen(true)}
                   />
                 </div>
                 <div className="animate-fade-in stagger-3">
@@ -266,6 +269,17 @@ const Index = () => {
           onOpenChange={setPendingDepositsOpen}
           orders={pendingDepositOrders}
           onDepositPaid={handleDepositChange}
+        />
+
+        {/* Active Orders Dialog */}
+        <ActiveOrdersDialog
+          open={activeOrdersOpen}
+          onOpenChange={setActiveOrdersOpen}
+          orders={activeOrders}
+          onOrderClick={(order) => {
+            setActiveOrdersOpen(false);
+            navigate("/orders", { state: { openOrderId: order.id } });
+          }}
         />
       </div>
     </AppLayout>
