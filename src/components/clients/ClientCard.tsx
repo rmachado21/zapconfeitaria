@@ -1,10 +1,11 @@
 import { Client } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Cake, MessageCircle, ChevronRight, Trash2, MapPin, ShoppingBag } from 'lucide-react';
+import { Phone, Mail, Cake, ChevronRight, Trash2, MapPin, ShoppingBag } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { openWhatsApp } from '@/lib/whatsapp';
+import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 
 interface ClientCardProps {
   client: Client & { orderCount?: number };
@@ -98,7 +99,7 @@ export function ClientCard({ client, onClick, onDelete }: ClientCardProps) {
                 className="text-success hover:text-success hover:bg-success/10"
                 onClick={handleWhatsAppClick}
               >
-                <MessageCircle className="h-4 w-4" />
+                <WhatsAppIcon className="h-4 w-4" />
               </Button>
             )}
             <Button
