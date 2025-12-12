@@ -212,11 +212,14 @@ export function OrderDetailDialog({
   const formatDate = (dateString: string | null, timeString?: string | null) => {
     if (!dateString) return "A definir";
     try {
-      const formatted = format(parseISO(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+      // Formato: "Sexta-feira, 12 de Dez"
+      const formatted = format(parseISO(dateString), "EEEE, dd 'de' MMM", { locale: ptBR });
+      // Capitalizar primeira letra
+      const capitalizedDate = formatted.charAt(0).toUpperCase() + formatted.slice(1);
       if (timeString) {
-        return `${formatted} às ${timeString.slice(0, 5)}`;
+        return `${capitalizedDate} às ${timeString.slice(0, 5)}`;
       }
-      return formatted;
+      return capitalizedDate;
     } catch {
       return "Data inválida";
     }
