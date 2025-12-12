@@ -117,9 +117,10 @@ export function useOrders() {
         .single();
       
       const orderNumberStart = profile?.order_number_start || 1;
-      const nextOrderNumber = maxOrderNumber?.order_number 
+      const nextSequential = maxOrderNumber?.order_number 
         ? maxOrderNumber.order_number + 1 
-        : orderNumberStart;
+        : 1;
+      const nextOrderNumber = Math.max(nextSequential, orderNumberStart);
 
       // Create order
       const { data: order, error: orderError } = await supabase
