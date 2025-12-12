@@ -1,24 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { KanbanBoard } from '@/components/orders/KanbanBoard';
-import { KanbanColumnSettings } from '@/components/orders/KanbanColumnSettings';
-import { OrdersList } from '@/components/orders/OrdersList';
-import { OrderFormDialog } from '@/components/orders/OrderFormDialog';
-import { OrderDetailDialog } from '@/components/orders/OrderDetailDialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { useOrders, OrderFormData, Order } from '@/hooks/useOrders';
-import { useProfile } from '@/hooks/useProfile';
-import { OrderStatus } from '@/types';
-import { Plus, Loader2, Search, ArrowUpDown } from 'lucide-react';
+import { useState, useMemo, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { KanbanBoard } from "@/components/orders/KanbanBoard";
+import { KanbanColumnSettings } from "@/components/orders/KanbanColumnSettings";
+import { OrdersList } from "@/components/orders/OrdersList";
+import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
+import { OrderDetailDialog } from "@/components/orders/OrderDetailDialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
+import { useProfile } from "@/hooks/useProfile";
+import { OrderStatus } from "@/types";
+import { Plus, Loader2, Search, ArrowUpDown } from "lucide-react";
 
 const Orders = () => {
   const location = useLocation();
@@ -26,18 +20,11 @@ const Orders = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | 'none'>('asc');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("asc");
 
-  const { 
-    orders, 
-    isLoading, 
-    createOrder, 
-    updateOrder,
-    updateOrderStatus, 
-    updateDepositPaid,
-    deleteOrder,
-  } = useOrders();
+  const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, deleteOrder } =
+    useOrders();
 
   // Open form or detail dialog automatically based on navigation state
   useEffect(() => {
@@ -45,10 +32,10 @@ const Orders = () => {
       setFormOpen(true);
       navigate(location.pathname, { replace: true, state: {} });
     }
-    
+
     // Open order detail if navigated from dashboard
     if (location.state?.openOrderId && orders.length > 0) {
-      const order = orders.find(o => o.id === location.state.openOrderId);
+      const order = orders.find((o) => o.id === location.state.openOrderId);
       if (order) {
         setSelectedOrder(order);
         setDetailOpen(true);
@@ -74,22 +61,22 @@ const Orders = () => {
     // Filter by client name or order number
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      result = result.filter(order => {
+      result = result.filter((order) => {
         // Match by client name
         const matchesClient = order.client?.name?.toLowerCase().includes(query);
         // Match by order number (with or without #)
-        const queryNumber = query.replace('#', '');
+        const queryNumber = query.replace("#", "");
         const matchesOrderNumber = order.order_number?.toString().includes(queryNumber);
         return matchesClient || matchesOrderNumber;
       });
     }
 
     // Sort by delivery date
-    if (sortOrder !== 'none') {
+    if (sortOrder !== "none") {
       result = [...result].sort((a, b) => {
         const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : 0;
         const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : 0;
-        return sortOrder === 'asc' ? dateA - dateB : dateB - dateA;
+        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
       });
     }
 
@@ -125,11 +112,23 @@ const Orders = () => {
     deleteOrder.mutate(orderId);
   };
 
-  const handleStatusChange = (orderId: string, newStatus: OrderStatus, clientName?: string, totalAmount?: number, previousStatus?: OrderStatus) => {
+  const handleStatusChange = (
+    orderId: string,
+    newStatus: OrderStatus,
+    clientName?: string,
+    totalAmount?: number,
+    previousStatus?: OrderStatus,
+  ) => {
     updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount, previousStatus });
   };
 
-  const handleDepositChange = (orderId: string, depositPaid: boolean, clientName?: string, totalAmount?: number, currentStatus?: OrderStatus) => {
+  const handleDepositChange = (
+    orderId: string,
+    depositPaid: boolean,
+    clientName?: string,
+    totalAmount?: number,
+    currentStatus?: OrderStatus,
+  ) => {
     updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount, currentStatus });
   };
 
@@ -139,9 +138,7 @@ const Orders = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Pedidos
-            </h1>
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Pedidos</h1>
             <p className="text-muted-foreground text-sm mt-1">
               {filteredOrders.length} pedidos {searchQuery && `encontrados`}
             </p>
@@ -157,13 +154,13 @@ const Orders = () => {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por cliente..."
+              placeholder="Buscar pedido, cliente..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9"
             />
           </div>
-          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as 'asc' | 'desc' | 'none')}>
+          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "asc" | "desc" | "none")}>
             <SelectTrigger className="w-full sm:w-[200px]">
               <ArrowUpDown className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Ordenar por" />
@@ -191,7 +188,7 @@ const Orders = () => {
           </div>
         ) : filteredOrders.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
-            <p>{searchQuery ? 'Nenhum pedido encontrado' : 'Nenhum pedido cadastrado'}</p>
+            <p>{searchQuery ? "Nenhum pedido encontrado" : "Nenhum pedido cadastrado"}</p>
             {!searchQuery && (
               <Button variant="link" className="mt-2" onClick={handleCreate}>
                 Criar primeiro pedido
@@ -201,8 +198,8 @@ const Orders = () => {
         ) : (
           <>
             {/* Kanban for Desktop */}
-            <KanbanBoard 
-              orders={filteredOrders} 
+            <KanbanBoard
+              orders={filteredOrders}
               onOrderClick={handleOrderClick}
               onStatusChange={handleStatusChange}
               onDepositChange={handleDepositChange}
@@ -210,11 +207,7 @@ const Orders = () => {
             />
 
             {/* List for Mobile */}
-            <OrdersList 
-              orders={filteredOrders} 
-              onOrderClick={handleOrderClick}
-              onDepositChange={handleDepositChange}
-            />
+            <OrdersList orders={filteredOrders} onOrderClick={handleOrderClick} onDepositChange={handleDepositChange} />
           </>
         )}
 
