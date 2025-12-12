@@ -45,6 +45,7 @@ import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { formatPhone } from "@/lib/masks";
+import { CurrencyInput } from "@/components/shared/CurrencyInput";
 
 interface OrderDetailDialogProps {
   open: boolean;
@@ -110,7 +111,8 @@ export function OrderDetailDialog({
 
   // Full payment form state
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'pix' | 'credit_card' | 'link' | ''>('');
-  const [paymentFee, setPaymentFee] = useState<string>('');
+  const [paymentFee, setPaymentFee] = useState<number>(0);
+  const [feeType, setFeeType] = useState<'value' | 'percentage'>('percentage');
 
   // Sync displayStatus, displayDepositPaid and displayFullPayment with order when order changes
   useEffect(() => {
@@ -119,7 +121,8 @@ export function OrderDetailDialog({
       setDisplayDepositPaid(order.deposit_paid ?? false);
       setDisplayFullPayment(order.full_payment_received ?? false);
       setSelectedPaymentMethod('');
-      setPaymentFee('');
+      setPaymentFee(0);
+      setFeeType('percentage');
     }
   }, [order?.status, order?.id, order?.deposit_paid, order?.full_payment_received]);
 
@@ -242,8 +245,13 @@ export function OrderDetailDialog({
   const depositAmount = order.total_amount / 2;
 
   // Calculate net amount for full payment
-  const paymentFeeNum = parseFloat(paymentFee.replace(',', '.')) || 0;
-  const netAmount = order.total_amount - paymentFeeNum;
+  const feeInReais = useMemo(() => {
+    if (feeType === 'percentage') {
+      return (order.total_amount * paymentFee) / 100;
+    }
+    return paymentFee;
+  }, [feeType, paymentFee, order.total_amount]);
+  const netAmount = order.total_amount - feeInReais;
 
   const handleFullPayment = () => {
     if (!selectedPaymentMethod || !onFullPayment) return;
@@ -257,7 +265,7 @@ export function OrderDetailDialog({
     onFullPayment(
       order.id,
       selectedPaymentMethod,
-      paymentFeeNum,
+      feeInReais,
       order.order_number,
       order.client?.name,
       order.total_amount,
@@ -614,14 +622,69 @@ export function OrderDetailDialog({
 
                     {(selectedPaymentMethod === 'credit_card' || selectedPaymentMethod === 'link') && (
                       <div className="space-y-2">
-                        <Label className="text-sm">Taxa cobrada (R$)</Label>
-                        <Input
-                          type="text"
-                          placeholder="0,00"
-                          value={paymentFee}
-                          onChange={(e) => setPaymentFee(e.target.value)}
-                          className="h-10"
-                        />
+                        <div className="flex items-center justify-between">
+                          <Label className="text-sm">Taxa cobrada</Label>
+                          <div className="flex rounded-md overflow-hidden border">
+                            <button
+                              type="button"
+                              className={cn(
+                                "px-3 py-1 text-xs font-medium transition-colors",
+                                feeType === 'percentage' 
+                                  ? "bg-primary text-primary-foreground" 
+                                  : "bg-muted hover:bg-muted/80"
+                              )}
+                              onClick={() => {
+                                setFeeType('percentage');
+                                setPaymentFee(0);
+                              }}
+                            >
+                              %
+                            </button>
+                            <button
+                              type="button"
+                              className={cn(
+                                "px-3 py-1 text-xs font-medium transition-colors",
+                                feeType === 'value' 
+                                  ? "bg-primary text-primary-foreground" 
+                                  : "bg-muted hover:bg-muted/80"
+                              )}
+                              onClick={() => {
+                                setFeeType('value');
+                                setPaymentFee(0);
+                              }}
+                            >
+                              R$
+                            </button>
+                          </div>
+                        </div>
+                        {feeType === 'value' ? (
+                          <CurrencyInput
+                            value={paymentFee}
+                            onChange={setPaymentFee}
+                            className="h-10"
+                          />
+                        ) : (
+                          <div className="relative">
+                            <Input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="0,00"
+                              value={paymentFee === 0 ? '' : paymentFee.toString().replace('.', ',')}
+                              onChange={(e) => {
+                                const val = e.target.value.replace(',', '.');
+                                const num = parseFloat(val) || 0;
+                                setPaymentFee(Math.min(num, 100));
+                              }}
+                              className="h-10 pr-8"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
+                          </div>
+                        )}
+                        {feeType === 'percentage' && paymentFee > 0 && (
+                          <p className="text-xs text-muted-foreground">
+                            = {formatCurrency(feeInReais)}
+                          </p>
+                        )}
                       </div>
                     )}
 
