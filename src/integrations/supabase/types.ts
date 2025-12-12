@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       clients: {
         Row: {
+          address: string | null
           birthday: string | null
           cpf_cnpj: string | null
           created_at: string
@@ -27,6 +28,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          address?: string | null
           birthday?: string | null
           cpf_cnpj?: string | null
           created_at?: string
@@ -38,6 +40,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          address?: string | null
           birthday?: string | null
           cpf_cnpj?: string | null
           created_at?: string

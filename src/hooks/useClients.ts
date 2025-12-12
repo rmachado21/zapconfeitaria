@@ -10,6 +10,7 @@ export interface Client {
   cpf_cnpj: string | null;
   email: string | null;
   birthday: string | null;
+  address: string | null;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -21,6 +22,7 @@ export interface ClientFormData {
   cpf_cnpj?: string;
   email?: string;
   birthday?: string;
+  address?: string;
 }
 
 export function useClients() {
@@ -56,6 +58,7 @@ export function useClients() {
           cpf_cnpj: formData.cpf_cnpj || null,
           email: formData.email || null,
           birthday: formData.birthday || null,
+          address: formData.address || null,
           user_id: user.id,
         })
         .select()
@@ -90,6 +93,7 @@ export function useClients() {
           cpf_cnpj: formData.cpf_cnpj || null,
           email: formData.email || null,
           birthday: formData.birthday || null,
+          address: formData.address || null,
         })
         .eq('id', id)
         .select()

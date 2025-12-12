@@ -17,8 +17,9 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Loader2, User, Phone, CreditCard, Mail, CalendarDays } from 'lucide-react';
+import { Loader2, User, Phone, CreditCard, Mail, CalendarDays, MapPin } from 'lucide-react';
 import { Client, ClientFormData } from '@/hooks/useClients';
 import { PhoneInput } from '@/components/shared/PhoneInput';
 import { CpfCnpjInput } from '@/components/shared/CpfCnpjInput';
@@ -30,6 +31,7 @@ const clientSchema = z.object({
   cpf_cnpj: z.string().optional(),
   email: z.string().email('Email inválido').optional().or(z.literal('')),
   birthday: z.string().optional(),
+  address: z.string().max(500, 'Endereço muito longo').optional(),
 });
 
 interface ClientFormDialogProps {
@@ -57,6 +59,7 @@ export function ClientFormDialog({
       cpf_cnpj: '',
       email: '',
       birthday: '',
+      address: '',
     },
   });
 
@@ -68,6 +71,7 @@ export function ClientFormDialog({
         cpf_cnpj: client.cpf_cnpj ? formatCpfCnpj(client.cpf_cnpj) : '',
         email: client.email || '',
         birthday: client.birthday || '',
+        address: client.address || '',
       });
     } else {
       form.reset({
@@ -76,6 +80,7 @@ export function ClientFormDialog({
         cpf_cnpj: '',
         email: '',
         birthday: '',
+        address: '',
       });
     }
   }, [client, form]);
@@ -184,6 +189,28 @@ export function ClientFormDialog({
                   </FormLabel>
                   <FormControl>
                     <Input type="date" {...field} className="max-w-full" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    Endereço / Referência
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea 
+                      placeholder="Rua, número, bairro ou referência" 
+                      className="resize-none"
+                      rows={2}
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

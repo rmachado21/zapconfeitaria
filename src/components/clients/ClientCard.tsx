@@ -1,7 +1,7 @@
 import { Client } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Cake, MessageCircle, ChevronRight, Trash2 } from 'lucide-react';
+import { Phone, Mail, Cake, MessageCircle, ChevronRight, Trash2, MapPin } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { openWhatsApp } from '@/lib/whatsapp';
@@ -51,27 +51,37 @@ export function ClientCard({ client, onClick, onDelete }: ClientCardProps) {
           {/* Info */}
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
-            <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
-              {client.phone && (
-                <div className="flex items-center gap-1">
-                  <Phone className="h-3 w-3" />
-                  <span>{client.phone}</span>
-                </div>
-              )}
-              {client.email && (
-                <div className="flex items-center gap-1">
-                  <Mail className="h-3 w-3" />
-                  <span className="truncate max-w-[120px]">{client.email}</span>
-                </div>
-              )}
-              {client.birthday && (
-                <div className="flex items-center gap-1">
-                  <Cake className="h-3 w-3" />
-                  <span>
-                    {format(parseISO(client.birthday), "dd 'de' MMM", { locale: ptBR })}
-                  </span>
-                </div>
-              )}
+            <div className="flex flex-col gap-1 mt-1 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center gap-3">
+                {client.phone && (
+                  <div className="flex items-center gap-1">
+                    <Phone className="h-3 w-3" />
+                    <span>{client.phone}</span>
+                  </div>
+                )}
+                {client.address && (
+                  <div className="flex items-center gap-1 max-w-[200px]">
+                    <MapPin className="h-3 w-3 flex-shrink-0" />
+                    <span className="truncate">{client.address}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                {client.email && (
+                  <div className="flex items-center gap-1">
+                    <Mail className="h-3 w-3" />
+                    <span className="truncate max-w-[120px]">{client.email}</span>
+                  </div>
+                )}
+                {client.birthday && (
+                  <div className="flex items-center gap-1">
+                    <Cake className="h-3 w-3" />
+                    <span>
+                      {format(parseISO(client.birthday), "dd 'de' MMM", { locale: ptBR })}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
