@@ -1,13 +1,13 @@
 import { Client } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Cake, MessageCircle, ChevronRight, Trash2, MapPin } from 'lucide-react';
+import { Phone, Mail, Cake, MessageCircle, ChevronRight, Trash2, MapPin, ShoppingBag } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { openWhatsApp } from '@/lib/whatsapp';
 
 interface ClientCardProps {
-  client: Client;
+  client: Client & { orderCount?: number };
   onClick?: () => void;
   onDelete?: () => void;
 }
@@ -50,7 +50,15 @@ export function ClientCard({ client, onClick, onDelete }: ClientCardProps) {
 
           {/* Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-semibold text-foreground truncate">{client.name}</h3>
+              {client.orderCount !== undefined && client.orderCount > 0 && (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium">
+                  <ShoppingBag className="h-3 w-3" />
+                  {client.orderCount}
+                </span>
+              )}
+            </div>
             <div className="flex flex-col gap-0.5 mt-1 text-xs text-muted-foreground">
               {client.phone && (
                 <div className="flex items-center gap-1">
