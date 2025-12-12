@@ -74,6 +74,7 @@ interface OrderDetailDialogProps {
     totalAmount?: number,
     currentStatus?: OrderStatus,
   ) => void;
+  onUndoFullPayment?: (orderId: string) => void;
   onEdit?: (order: Order) => void;
   onDelete?: (orderId: string) => void;
 }
@@ -87,6 +88,7 @@ export function OrderDetailDialog({
   onStatusChange,
   onDepositChange,
   onFullPayment,
+  onUndoFullPayment,
   onEdit,
   onDelete,
 }: OrderDetailDialogProps) {
@@ -465,11 +467,26 @@ export function OrderDetailDialog({
             {displayFullPayment && (
               <Card className="bg-success/5 border-success/20">
                 <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
-                      <Check className="h-4 w-4 text-success" />
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
+                        <Check className="h-4 w-4 text-success" />
+                      </div>
+                      <p className="font-semibold text-success">Pagamento Completo</p>
                     </div>
-                    <p className="font-semibold text-success">Pagamento Completo</p>
+                    {onUndoFullPayment && (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                        onClick={() => {
+                          setDisplayFullPayment(false);
+                          onUndoFullPayment(order.id);
+                        }}
+                      >
+                        Desfazer
+                      </Button>
+                    )}
                   </div>
                   <div className="space-y-1.5 text-sm">
                     <div className="flex justify-between">
