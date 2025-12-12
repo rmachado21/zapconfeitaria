@@ -11,6 +11,13 @@ export interface Product {
   sale_price: number;
   unit_type: string;
   photo_url: string | null;
+  category_id: string | null;
+  category?: {
+    id: string;
+    name: string;
+    emoji: string;
+    color: string;
+  } | null;
   created_at: string;
   updated_at: string;
   user_id: string;
@@ -23,6 +30,7 @@ export interface ProductFormData {
   sale_price: number;
   unit_type: 'kg' | 'unit' | 'cento';
   photo_url?: string;
+  category_id?: string | null;
 }
 
 export function useProducts() {
@@ -37,7 +45,10 @@ export function useProducts() {
       
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select(`
+          *,
+          category:product_categories(id, name, emoji, color)
+        `)
         .order('name', { ascending: true });
       
       if (error) throw error;
@@ -59,9 +70,13 @@ export function useProducts() {
           sale_price: formData.sale_price,
           unit_type: formData.unit_type,
           photo_url: formData.photo_url || null,
+          category_id: formData.category_id || null,
           user_id: user.id,
         })
-        .select()
+        .select(`
+          *,
+          category:product_categories(id, name, emoji, color)
+        `)
         .single();
 
       if (error) throw error;
@@ -94,9 +109,13 @@ export function useProducts() {
           sale_price: formData.sale_price,
           unit_type: formData.unit_type,
           photo_url: formData.photo_url || null,
+          category_id: formData.category_id || null,
         })
         .eq('id', id)
-        .select()
+        .select(`
+          *,
+          category:product_categories(id, name, emoji, color)
+        `)
         .single();
 
       if (error) throw error;

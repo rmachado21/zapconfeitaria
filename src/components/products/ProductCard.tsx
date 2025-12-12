@@ -1,13 +1,15 @@
-import { Product } from '@/types';
+import { Product } from '@/hooks/useProducts';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { CakeSlice, Camera, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Camera, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { getCategoryColorClasses } from '@/hooks/useProductCategories';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -37,9 +39,9 @@ export function ProductCard({
     onClick?.();
   };
 
-  const profit = product.salePrice - product.costPrice;
-  const profitMargin = product.salePrice > 0 ? Math.round((profit / product.salePrice) * 100) : 0;
-  const unitLabel = product.unitType === 'kg' ? 'Kg' : product.unitType === 'cento' ? 'Cento' : 'Un';
+  const profit = product.sale_price - product.cost_price;
+  const profitMargin = product.sale_price > 0 ? Math.round((profit / product.sale_price) * 100) : 0;
+  const unitLabel = product.unit_type === 'kg' ? 'Kg' : product.unit_type === 'cento' ? 'Cento' : 'Un';
 
   const getMarginColor = (margin: number) => {
     if (margin >= 50) return "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800";
@@ -58,10 +60,10 @@ export function ProductCard({
         <div className="flex gap-3">
           {/* Image/Icon */}
           <div className="flex-shrink-0">
-            {product.imageUrl ? (
+            {product.photo_url ? (
               <div className="w-16 h-16 rounded-xl overflow-hidden">
                 <img 
-                  src={product.imageUrl} 
+                  src={product.photo_url} 
                   alt={product.name} 
                   className="w-full h-full object-cover" 
                 />
@@ -78,12 +80,22 @@ export function ProductCard({
           <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
             <div>
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-foreground leading-tight line-clamp-1">
-                  {product.name}
-                </h3>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-foreground leading-tight line-clamp-1">
+                    {product.name}
+                  </h3>
+                  {product.category && (
+                    <span className={cn(
+                      "inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium mt-0.5",
+                      getCategoryColorClasses(product.category.color)
+                    )}>
+                      {product.category.emoji} {product.category.name}
+                    </span>
+                  )}
+                </div>
                 <div className="text-right flex-shrink-0">
                   <div className="font-display font-bold text-primary text-base leading-tight">
-                    {formatCurrency(product.salePrice)}
+                    {formatCurrency(product.sale_price)}
                   </div>
                   <span className="text-[10px] text-muted-foreground">/{unitLabel}</span>
                 </div>
@@ -98,7 +110,7 @@ export function ProductCard({
             <div className="flex items-center justify-between mt-2">
               <div className="flex items-center gap-2">
                 <span className="text-[11px] text-muted-foreground">
-                  Custo: {formatCurrency(product.costPrice)}
+                  Custo: {formatCurrency(product.cost_price)}
                 </span>
                 <Badge 
                   variant="outline" 

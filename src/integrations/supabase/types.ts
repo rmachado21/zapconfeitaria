@@ -172,8 +172,42 @@ export type Database = {
           },
         ]
       }
+      product_categories: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          display_order: number | null
+          emoji: string | null
+          id: string
+          name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          emoji?: string | null
+          id?: string
+          name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          display_order?: number | null
+          emoji?: string | null
+          id?: string
+          name?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
+          category_id: string | null
           cost_price: number
           created_at: string
           description: string | null
@@ -186,6 +220,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          category_id?: string | null
           cost_price?: number
           created_at?: string
           description?: string | null
@@ -198,6 +233,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          category_id?: string | null
           cost_price?: number
           created_at?: string
           description?: string | null
@@ -209,7 +245,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
