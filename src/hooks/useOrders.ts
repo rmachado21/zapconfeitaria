@@ -30,6 +30,9 @@ export interface Order {
   delivery_fee: number;
   total_amount: number;
   deposit_paid: boolean;
+  full_payment_received: boolean;
+  payment_method: string | null;
+  payment_fee: number;
   notes: string | null;
   created_at: string;
   updated_at: string;
@@ -181,16 +184,17 @@ export function useOrders() {
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ id, status, clientName, totalAmount, previousStatus }: { 
+    mutationFn: async ({ id, status, clientName, totalAmount, previousStatus, fullPaymentReceived }: { 
       id: string; 
       status: OrderStatus;
       clientName?: string;
       totalAmount?: number;
       previousStatus?: OrderStatus;
+      fullPaymentReceived?: boolean;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
-      // Handle cancellation - remove all transactions and reset deposit
+      // Handle cancellation - remove all transactions and reset deposit/full payment
       if (status === 'cancelled') {
         await supabase
           .from('transactions')
@@ -199,7 +203,7 @@ export function useOrders() {
 
         const { data, error } = await supabase
           .from('orders')
-          .update({ status, deposit_paid: false })
+          .update({ status, deposit_paid: false, full_payment_received: false, payment_method: null, payment_fee: 0 })
           .eq('id', id)
           .select()
           .single();
@@ -226,8 +230,8 @@ export function useOrders() {
 
       if (error) throw error;
 
-      // Create transaction for delivered status (final payment)
-      if (status === 'delivered' && previousStatus !== 'delivered' && totalAmount) {
+      // Create transaction for delivered status (final payment) - ONLY if not already paid in full
+      if (status === 'delivered' && previousStatus !== 'delivered' && totalAmount && !fullPaymentReceived) {
         const finalPayment = totalAmount / 2; // Remaining 50%
         await supabase
           .from('transactions')
@@ -241,9 +245,9 @@ export function useOrders() {
           });
       }
 
-      return data;
+      return { data, fullPaymentReceived };
     },
-    onSuccess: (_, variables) => {
+    onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
       
@@ -255,7 +259,7 @@ export function useOrders() {
       } else if (variables.status === 'delivered') {
         toast({
           title: 'Pedido entregue!',
-          description: 'Pagamento final registrado automaticamente.',
+          description: result.fullPaymentReceived ? undefined : 'Pagamento final registrado automaticamente.',
         });
       } else if (variables.previousStatus === 'delivered') {
         toast({
@@ -351,6 +355,95 @@ export function useOrders() {
     onError: (error) => {
       toast({
         title: 'Erro ao atualizar sinal',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const markFullPayment = useMutation({
+    mutationFn: async ({ 
+      orderId, 
+      paymentMethod, 
+      fee,
+      orderNumber,
+      clientName,
+      totalAmount,
+      currentStatus
+    }: { 
+      orderId: string; 
+      paymentMethod: 'pix' | 'credit_card' | 'link';
+      fee: number;
+      orderNumber: number | null;
+      clientName?: string;
+      totalAmount: number;
+      currentStatus?: OrderStatus;
+    }) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const netAmount = totalAmount - fee;
+
+      // Should update status to in_production if currently in quote or awaiting_deposit
+      const shouldUpdateStatus = currentStatus === 'quote' || currentStatus === 'awaiting_deposit';
+
+      const updateData: { 
+        full_payment_received: boolean; 
+        payment_method: string;
+        payment_fee: number;
+        status?: OrderStatus;
+      } = { 
+        full_payment_received: true,
+        payment_method: paymentMethod,
+        payment_fee: fee,
+      };
+
+      if (shouldUpdateStatus) {
+        updateData.status = 'in_production';
+      }
+
+      const { data, error } = await supabase
+        .from('orders')
+        .update(updateData)
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Create transaction with net amount
+      const paymentMethodLabel = paymentMethod === 'pix' ? 'Pix' : paymentMethod === 'credit_card' ? 'Cartão' : 'Link';
+      await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          order_id: orderId,
+          type: 'income',
+          description: `Pagamento Total (${paymentMethodLabel}) - ${clientName || 'Cliente'}${orderNumber ? ` #${orderNumber.toString().padStart(4, '0')}` : ''}`,
+          amount: netAmount,
+          date: new Date().toISOString().split('T')[0],
+        });
+
+      return { data, statusUpdated: shouldUpdateStatus };
+    },
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      
+      if (result.statusUpdated) {
+        toast({
+          title: 'Pagamento total recebido! 🎉',
+          description: 'Pedido movido para "Em Produção" automaticamente.',
+        });
+      } else {
+        toast({
+          title: 'Pagamento total registrado!',
+          description: 'Receita registrada automaticamente.',
+        });
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao registrar pagamento',
         description: error.message,
         variant: 'destructive',
       });
@@ -477,6 +570,7 @@ export function useOrders() {
     updateOrder,
     updateOrderStatus,
     updateDepositPaid,
+    markFullPayment,
     deleteOrder,
   };
 }

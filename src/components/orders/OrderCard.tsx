@@ -196,7 +196,25 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
         </div>
 
         {/* Payment status indicator */}
-        {order.status === 'delivered' ? (
+        {order.fullPaymentReceived ? (
+          <div className="mt-3 pt-3 border-t border-border">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-5 h-5 rounded-full bg-success/20 flex items-center justify-center">
+                  <Check className="h-3 w-3 text-success" />
+                </div>
+                <span className="text-sm font-medium text-foreground">Pago 100%</span>
+              </div>
+              <Badge variant="success" className="text-[10px]">Antecipado</Badge>
+            </div>
+            <div className="pl-7 mt-1">
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">Valor recebido</span>
+                <span className="text-success font-medium">{formatCurrency(order.totalAmount - (order.paymentFee || 0))}</span>
+              </div>
+            </div>
+          </div>
+        ) : order.status === 'delivered' ? (
           <div className="mt-3 pt-3 border-t border-border space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
