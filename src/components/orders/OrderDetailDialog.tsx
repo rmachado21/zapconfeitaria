@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Order, formatOrderNumber } from "@/hooks/useOrders";
 import { useQuotePdf } from "@/hooks/useQuotePdf";
 import { useProfile } from "@/hooks/useProfile";
@@ -36,6 +38,8 @@ import {
   AlertTriangle,
   Gift,
   PackagePlus,
+  CreditCard,
+  Check,
 } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -52,10 +56,20 @@ interface OrderDetailDialogProps {
     clientName?: string,
     totalAmount?: number,
     previousStatus?: OrderStatus,
+    fullPaymentReceived?: boolean,
   ) => void;
   onDepositChange?: (
     orderId: string,
     depositPaid: boolean,
+    clientName?: string,
+    totalAmount?: number,
+    currentStatus?: OrderStatus,
+  ) => void;
+  onFullPayment?: (
+    orderId: string,
+    paymentMethod: 'pix' | 'credit_card' | 'link',
+    fee: number,
+    orderNumber: number | null,
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
@@ -72,6 +86,7 @@ export function OrderDetailDialog({
   order,
   onStatusChange,
   onDepositChange,
+  onFullPayment,
   onEdit,
   onDelete,
 }: OrderDetailDialogProps) {
@@ -88,13 +103,23 @@ export function OrderDetailDialog({
   // Local optimistic state for deposit
   const [displayDepositPaid, setDisplayDepositPaid] = useState<boolean>(false);
 
-  // Sync displayStatus and displayDepositPaid with order when order changes
+  // Local optimistic state for full payment
+  const [displayFullPayment, setDisplayFullPayment] = useState<boolean>(false);
+
+  // Full payment form state
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'pix' | 'credit_card' | 'link' | ''>('');
+  const [paymentFee, setPaymentFee] = useState<string>('');
+
+  // Sync displayStatus, displayDepositPaid and displayFullPayment with order when order changes
   useEffect(() => {
     if (order) {
       setDisplayStatus(order.status as OrderStatus);
       setDisplayDepositPaid(order.deposit_paid ?? false);
+      setDisplayFullPayment(order.full_payment_received ?? false);
+      setSelectedPaymentMethod('');
+      setPaymentFee('');
     }
-  }, [order?.status, order?.id, order?.deposit_paid]);
+  }, [order?.status, order?.id, order?.deposit_paid, order?.full_payment_received]);
 
   if (!order) return null;
 
@@ -115,22 +140,27 @@ export function OrderDetailDialog({
       // Update display immediately (optimistic update)
       setDisplayStatus(newStatus);
 
-      // If changing to delivered, show confirmation dialog
+      // If changing to delivered, show confirmation dialog only if NOT paid in full
       if (newStatus === "delivered") {
-        setPendingStatus(newStatus);
-        setDeliveredConfirmOpen(true);
+        if (displayFullPayment) {
+          // Already paid in full, no confirmation needed
+          onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus, true);
+        } else {
+          setPendingStatus(newStatus);
+          setDeliveredConfirmOpen(true);
+        }
       } else if (newStatus === "cancelled") {
         setPendingStatus(newStatus);
         setCancelConfirmOpen(true);
       } else {
-        onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
+        onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
       }
     }
   };
 
   const confirmDelivered = () => {
     if (pendingStatus && onStatusChange) {
-      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
     }
     setDeliveredConfirmOpen(false);
     setPendingStatus(null);
@@ -145,7 +175,7 @@ export function OrderDetailDialog({
 
   const confirmCancelled = () => {
     if (pendingStatus && onStatusChange) {
-      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus);
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
     }
     setCancelConfirmOpen(false);
     setPendingStatus(null);
@@ -208,6 +238,35 @@ export function OrderDetailDialog({
   };
 
   const depositAmount = order.total_amount / 2;
+
+  // Calculate net amount for full payment
+  const paymentFeeNum = parseFloat(paymentFee.replace(',', '.')) || 0;
+  const netAmount = order.total_amount - paymentFeeNum;
+
+  const handleFullPayment = () => {
+    if (!selectedPaymentMethod || !onFullPayment) return;
+    
+    setDisplayFullPayment(true);
+    // Update status optimistically if it will change
+    if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
+      setDisplayStatus("in_production");
+    }
+    
+    onFullPayment(
+      order.id,
+      selectedPaymentMethod,
+      paymentFeeNum,
+      order.order_number,
+      order.client?.name,
+      order.total_amount,
+      order.status as OrderStatus
+    );
+  };
+
+  // Show upfront payment card only if neither deposit nor full payment has been received
+  const showUpfrontPaymentCard = !displayDepositPaid && !displayFullPayment;
+  // Show deposit card only if full payment has not been received
+  const showDepositCard = !displayFullPayment;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -402,68 +461,172 @@ export function OrderDetailDialog({
               </CardContent>
             </Card>
 
-            {/* Deposit Status */}
-            <Card className={displayDepositPaid ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20"}>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-2">
-                    <Banknote className="h-5 w-5" />
-                    <div>
-                      <p className="font-medium">Sinal 50%</p>
-                      <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
+            {/* Full Payment Complete Display */}
+            {displayFullPayment && (
+              <Card className="bg-success/5 border-success/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-6 h-6 rounded-full bg-success/20 flex items-center justify-center">
+                      <Check className="h-4 w-4 text-success" />
+                    </div>
+                    <p className="font-semibold text-success">Pagamento Completo</p>
+                  </div>
+                  <div className="space-y-1.5 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Pago via</span>
+                      <span className="font-medium">
+                        {order.payment_method === 'pix' ? 'Pix' : order.payment_method === 'credit_card' ? 'Cartão de Crédito' : order.payment_method === 'link' ? 'Link de Pagamento' : '-'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Valor total</span>
+                      <span className="font-medium">{formatCurrency(order.total_amount)}</span>
+                    </div>
+                    {order.payment_fee > 0 && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Taxa</span>
+                        <span className="font-medium text-destructive">-{formatCurrency(order.payment_fee)}</span>
+                      </div>
+                    )}
+                    <Separator className="my-2" />
+                    <div className="flex justify-between font-semibold">
+                      <span>Valor recebido</span>
+                      <span className="text-success">{formatCurrency(order.total_amount - order.payment_fee)}</span>
                     </div>
                   </div>
-                  {displayDepositPaid ? (
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Deposit Status - Only show if full payment not received */}
+            {showDepositCard && (
+              <Card className={displayDepositPaid ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20"}>
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="success">Pago</Badge>
-                      {onDepositChange && (
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                          onClick={() => {
-                            setDisplayDepositPaid(false);
-                            onDepositChange(
-                              order.id,
-                              false,
-                              order.client?.name,
-                              order.total_amount,
-                              order.status as OrderStatus,
-                            );
-                          }}
-                        >
-                          Desfazer
-                        </Button>
-                      )}
+                      <Banknote className="h-5 w-5" />
+                      <div>
+                        <p className="font-medium">Sinal 50%</p>
+                        <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
+                      </div>
                     </div>
-                  ) : onDepositChange ? (
+                    {displayDepositPaid ? (
+                      <div className="flex items-center gap-2">
+                        <Badge variant="success">Pago</Badge>
+                        {onDepositChange && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                            onClick={() => {
+                              setDisplayDepositPaid(false);
+                              onDepositChange(
+                                order.id,
+                                false,
+                                order.client?.name,
+                                order.total_amount,
+                                order.status as OrderStatus,
+                              );
+                            }}
+                          >
+                            Desfazer
+                          </Button>
+                        )}
+                      </div>
+                    ) : onDepositChange ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+                        onClick={() => {
+                          setDisplayDepositPaid(true);
+                          // Also update status optimistically if it will change
+                          if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
+                            setDisplayStatus("in_production");
+                          }
+                          onDepositChange(
+                            order.id,
+                            true,
+                            order.client?.name,
+                            order.total_amount,
+                            order.status as OrderStatus,
+                          );
+                        }}
+                      >
+                        Marcar como Pago
+                      </Button>
+                    ) : (
+                      <Badge variant="warning">Pendente</Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Upfront Payment Card - Only show if neither deposit nor full payment received */}
+            {showUpfrontPaymentCard && onFullPayment && (
+              <Card className="bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/50 dark:border-blue-800/30">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                    <p className="font-semibold">Pagamento Antecipado</p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Valor Total</span>
+                      <span className="font-semibold">{formatCurrency(order.total_amount)}</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-sm">Forma de Pagamento</Label>
+                      <Select 
+                        value={selectedPaymentMethod} 
+                        onValueChange={(value) => setSelectedPaymentMethod(value as 'pix' | 'credit_card' | 'link')}
+                      >
+                        <SelectTrigger className="h-10">
+                          <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pix">Pix</SelectItem>
+                          <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
+                          <SelectItem value="link">Link de Pagamento</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {(selectedPaymentMethod === 'credit_card' || selectedPaymentMethod === 'link') && (
+                      <div className="space-y-2">
+                        <Label className="text-sm">Taxa cobrada (R$)</Label>
+                        <Input
+                          type="text"
+                          placeholder="0,00"
+                          value={paymentFee}
+                          onChange={(e) => setPaymentFee(e.target.value)}
+                          className="h-10"
+                        />
+                      </div>
+                    )}
+
+                    {selectedPaymentMethod && (
+                      <div className="flex justify-between text-sm pt-2 border-t">
+                        <span className="text-muted-foreground">Valor a receber</span>
+                        <span className="font-bold text-success">{formatCurrency(netAmount)}</span>
+                      </div>
+                    )}
+
                     <Button
-                      size="sm"
-                      variant="outline"
-                      className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
-                      onClick={() => {
-                        setDisplayDepositPaid(true);
-                        // Also update status optimistically if it will change
-                        if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
-                          setDisplayStatus("in_production");
-                        }
-                        onDepositChange(
-                          order.id,
-                          true,
-                          order.client?.name,
-                          order.total_amount,
-                          order.status as OrderStatus,
-                        );
-                      }}
+                      className="w-full mt-2"
+                      disabled={!selectedPaymentMethod}
+                      onClick={handleFullPayment}
                     >
+                      <Check className="mr-2 h-4 w-4" />
                       Marcar como Pago
                     </Button>
-                  ) : (
-                    <Badge variant="warning">Pendente</Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Notes */}
             {order.notes && (

@@ -110,9 +110,12 @@ export type Database = {
           delivery_fee: number | null
           delivery_time: string | null
           deposit_paid: boolean | null
+          full_payment_received: boolean | null
           id: string
           notes: string | null
           order_number: number | null
+          payment_fee: number | null
+          payment_method: string | null
           status: Database["public"]["Enums"]["order_status"]
           total_amount: number | null
           updated_at: string
@@ -126,9 +129,12 @@ export type Database = {
           delivery_fee?: number | null
           delivery_time?: string | null
           deposit_paid?: boolean | null
+          full_payment_received?: boolean | null
           id?: string
           notes?: string | null
           order_number?: number | null
+          payment_fee?: number | null
+          payment_method?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number | null
           updated_at?: string
@@ -142,9 +148,12 @@ export type Database = {
           delivery_fee?: number | null
           delivery_time?: string | null
           deposit_paid?: boolean | null
+          full_payment_received?: boolean | null
           id?: string
           notes?: string | null
           order_number?: number | null
+          payment_fee?: number | null
+          payment_method?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           total_amount?: number | null
           updated_at?: string

@@ -23,7 +23,7 @@ const Orders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("asc");
 
-  const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, deleteOrder } =
+  const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, markFullPayment, deleteOrder } =
     useOrders();
 
   // Open form or detail dialog automatically based on navigation state
@@ -118,8 +118,29 @@ const Orders = () => {
     clientName?: string,
     totalAmount?: number,
     previousStatus?: OrderStatus,
+    fullPaymentReceived?: boolean,
   ) => {
-    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount, previousStatus });
+    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount, previousStatus, fullPaymentReceived });
+  };
+
+  const handleFullPayment = (
+    orderId: string,
+    paymentMethod: 'pix' | 'credit_card' | 'link',
+    fee: number,
+    orderNumber: number | null,
+    clientName?: string,
+    totalAmount?: number,
+    currentStatus?: OrderStatus,
+  ) => {
+    markFullPayment.mutate({ 
+      orderId, 
+      paymentMethod, 
+      fee, 
+      orderNumber, 
+      clientName, 
+      totalAmount: totalAmount || 0, 
+      currentStatus 
+    });
   };
 
   const handleDepositChange = (
@@ -241,6 +262,7 @@ const Orders = () => {
         order={selectedOrder}
         onStatusChange={handleStatusChange}
         onDepositChange={handleDepositChange}
+        onFullPayment={handleFullPayment}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
