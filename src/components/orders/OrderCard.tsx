@@ -1,11 +1,9 @@
 import { Order, ORDER_STATUS_CONFIG } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, MapPin, MessageCircle, ChevronRight, Package, Check, AlertTriangle, PackagePlus } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, Package, Check, AlertTriangle, PackagePlus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { openWhatsApp } from '@/lib/whatsapp';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { formatOrderNumber } from '@/hooks/useOrders';
@@ -74,12 +72,6 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
   };
 
   const depositOverdueDays = getDepositOverdueDays();
-
-  const handleWhatsAppClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!order.clientPhone) return;
-    openWhatsApp(order.clientPhone);
-  };
 
   const handleDepositChange = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -175,20 +167,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
         </div>
 
         {/* Actions row */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            {order.clientPhone && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 px-3 text-success hover:text-success hover:bg-success/10 gap-1.5"
-                onClick={handleWhatsAppClick}
-              >
-                <MessageCircle className="h-4 w-4" />
-                <span className="text-xs font-medium">WhatsApp</span>
-              </Button>
-            )}
-          </div>
+        <div className="flex items-center justify-end">
           <div className="flex items-center gap-1 text-muted-foreground group-hover:text-primary transition-colors">
             <span className="text-xs">Ver detalhes</span>
             <ChevronRight className="h-4 w-4" />

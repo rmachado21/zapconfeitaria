@@ -31,7 +31,6 @@ import {
   User,
   Package,
   Banknote,
-  Send,
   ChevronDown,
   Pencil,
   Trash2,
@@ -41,6 +40,7 @@ import {
   CreditCard,
   Check,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -739,7 +739,7 @@ export function OrderDetailDialog({
                   onClick={handleOpenWhatsApp}
                   disabled={!order.client?.phone}
                 >
-                  <Send className="mr-2 h-4 w-4" />
+                  <WhatsAppIcon className="mr-2 h-4 w-4" />
                   Abrir WhatsApp
                 </Button>
               </div>
