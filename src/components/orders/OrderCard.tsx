@@ -27,11 +27,14 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
   const formatDate = (dateString: string, timeString?: string) => {
     if (!dateString) return 'Sem data';
     try {
-      const dateFormatted = format(parseISO(dateString), "dd 'de' MMM", { locale: ptBR });
+      // Formato: "Sexta-feira, 12 de Dez"
+      const dateFormatted = format(parseISO(dateString), "EEEE, dd 'de' MMM", { locale: ptBR });
+      // Capitalizar primeira letra
+      const capitalizedDate = dateFormatted.charAt(0).toUpperCase() + dateFormatted.slice(1);
       if (timeString) {
-        return `${dateFormatted} às ${timeString.slice(0, 5)}`;
+        return `${capitalizedDate} às ${timeString.slice(0, 5)}`;
       }
-      return dateFormatted;
+      return capitalizedDate;
     } catch {
       return 'Data inválida';
     }
