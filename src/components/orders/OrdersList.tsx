@@ -63,9 +63,9 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
               key={tab.value}
               value={tab.value}
               className={cn(
-                "flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium",
-                "data-[state=active]:bg-primary data-[state=active]:text-primary-foreground",
-                "data-[state=active]:shadow-warm"
+                "flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
+                "data-[state=active]:text-primary data-[state=active]:shadow-soft"
               )}
             >
               {tab.label}
