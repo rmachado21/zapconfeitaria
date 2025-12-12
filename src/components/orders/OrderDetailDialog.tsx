@@ -68,7 +68,7 @@ interface OrderDetailDialogProps {
   ) => void;
   onFullPayment?: (
     orderId: string,
-    paymentMethod: 'pix' | 'credit_card' | 'link',
+    paymentMethod: "pix" | "credit_card" | "link",
     fee: number,
     orderNumber: number | null,
     clientName?: string,
@@ -110,9 +110,9 @@ export function OrderDetailDialog({
   const [displayFullPayment, setDisplayFullPayment] = useState<boolean>(false);
 
   // Full payment form state
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'pix' | 'credit_card' | 'link' | ''>('');
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"pix" | "credit_card" | "link" | "">("");
   const [paymentFee, setPaymentFee] = useState<number>(0);
-  const [feeType, setFeeType] = useState<'value' | 'percentage'>('percentage');
+  const [feeType, setFeeType] = useState<"value" | "percentage">("percentage");
 
   // Sync displayStatus, displayDepositPaid and displayFullPayment with order when order changes
   useEffect(() => {
@@ -120,9 +120,9 @@ export function OrderDetailDialog({
       setDisplayStatus(order.status as OrderStatus);
       setDisplayDepositPaid(order.deposit_paid ?? false);
       setDisplayFullPayment(order.full_payment_received ?? false);
-      setSelectedPaymentMethod('');
+      setSelectedPaymentMethod("");
       setPaymentFee(0);
-      setFeeType('percentage');
+      setFeeType("percentage");
     }
   }, [order?.status, order?.id, order?.deposit_paid, order?.full_payment_received]);
 
@@ -149,7 +149,14 @@ export function OrderDetailDialog({
       if (newStatus === "delivered") {
         if (displayFullPayment) {
           // Already paid in full, no confirmation needed
-          onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus, true);
+          onStatusChange(
+            order.id,
+            newStatus,
+            order.client?.name,
+            order.total_amount,
+            order.status as OrderStatus,
+            true,
+          );
         } else {
           setPendingStatus(newStatus);
           setDeliveredConfirmOpen(true);
@@ -158,14 +165,28 @@ export function OrderDetailDialog({
         setPendingStatus(newStatus);
         setCancelConfirmOpen(true);
       } else {
-        onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
+        onStatusChange(
+          order.id,
+          newStatus,
+          order.client?.name,
+          order.total_amount,
+          order.status as OrderStatus,
+          displayFullPayment,
+        );
       }
     }
   };
 
   const confirmDelivered = () => {
     if (pendingStatus && onStatusChange) {
-      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
+      onStatusChange(
+        order.id,
+        pendingStatus,
+        order.client?.name,
+        order.total_amount,
+        order.status as OrderStatus,
+        displayFullPayment,
+      );
     }
     setDeliveredConfirmOpen(false);
     setPendingStatus(null);
@@ -180,7 +201,14 @@ export function OrderDetailDialog({
 
   const confirmCancelled = () => {
     if (pendingStatus && onStatusChange) {
-      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
+      onStatusChange(
+        order.id,
+        pendingStatus,
+        order.client?.name,
+        order.total_amount,
+        order.status as OrderStatus,
+        displayFullPayment,
+      );
     }
     setCancelConfirmOpen(false);
     setPendingStatus(null);
@@ -246,7 +274,7 @@ export function OrderDetailDialog({
 
   // Calculate net amount for full payment
   const feeInReais = useMemo(() => {
-    if (feeType === 'percentage') {
+    if (feeType === "percentage") {
       return (order.total_amount * paymentFee) / 100;
     }
     return paymentFee;
@@ -255,13 +283,13 @@ export function OrderDetailDialog({
 
   const handleFullPayment = () => {
     if (!selectedPaymentMethod || !onFullPayment) return;
-    
+
     setDisplayFullPayment(true);
     // Update status optimistically if it will change
     if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
       setDisplayStatus("in_production");
     }
-    
+
     onFullPayment(
       order.id,
       selectedPaymentMethod,
@@ -269,7 +297,7 @@ export function OrderDetailDialog({
       order.order_number,
       order.client?.name,
       order.total_amount,
-      order.status as OrderStatus
+      order.status as OrderStatus,
     );
   };
 
@@ -500,7 +528,13 @@ export function OrderDetailDialog({
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Pago via</span>
                       <span className="font-medium">
-                        {order.payment_method === 'pix' ? 'Pix' : order.payment_method === 'credit_card' ? 'Cartão de Crédito' : order.payment_method === 'link' ? 'Link de Pagamento' : '-'}
+                        {order.payment_method === "pix"
+                          ? "Pix"
+                          : order.payment_method === "credit_card"
+                            ? "Cartão de Crédito"
+                            : order.payment_method === "link"
+                              ? "Link de Pagamento"
+                              : "-"}
                       </span>
                     </div>
                     <div className="flex justify-between">
@@ -525,7 +559,9 @@ export function OrderDetailDialog({
 
             {/* Deposit Status - Only show if full payment not received */}
             {showDepositCard && (
-              <Card className={displayDepositPaid ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20"}>
+              <Card
+                className={displayDepositPaid ? "bg-success/5 border-success/20" : "bg-warning/5 border-warning/20"}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-2">
@@ -578,7 +614,7 @@ export function OrderDetailDialog({
                           );
                         }}
                       >
-                        Marcar como Pago
+                        Marcar Pago
                       </Button>
                     ) : (
                       <Badge variant="warning">Pendente</Badge>
@@ -596,7 +632,7 @@ export function OrderDetailDialog({
                     <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <p className="font-semibold">Pagamento Antecipado</p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Valor Total</span>
@@ -605,9 +641,9 @@ export function OrderDetailDialog({
 
                     <div className="space-y-2">
                       <Label className="text-sm">Forma de Pagamento</Label>
-                      <Select 
-                        value={selectedPaymentMethod} 
-                        onValueChange={(value) => setSelectedPaymentMethod(value as 'pix' | 'credit_card' | 'link')}
+                      <Select
+                        value={selectedPaymentMethod}
+                        onValueChange={(value) => setSelectedPaymentMethod(value as "pix" | "credit_card" | "link")}
                       >
                         <SelectTrigger className="h-10">
                           <SelectValue placeholder="Selecione..." />
@@ -620,7 +656,7 @@ export function OrderDetailDialog({
                       </Select>
                     </div>
 
-                    {(selectedPaymentMethod === 'credit_card' || selectedPaymentMethod === 'link') && (
+                    {(selectedPaymentMethod === "credit_card" || selectedPaymentMethod === "link") && (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label className="text-sm">Taxa cobrada</Label>
@@ -629,12 +665,12 @@ export function OrderDetailDialog({
                               type="button"
                               className={cn(
                                 "px-3 py-1 text-xs font-medium transition-colors",
-                                feeType === 'percentage' 
-                                  ? "bg-primary text-primary-foreground" 
-                                  : "bg-muted hover:bg-muted/80"
+                                feeType === "percentage"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted hover:bg-muted/80",
                               )}
                               onClick={() => {
-                                setFeeType('percentage');
+                                setFeeType("percentage");
                                 setPaymentFee(0);
                               }}
                             >
@@ -644,12 +680,12 @@ export function OrderDetailDialog({
                               type="button"
                               className={cn(
                                 "px-3 py-1 text-xs font-medium transition-colors",
-                                feeType === 'value' 
-                                  ? "bg-primary text-primary-foreground" 
-                                  : "bg-muted hover:bg-muted/80"
+                                feeType === "value"
+                                  ? "bg-primary text-primary-foreground"
+                                  : "bg-muted hover:bg-muted/80",
                               )}
                               onClick={() => {
-                                setFeeType('value');
+                                setFeeType("value");
                                 setPaymentFee(0);
                               }}
                             >
@@ -657,33 +693,29 @@ export function OrderDetailDialog({
                             </button>
                           </div>
                         </div>
-                        {feeType === 'value' ? (
-                          <CurrencyInput
-                            value={paymentFee}
-                            onChange={setPaymentFee}
-                            className="h-10"
-                          />
+                        {feeType === "value" ? (
+                          <CurrencyInput value={paymentFee} onChange={setPaymentFee} className="h-10" />
                         ) : (
                           <div className="relative">
                             <Input
                               type="text"
                               inputMode="decimal"
                               placeholder="0,00"
-                              value={paymentFee === 0 ? '' : paymentFee.toString().replace('.', ',')}
+                              value={paymentFee === 0 ? "" : paymentFee.toString().replace(".", ",")}
                               onChange={(e) => {
-                                const val = e.target.value.replace(',', '.');
+                                const val = e.target.value.replace(",", ".");
                                 const num = parseFloat(val) || 0;
                                 setPaymentFee(Math.min(num, 100));
                               }}
                               className="h-10 pr-8"
                             />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">%</span>
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                              %
+                            </span>
                           </div>
                         )}
-                        {feeType === 'percentage' && paymentFee > 0 && (
-                          <p className="text-xs text-muted-foreground">
-                            = {formatCurrency(feeInReais)}
-                          </p>
+                        {feeType === "percentage" && paymentFee > 0 && (
+                          <p className="text-xs text-muted-foreground">= {formatCurrency(feeInReais)}</p>
                         )}
                       </div>
                     )}
@@ -695,11 +727,7 @@ export function OrderDetailDialog({
                       </div>
                     )}
 
-                    <Button
-                      className="w-full mt-2"
-                      disabled={!selectedPaymentMethod}
-                      onClick={handleFullPayment}
-                    >
+                    <Button className="w-full mt-2" disabled={!selectedPaymentMethod} onClick={handleFullPayment}>
                       <Check className="mr-2 h-4 w-4" />
                       Marcar como Pago
                     </Button>
