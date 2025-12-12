@@ -80,7 +80,7 @@ const Finances = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
 
-  const { downloadPdf: downloadReportPdf, isGenerating: isGeneratingReport } = useFinanceReportPdf();
+  const { sharePdf: shareReportPdf, isGenerating: isGeneratingReport } = useFinanceReportPdf();
 
   const { 
     transactions,
@@ -325,7 +325,7 @@ const Finances = () => {
   }, [filteredTransactions]);
 
   const handleExportPDF = useCallback(() => {
-    downloadReportPdf({
+    shareReportPdf({
       period,
       periodLabel: periodLabels[period],
       periodDates,
@@ -338,7 +338,7 @@ const Finances = () => {
       transactions: listFilteredTransactions,
       expensesByCategory,
     });
-  }, [period, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, downloadReportPdf]);
+  }, [period, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, shareReportPdf]);
 
   return (
     <AppLayout>

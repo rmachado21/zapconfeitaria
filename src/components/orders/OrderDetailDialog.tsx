@@ -24,7 +24,7 @@ import {
   Calendar,
   MapPin,
   Phone,
-  FileText,
+  Share2,
   Loader2,
   User,
   Package,
@@ -75,7 +75,7 @@ export function OrderDetailDialog({
   onEdit,
   onDelete,
 }: OrderDetailDialogProps) {
-  const { downloadPdf, isGenerating } = useQuotePdf();
+  const { sharePdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
@@ -198,8 +198,8 @@ export function OrderDetailDialog({
 
   const daysRemaining = order.status !== "delivered" ? getDaysRemaining(order.delivery_date) : null;
 
-  const handleDownloadPdf = async () => {
-    await downloadPdf(order.id);
+  const handleSharePdf = async () => {
+    await sharePdf(order.id);
   };
 
   const handleOpenWhatsApp = () => {
@@ -481,13 +481,13 @@ export function OrderDetailDialog({
                 <Button
                   variant="outline"
                   className="flex-1 h-11 sm:h-10"
-                  onClick={handleDownloadPdf}
+                  onClick={handleSharePdf}
                   disabled={isGenerating}
                 >
                   {isGenerating ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <FileText className="mr-2 h-4 w-4" />
+                    <Share2 className="mr-2 h-4 w-4" />
                   )}
                   Orçamento em PDF
                 </Button>
