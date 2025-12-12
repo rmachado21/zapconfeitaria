@@ -80,9 +80,65 @@ export function useFinanceReportPdf() {
     }
   };
 
+  const sharePdf = async (data: ReportData): Promise<void> => {
+    const result = await generatePdf(data);
+    if (!result) return;
+
+    try {
+      // Convert base64 to Blob
+      const base64Data = result.pdf.split(',')[1];
+      const byteCharacters = atob(base64Data);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: 'application/pdf' });
+      
+      // Create File object
+      const file = new File([blob], result.fileName, { type: 'application/pdf' });
+
+      // Check Web Share API support with files
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: 'Relatório Financeiro',
+        });
+        toast({
+          title: 'Relatório compartilhado!',
+          description: 'O arquivo foi enviado com sucesso.',
+        });
+      } else {
+        // Fallback: traditional download
+        const link = document.createElement('a');
+        link.href = result.pdf;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        toast({
+          title: 'Relatório gerado!',
+          description: 'O PDF foi baixado.',
+        });
+      }
+    } catch (error: any) {
+      // User cancelled sharing - don't show error
+      if (error.name !== 'AbortError') {
+        console.error('Share error:', error);
+        toast({
+          title: 'Erro ao compartilhar',
+          description: 'Tente novamente.',
+          variant: 'destructive',
+        });
+      }
+    }
+  };
+
   return {
     generatePdf,
     downloadPdf,
+    sharePdf,
     isGenerating,
   };
 }
