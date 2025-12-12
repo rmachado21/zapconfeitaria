@@ -52,6 +52,9 @@ export interface Order {
   totalAmount: number;
   depositPaid: boolean;
   depositAmount: number;
+  fullPaymentReceived: boolean;
+  paymentMethod?: string | null;
+  paymentFee: number;
   notes?: string;
   createdAt: string;
 }
