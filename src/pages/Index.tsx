@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StatsCardSkeleton } from "@/components/dashboard/StatsCardSkeleton";
+import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
 import { KanbanBoard } from "@/components/orders/KanbanBoard";
 import { OrdersList } from "@/components/orders/OrdersList";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const periodLabels: Record<PeriodFilter, string> = {
 const Index = () => {
   const navigate = useNavigate();
   const [period, setPeriod] = useState<PeriodFilter>("month");
+  const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
   const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
   const { clients, isLoading: clientsLoading } = useClients();
   const { products, isLoading: productsLoading } = useProducts();
@@ -68,9 +70,10 @@ const Index = () => {
 
   // Calculate stats from filtered data
   const activeOrders = filteredOrders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
-  const pendingDeposits = filteredOrders
-    .filter((o) => !o.deposit_paid && o.status !== "delivered" && o.status !== "cancelled")
-    .reduce((sum, o) => sum + o.total_amount / 2, 0);
+  const pendingDepositOrders = filteredOrders.filter(
+    (o) => !o.deposit_paid && o.status !== "delivered" && o.status !== "cancelled"
+  );
+  const pendingDeposits = pendingDepositOrders.reduce((sum, o) => sum + o.total_amount / 2, 0);
   const periodIncome = filteredOrders
     .filter((o) => o.status === "delivered")
     .reduce((sum, o) => sum + o.total_amount, 0);
@@ -184,6 +187,7 @@ const Index = () => {
                     subtitle="Aguardando pagamento"
                     icon={Clock}
                     variant="warning"
+                    onClick={() => setPendingDepositsOpen(true)}
                   />
                 </div>
                 <div className="animate-fade-in stagger-4">
@@ -255,6 +259,14 @@ const Index = () => {
         >
           <Plus className="h-6 w-6" />
         </Button>
+
+        {/* Pending Deposits Dialog */}
+        <PendingDepositsDialog
+          open={pendingDepositsOpen}
+          onOpenChange={setPendingDepositsOpen}
+          orders={pendingDepositOrders}
+          onDepositPaid={handleDepositChange}
+        />
       </div>
     </AppLayout>
   );
