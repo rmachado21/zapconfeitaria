@@ -126,6 +126,15 @@ export function OrderDetailDialog({
     }
   }, [order?.status, order?.id, order?.deposit_paid, order?.full_payment_received]);
 
+  // Calculate net amount for full payment - must be before early return
+  const feeInReais = useMemo(() => {
+    if (!order) return 0;
+    if (feeType === 'percentage') {
+      return (order.total_amount * paymentFee) / 100;
+    }
+    return paymentFee;
+  }, [feeType, paymentFee, order?.total_amount]);
+
   if (!order) return null;
 
   const currentStatus = displayStatus || (order.status as OrderStatus);
@@ -243,14 +252,6 @@ export function OrderDetailDialog({
   };
 
   const depositAmount = order.total_amount / 2;
-
-  // Calculate net amount for full payment
-  const feeInReais = useMemo(() => {
-    if (feeType === 'percentage') {
-      return (order.total_amount * paymentFee) / 100;
-    }
-    return paymentFee;
-  }, [feeType, paymentFee, order.total_amount]);
   const netAmount = order.total_amount - feeInReais;
 
   const handleFullPayment = () => {
