@@ -14,6 +14,7 @@ export interface Client {
   created_at: string;
   updated_at: string;
   user_id: string;
+  order_count?: number;
 }
 
 export interface ClientFormData {
@@ -35,13 +36,34 @@ export function useClients() {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      // Fetch clients
+      const { data: clientsData, error: clientsError } = await supabase
         .from('clients')
         .select('*')
         .order('name', { ascending: true });
       
-      if (error) throw error;
-      return data as Client[];
+      if (clientsError) throw clientsError;
+
+      // Fetch order counts per client
+      const { data: orderCounts, error: ordersError } = await supabase
+        .from('orders')
+        .select('client_id');
+      
+      if (ordersError) throw ordersError;
+
+      // Count orders per client
+      const countMap = new Map<string, number>();
+      orderCounts?.forEach(order => {
+        if (order.client_id) {
+          countMap.set(order.client_id, (countMap.get(order.client_id) || 0) + 1);
+        }
+      });
+
+      // Add order_count to each client
+      return clientsData.map(client => ({
+        ...client,
+        order_count: countMap.get(client.id) || 0,
+      })) as Client[];
     },
     enabled: !!user,
   });

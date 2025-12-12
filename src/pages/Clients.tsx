@@ -155,6 +155,7 @@ const Clients = () => {
                     email: client.email || undefined,
                     birthday: client.birthday || undefined,
                     createdAt: client.created_at,
+                    orderCount: client.order_count,
                   }}
                   onClick={() => handleEdit(client)}
                   onDelete={() => handleDelete(client)}
