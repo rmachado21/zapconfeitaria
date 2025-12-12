@@ -259,7 +259,7 @@ export function useOrders() {
       } else if (variables.status === 'delivered') {
         toast({
           title: 'Pedido entregue!',
-          description: result.fullPaymentReceived ? undefined : 'Pagamento final registrado automaticamente.',
+          description: variables.fullPaymentReceived ? undefined : 'Pagamento final registrado automaticamente.',
         });
       } else if (variables.previousStatus === 'delivered') {
         toast({
