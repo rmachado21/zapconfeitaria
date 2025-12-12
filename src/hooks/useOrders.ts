@@ -41,6 +41,7 @@ export interface Order {
     id: string;
     name: string;
     phone: string | null;
+    address: string | null;
   } | null;
   order_items?: OrderItem[];
 }
@@ -81,7 +82,7 @@ export function useOrders() {
         .from('orders')
         .select(`
           *,
-          client:clients(id, name, phone),
+          client:clients(id, name, phone, address),
           order_items(*)
         `)
         .order('created_at', { ascending: false });

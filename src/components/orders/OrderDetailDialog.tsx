@@ -363,6 +363,12 @@ export function OrderDetailDialog({
                         {formatPhone(order.client.phone)}
                       </p>
                     )}
+                    {order.client?.address && (
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        {order.client.address}
+                      </p>
+                    )}
                   </div>
                 </div>
               </CardContent>
