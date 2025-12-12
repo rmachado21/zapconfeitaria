@@ -309,17 +309,17 @@ export function OrderDetailDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent 
-        className="sm:max-w-[550px] flex flex-col"
+        className="sm:max-w-[550px]"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-3">
             <Package className="h-5 w-5 text-primary" />
             {order.order_number ? `Pedido ${formatOrderNumber(order.order_number)}` : "Detalhes do Pedido"}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-4 pr-1">
+        <div className="space-y-4">
           {/* Status Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <span className="text-sm text-muted-foreground">Status:</span>
