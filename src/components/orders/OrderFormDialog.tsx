@@ -132,6 +132,21 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
     }
   }, [open, form, editOrder]);
 
+  // Auto-fill delivery address when client is selected (only for new orders)
+  const watchedClientId = form.watch("client_id");
+  useEffect(() => {
+    if (!isEditMode && watchedClientId) {
+      const selectedClient = clients.find((c) => c.id === watchedClientId);
+      if (selectedClient?.address) {
+        const currentAddress = form.getValues("delivery_address");
+        // Only auto-fill if delivery address is empty
+        if (!currentAddress) {
+          form.setValue("delivery_address", selectedClient.address);
+        }
+      }
+    }
+  }, [watchedClientId, clients, form, isEditMode]);
+
   // Handler for additional items
   const handleAddAdditionalItem = () => {
     if (!additionalItemName.trim()) {
