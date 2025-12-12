@@ -450,6 +450,49 @@ export function useOrders() {
     },
   });
 
+  const undoFullPayment = useMutation({
+    mutationFn: async ({ orderId }: { orderId: string }) => {
+      if (!user) throw new Error('Usuário não autenticado');
+
+      // Remove the full payment transaction
+      await supabase
+        .from('transactions')
+        .delete()
+        .eq('order_id', orderId)
+        .ilike('description', '%Pagamento Total%');
+
+      // Reset full payment fields on order
+      const { data, error } = await supabase
+        .from('orders')
+        .update({
+          full_payment_received: false,
+          payment_method: null,
+          payment_fee: 0,
+        })
+        .eq('id', orderId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      queryClient.invalidateQueries({ queryKey: ['transactions'] });
+      toast({
+        title: 'Pagamento desfeito',
+        description: 'Transação removida automaticamente.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao desfazer pagamento',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const deleteOrder = useMutation({
     mutationFn: async (id: string) => {
       // Delete related transactions first
@@ -571,6 +614,7 @@ export function useOrders() {
     updateOrderStatus,
     updateDepositPaid,
     markFullPayment,
+    undoFullPayment,
     deleteOrder,
   };
 }

@@ -23,7 +23,7 @@ const Orders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("asc");
 
-  const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, markFullPayment, deleteOrder } =
+  const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, markFullPayment, undoFullPayment, deleteOrder } =
     useOrders();
 
   // Open form or detail dialog automatically based on navigation state
@@ -141,6 +141,10 @@ const Orders = () => {
       totalAmount: totalAmount || 0, 
       currentStatus 
     });
+  };
+
+  const handleUndoFullPayment = (orderId: string) => {
+    undoFullPayment.mutate({ orderId });
   };
 
   const handleDepositChange = (
@@ -263,6 +267,7 @@ const Orders = () => {
         onStatusChange={handleStatusChange}
         onDepositChange={handleDepositChange}
         onFullPayment={handleFullPayment}
+        onUndoFullPayment={handleUndoFullPayment}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
