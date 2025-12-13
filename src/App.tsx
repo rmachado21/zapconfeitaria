@@ -12,6 +12,8 @@ import Products from "./pages/Products";
 import Finances from "./pages/Finances";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import Pricing from "./pages/Pricing";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,16 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/pricing" element={
+              <ProtectedRoute requireSubscription={false}>
+                <Pricing />
+              </ProtectedRoute>
+            } />
+            <Route path="/checkout-success" element={
+              <ProtectedRoute requireSubscription={false}>
+                <CheckoutSuccess />
+              </ProtectedRoute>
+            } />
             <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
             <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
             <Route path="/clients" element={<ProtectedRoute><Clients /></ProtectedRoute>} />
