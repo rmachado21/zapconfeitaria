@@ -145,7 +145,7 @@ export default function Landing() {
             </div>
 
             {/* App Mockup */}
-            <div className="flex justify-center lg:justify-end opacity-0 animate-slide-in-right" style={{ animationDelay: '0.3s' }}>
+            <div className="flex justify-center lg:justify-end animate-slide-in-right" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
               <div className="relative">
                 {/* Glow effect behind mockup */}
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
