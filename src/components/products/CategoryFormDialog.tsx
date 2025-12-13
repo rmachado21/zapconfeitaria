@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Form,
   FormControl,
@@ -96,8 +97,10 @@ export function CategoryFormDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-            {/* Preview */}
-            <div className="flex items-center justify-center">
+            <ScrollArea className="max-h-[70dvh] pr-3">
+              <div className="space-y-5">
+                {/* Preview */}
+                <div className="flex items-center justify-center">
               <span className={cn(
                 "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium",
                 getCategoryColorClasses(selectedColor)
@@ -156,40 +159,42 @@ export function CategoryFormDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <Palette className="h-4 w-4" />
-                    Cor
-                  </FormLabel>
-                  <FormControl>
-                    <div className="flex flex-wrap gap-2">
-                      {CATEGORY_COLORS.map((color) => (
-                        <button
-                          key={color.value}
-                          type="button"
-                          onClick={() => field.onChange(color.value)}
-                          className={cn(
-                            "w-9 h-9 rounded-lg border-2 transition-all hover:scale-110",
-                            color.bg,
-                            field.value === color.value
-                              ? "border-primary ring-2 ring-primary/30"
-                              : "border-transparent"
-                          )}
-                          title={color.label}
-                        />
-                      ))}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="color"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <Palette className="h-4 w-4" />
+                        Cor
+                      </FormLabel>
+                      <FormControl>
+                        <div className="flex flex-wrap gap-2">
+                          {CATEGORY_COLORS.map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => field.onChange(color.value)}
+                              className={cn(
+                                "w-9 h-9 rounded-lg border-2 transition-all hover:scale-110",
+                                color.bg,
+                                field.value === color.value
+                                  ? "border-primary ring-2 ring-primary/30"
+                                  : "border-transparent"
+                              )}
+                              title={color.label}
+                            />
+                          ))}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </ScrollArea>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 sm:justify-end">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 sm:justify-end border-t mt-4">
               <Button
                 type="button"
                 variant="outline"

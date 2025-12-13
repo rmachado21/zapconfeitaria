@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Form,
   FormControl,
@@ -102,7 +103,9 @@ export function ClientFormDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
+            <ScrollArea className="max-h-[70dvh] pr-3">
+              <div className="space-y-4">
+                <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
@@ -195,29 +198,31 @@ export function ClientFormDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    Endereço / Referência
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Rua, número, bairro ou referência" 
-                      className="resize-none"
-                      rows={2}
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4" />
+                        Endereço / Referência
+                      </FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Rua, número, bairro ou referência" 
+                          className="resize-none"
+                          rows={2}
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </ScrollArea>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end border-t mt-4">
               <Button
                 type="button"
                 variant="outline"

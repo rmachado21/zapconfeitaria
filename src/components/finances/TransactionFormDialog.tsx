@@ -8,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Form,
   FormControl,
@@ -166,9 +167,11 @@ export function TransactionFormDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="type"
+            <ScrollArea className="max-h-[70dvh] pr-3">
+              <div className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="flex items-center gap-1.5">
@@ -277,24 +280,26 @@ export function TransactionFormDialog({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem className="overflow-hidden">
-                  <FormLabel className="flex items-center gap-1.5">
-                    <CalendarDays className="h-4 w-4" />
-                    Data
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} className="max-w-full" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem className="overflow-hidden">
+                      <FormLabel className="flex items-center gap-1.5">
+                        <CalendarDays className="h-4 w-4" />
+                        Data
+                      </FormLabel>
+                      <FormControl>
+                        <Input type="date" {...field} className="max-w-full" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </ScrollArea>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end border-t mt-4">
               <Button
                 type="button"
                 variant="outline"
