@@ -5,7 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
+import { AdminRoute } from "@/components/admin/AdminRoute";
 import Landing from "./pages/Landing";
+import Admin from "./pages/Admin";
 import Index from "./pages/Index";
 import Orders from "./pages/Orders";
 import Clients from "./pages/Clients";
@@ -50,6 +52,9 @@ const App = () => (
             <Route path="/products" element={<ProtectedRoute><Products /></ProtectedRoute>} />
             <Route path="/finances" element={<ProtectedRoute><Finances /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            
+            {/* Admin route (requires admin role) */}
+            <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
             
             {/* Catch-all */}
             <Route path="*" element={<NotFound />} />
