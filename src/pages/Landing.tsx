@@ -208,12 +208,11 @@ export default function Landing() {
                 </div>
 
                 {/* Badge - Use anywhere */}
-                <div 
-                  className="absolute -bottom-12 sm:-bottom-14 left-1/2 -translate-x-1/2 flex items-center gap-3 sm:gap-4 bg-card/90 backdrop-blur-md rounded-2xl px-5 sm:px-6 py-2.5 sm:py-3 shadow-xl border border-border/50 animate-fade-in whitespace-nowrap" 
-                  style={{ animationDelay: '0.8s' }}
-                >
+                <div className="absolute -bottom-12 sm:-bottom-14 left-1/2 -translate-x-1/2 flex items-center gap-3 sm:gap-4 bg-card/90 backdrop-blur-md rounded-2xl px-5 sm:px-6 py-2.5 sm:py-3 shadow-xl border border-border/50 animate-fade-in whitespace-nowrap" style={{
+                animationDelay: '0.8s'
+              }}>
                   <div className="flex items-center gap-2">
-                    <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10 px-[6px]">
                       <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                     </div>
                     <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
@@ -348,12 +347,10 @@ export default function Landing() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">{feature.description}</p>
-                  {feature.note && (
-                    <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
+                  {feature.note && <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
                       <Laptop className="h-3 w-3" />
                       {feature.note}
-                    </p>
-                  )}
+                    </p>}
                 </CardContent>
               </Card>)}
           </div>
