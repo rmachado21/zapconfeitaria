@@ -208,7 +208,7 @@ export default function Landing() {
 
                 {/* Badge - Use anywhere */}
                 <div 
-                  className="absolute -bottom-12 sm:-bottom-14 left-1/2 -translate-x-1/2 flex items-center gap-3 sm:gap-4 bg-card/90 backdrop-blur-md rounded-2xl px-4 sm:px-6 py-2.5 sm:py-3 shadow-xl border border-border/50 animate-fade-in" 
+                  className="absolute -bottom-12 sm:-bottom-14 left-1/2 -translate-x-1/2 flex items-center gap-3 sm:gap-4 bg-card/90 backdrop-blur-md rounded-2xl px-5 sm:px-6 py-2.5 sm:py-3 shadow-xl border border-border/50 animate-fade-in whitespace-nowrap" 
                   style={{ animationDelay: '0.8s' }}
                 >
                   <div className="flex items-center gap-2">
