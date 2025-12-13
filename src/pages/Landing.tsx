@@ -98,7 +98,7 @@ export default function Landing() {
                   Entrar
                 </Button>
                 <Button onClick={() => navigate('/auth')}>
-                  Começar Grátis
+                  Criar Conta
                 </Button>
               </>
             )}
