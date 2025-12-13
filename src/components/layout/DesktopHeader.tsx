@@ -1,11 +1,12 @@
 import { Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
-import { Home, ShoppingBag, Users, Wallet, CakeSlice, User } from 'lucide-react';
+import { Home, ShoppingBag, Users, Wallet, CakeSlice, User, Shield } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import zapLogo from '@/assets/zap-confeitaria-logo.png';
+import { useUserRole } from '@/hooks/useUserRole';
 
 const navItems = [
   { to: '/dashboard', icon: Home, label: 'Início' },
@@ -16,6 +17,8 @@ const navItems = [
 ];
 
 export function DesktopHeader() {
+  const { isAdmin } = useUserRole();
+
   return (
     <header className="hidden md:flex fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-lg border-b border-border z-40">
       {/* Logo */}
@@ -55,6 +58,18 @@ export function DesktopHeader() {
 
       {/* Ações à direita */}
       <div className="flex items-center gap-2 px-6">
+        {isAdmin && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" asChild>
+                <Link to="/admin">
+                  <Shield className="h-5 w-5 text-muted-foreground" />
+                </Link>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Admin</TooltipContent>
+          </Tooltip>
+        )}
         <NotificationBell />
         <Tooltip>
           <TooltipTrigger asChild>
