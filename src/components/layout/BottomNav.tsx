@@ -3,7 +3,7 @@ import { Home, ShoppingBag, Users, Wallet, Package } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Início' },
+  { to: '/dashboard', icon: Home, label: 'Início' },
   { to: '/orders', icon: ShoppingBag, label: 'Pedidos' },
   { to: '/products', icon: Package, label: 'Produtos' },
   { to: '/clients', icon: Users, label: 'Clientes' },

@@ -8,7 +8,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import zapLogo from '@/assets/zap-confeitaria-logo.png';
 
 const navItems = [
-  { to: '/', icon: Home, label: 'Início' },
+  { to: '/dashboard', icon: Home, label: 'Início' },
   { to: '/orders', icon: ShoppingBag, label: 'Pedidos' },
   { to: '/clients', icon: Users, label: 'Clientes' },
   { to: '/products', icon: CakeSlice, label: 'Produtos' },
@@ -20,7 +20,7 @@ export function DesktopHeader() {
     <header className="hidden md:flex fixed top-0 left-0 right-0 h-16 bg-background/80 backdrop-blur-lg border-b border-border z-40">
       {/* Logo */}
       <div className="flex items-center px-6">
-        <Link to="/">
+        <Link to="/dashboard">
           <img 
             src={zapLogo} 
             alt="Zap Confeitaria" 
