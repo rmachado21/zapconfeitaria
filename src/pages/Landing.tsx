@@ -152,13 +152,16 @@ export default function Landing() {
                 
                 {/* Phone Frame */}
                 <div className="relative w-64 md:w-72 lg:w-80 animate-float" style={{ animationDelay: '0.5s' }}>
-                  {/* Phone body - warm cream/terracotta theme */}
-                  <div className="relative bg-gradient-to-br from-primary to-primary/80 rounded-[2.5rem] p-2 shadow-2xl">
+                  {/* Phone body */}
+                  <div className="relative bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
                     {/* Top notch/dynamic island */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-primary rounded-b-2xl z-10" />
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
                     
                     {/* Screen bezel */}
-                    <div className="relative rounded-[2rem] overflow-hidden bg-background">
+                    <div className="relative rounded-[2rem] overflow-hidden bg-black">
+                      {/* Status bar simulation */}
+                      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/20 to-transparent z-10" />
+                      
                       {/* App Screenshot */}
                       <img 
                         src={appMockup} 
@@ -168,9 +171,9 @@ export default function Landing() {
                     </div>
                     
                     {/* Side buttons simulation */}
-                    <div className="absolute -right-1 top-24 w-1 h-8 bg-primary-foreground/30 rounded-r-sm" />
-                    <div className="absolute -right-1 top-36 w-1 h-12 bg-primary-foreground/30 rounded-r-sm" />
-                    <div className="absolute -left-1 top-28 w-1 h-10 bg-primary-foreground/30 rounded-l-sm" />
+                    <div className="absolute -right-1 top-24 w-1 h-8 bg-gray-700 rounded-r-sm" />
+                    <div className="absolute -right-1 top-36 w-1 h-12 bg-gray-700 rounded-r-sm" />
+                    <div className="absolute -left-1 top-28 w-1 h-10 bg-gray-700 rounded-l-sm" />
                   </div>
                 </div>
               </div>
