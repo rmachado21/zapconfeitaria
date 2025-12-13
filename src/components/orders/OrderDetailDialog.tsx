@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -292,7 +293,8 @@ export function OrderDetailDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="max-h-[75dvh] overflow-y-auto space-y-4 pr-1">
+        <ScrollArea className="max-h-[75dvh] pr-1">
+          <div className="space-y-4 pr-2">
           {/* Status Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <span className="text-sm text-muted-foreground">Status:</span>
@@ -787,6 +789,7 @@ export function OrderDetailDialog({
             </div>
           </div>
         </div>
+        </ScrollArea>
       </DialogContent>
 
       {/* Delete Confirmation Dialog */}
