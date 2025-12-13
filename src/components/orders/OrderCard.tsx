@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Calendar, MapPin, ChevronRight, Package, Check, AlertTriangle, PackagePlus } from 'lucide-react';
+import { Calendar, MapPin, ChevronRight, Package, Check, AlertTriangle, PackagePlus, StickyNote } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO, differenceInDays } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -144,6 +144,16 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
             )}
           </div>
         </div>
+
+        {/* Notes preview - discrete display */}
+        {order.notes && (
+          <div className="flex items-start gap-2 mb-3 p-2 rounded-md bg-muted/50 border border-border/50">
+            <StickyNote className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-muted-foreground line-clamp-2 italic">
+              {order.notes}
+            </p>
+          </div>
+        )}
 
         {/* Meta info with icons */}
         <div className="flex flex-wrap items-center gap-3 mb-3">
