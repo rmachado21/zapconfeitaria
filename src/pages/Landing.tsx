@@ -3,110 +3,70 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Check, 
-  ClipboardList, 
-  Users, 
-  Package, 
-  Wallet, 
-  FileText, 
-  Smartphone,
-  ArrowRight,
-  Sparkles,
-  Star
-} from 'lucide-react';
+import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, ArrowRight, Sparkles, Star } from 'lucide-react';
 import logo from '@/assets/zap-confeitaria-logo.png';
-
-const features = [
-  {
-    icon: ClipboardList,
-    title: 'Gestão de Pedidos',
-    description: 'Kanban visual para acompanhar todos os pedidos, do orçamento à entrega.',
-  },
-  {
-    icon: Users,
-    title: 'Cadastro de Clientes',
-    description: 'Organize seus clientes com telefone, endereço e aniversários para fidelização.',
-  },
-  {
-    icon: Package,
-    title: 'Catálogo de Produtos',
-    description: 'Cadastre produtos com fotos, preços de custo e venda, por unidade, Kg ou cento.',
-  },
-  {
-    icon: Wallet,
-    title: 'Controle Financeiro',
-    description: 'Acompanhe receitas, despesas, sinais pendentes e lucro bruto automaticamente.',
-  },
-  {
-    icon: FileText,
-    title: 'PDFs Profissionais',
-    description: 'Gere orçamentos em PDF com sua logo, termos e dados de pagamento Pix.',
-  },
-  {
-    icon: Smartphone,
-    title: 'App Mobile (PWA)',
-    description: 'Instale no celular como um app nativo. Funciona offline e notifica entregas.',
-  },
-];
-
-const plans = [
-  {
-    id: 'monthly',
-    name: 'Mensal',
-    price: 'R$ 17,90',
-    period: '/mês',
-    description: 'Ideal para começar',
-    features: [
-      'Gestão de pedidos ilimitada',
-      'Cadastro de clientes',
-      'Catálogo de produtos',
-      'Controle financeiro',
-      'PDFs profissionais',
-      'App mobile (PWA)',
-    ],
-  },
-  {
-    id: 'yearly',
-    name: 'Anual',
-    price: 'R$ 189,90',
-    period: '/ano',
-    description: 'Economia de 12%',
-    badge: 'Mais popular',
-    features: [
-      'Tudo do plano mensal',
-      'Economia de R$ 24,90',
-      'Suporte prioritário',
-      'Funcionalidades beta',
-    ],
-  },
-];
-
-const testimonials = [
-  {
-    name: 'Maria Silva',
-    role: 'Confeiteira Artesanal',
-    content: 'Antes eu perdia pedidos no WhatsApp. Agora tenho tudo organizado e nunca mais esqueci de cobrar o sinal!',
-    rating: 5,
-  },
-  {
-    name: 'Ana Costa',
-    role: 'Cake Designer',
-    content: 'Os orçamentos em PDF deixaram meu trabalho muito mais profissional. Meus clientes adoram!',
-    rating: 5,
-  },
-  {
-    name: 'Juliana Santos',
-    role: 'Doceria Gourmet',
-    content: 'O controle financeiro me mostrou onde eu estava perdendo dinheiro. Aumentei meu lucro em 30%!',
-    rating: 5,
-  },
-];
-
+const features = [{
+  icon: ClipboardList,
+  title: 'Gestão de Pedidos',
+  description: 'Kanban visual para acompanhar todos os pedidos, do orçamento à entrega.'
+}, {
+  icon: Users,
+  title: 'Cadastro de Clientes',
+  description: 'Organize seus clientes com telefone, endereço e aniversários para fidelização.'
+}, {
+  icon: Package,
+  title: 'Catálogo de Produtos',
+  description: 'Cadastre produtos com fotos, preços de custo e venda, por unidade, Kg ou cento.'
+}, {
+  icon: Wallet,
+  title: 'Controle Financeiro',
+  description: 'Acompanhe receitas, despesas, sinais pendentes e lucro bruto automaticamente.'
+}, {
+  icon: FileText,
+  title: 'PDFs Profissionais',
+  description: 'Gere orçamentos em PDF com sua logo, termos e dados de pagamento Pix.'
+}, {
+  icon: Smartphone,
+  title: 'App Mobile (PWA)',
+  description: 'Instale no celular como um app nativo. Funciona offline e notifica entregas.'
+}];
+const plans = [{
+  id: 'monthly',
+  name: 'Mensal',
+  price: 'R$ 17,90',
+  period: '/mês',
+  description: 'Ideal para começar',
+  features: ['Gestão de pedidos ilimitada', 'Cadastro de clientes', 'Catálogo de produtos', 'Controle financeiro', 'PDFs profissionais', 'App mobile (PWA)']
+}, {
+  id: 'yearly',
+  name: 'Anual',
+  price: 'R$ 189,90',
+  period: '/ano',
+  description: 'Economia de 12%',
+  badge: 'Mais popular',
+  features: ['Tudo do plano mensal', 'Economia de R$ 24,90', 'Suporte prioritário', 'Funcionalidades beta']
+}];
+const testimonials = [{
+  name: 'Maria Silva',
+  role: 'Confeiteira Artesanal',
+  content: 'Antes eu perdia pedidos no WhatsApp. Agora tenho tudo organizado e nunca mais esqueci de cobrar o sinal!',
+  rating: 5
+}, {
+  name: 'Ana Costa',
+  role: 'Cake Designer',
+  content: 'Os orçamentos em PDF deixaram meu trabalho muito mais profissional. Meus clientes adoram!',
+  rating: 5
+}, {
+  name: 'Juliana Santos',
+  role: 'Doceria Gourmet',
+  content: 'O controle financeiro me mostrou onde eu estava perdendo dinheiro. Aumentei meu lucro em 30%!',
+  rating: 5
+}];
 export default function Landing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   const handleGetStarted = () => {
     if (user) {
       navigate('/dashboard');
@@ -114,9 +74,7 @@ export default function Landing() {
       navigate('/auth');
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background">
+  return <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -124,20 +82,16 @@ export default function Landing() {
             <img src={logo} alt="ZAP Confeitaria" className="h-8 w-auto" />
           </div>
           <div className="flex items-center gap-4">
-            {user ? (
-              <Button onClick={() => navigate('/dashboard')}>
+            {user ? <Button onClick={() => navigate('/dashboard')}>
                 Acessar App
-              </Button>
-            ) : (
-              <>
+              </Button> : <>
                 <Button variant="ghost" onClick={() => navigate('/auth')}>
                   Entrar
                 </Button>
                 <Button onClick={() => navigate('/auth')}>
                   Começar Grátis
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </div>
       </header>
@@ -162,13 +116,13 @@ export default function Landing() {
               Começar agora
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
-            <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}>
+            <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({
+            behavior: 'smooth'
+          })}>
               Ver funcionalidades
             </Button>
           </div>
-          <p className="text-sm text-muted-foreground mt-4">
-            Sem período de teste. Escolha seu plano e comece hoje.
-          </p>
+          <p className="text-sm text-muted-foreground mt-4">Escolha seu plano e comece hoje.</p>
         </div>
       </section>
 
@@ -184,8 +138,7 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card key={index} className="border-0 shadow-sm">
+            {features.map((feature, index) => <Card key={index} className="border-0 shadow-sm">
                 <CardHeader>
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
                     <feature.icon className="h-6 w-6 text-primary" />
@@ -195,8 +148,7 @@ export default function Landing() {
                 <CardContent>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -213,13 +165,10 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-0 shadow-sm">
+            {testimonials.map((testimonial, index) => <Card key={index} className="border-0 shadow-sm">
                 <CardHeader>
                   <div className="flex gap-1 mb-2">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
-                    ))}
+                    {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-primary text-primary" />)}
                   </div>
                   <CardDescription className="text-foreground text-base">
                     "{testimonial.content}"
@@ -231,8 +180,7 @@ export default function Landing() {
                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </CardFooter>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -249,16 +197,10 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {plans.map((plan) => (
-              <Card 
-                key={plan.id}
-                className={`relative flex flex-col ${plan.badge ? 'border-primary shadow-lg ring-2 ring-primary/20' : ''}`}
-              >
-                {plan.badge && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
+            {plans.map(plan => <Card key={plan.id} className={`relative flex flex-col ${plan.badge ? 'border-primary shadow-lg ring-2 ring-primary/20' : ''}`}>
+                {plan.badge && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary">
                     {plan.badge}
-                  </Badge>
-                )}
+                  </Badge>}
                 
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
@@ -271,27 +213,19 @@ export default function Landing() {
                 
                 <CardContent className="flex-1">
                   <ul className="space-y-3">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
+                    {plan.features.map((feature, index) => <li key={index} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                         <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
                 </CardContent>
                 
                 <CardFooter>
-                  <Button 
-                    className="w-full" 
-                    size="lg"
-                    variant={plan.badge ? 'default' : 'outline'}
-                    onClick={handleGetStarted}
-                  >
+                  <Button className="w-full" size="lg" variant={plan.badge ? 'default' : 'outline'} onClick={handleGetStarted}>
                     Começar agora
                   </Button>
                 </CardFooter>
-              </Card>
-            ))}
+              </Card>)}
           </div>
           <p className="text-center text-sm text-muted-foreground mt-8">
             Pagamento seguro via Stripe. Cancele quando quiser.
@@ -328,6 +262,5 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
