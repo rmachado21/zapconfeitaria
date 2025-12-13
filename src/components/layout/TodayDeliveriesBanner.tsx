@@ -29,8 +29,9 @@ export function TodayDeliveriesBanner() {
   
   const todayOrders = (orders?.filter(order => {
     if (!order.delivery_date) return false;
-    const orderDate = format(new Date(order.delivery_date), 'yyyy-MM-dd');
-    return orderDate === today && order.status !== 'delivered';
+    // Compare date strings directly to avoid timezone conversion issues
+    const orderDate = order.delivery_date.split('T')[0];
+    return orderDate === today && order.status !== 'delivered' && order.status !== 'cancelled';
   }) || []).sort((a, b) => {
     // Sort by delivery time (orders without time go to the end)
     if (!a.delivery_time && !b.delivery_time) return 0;
