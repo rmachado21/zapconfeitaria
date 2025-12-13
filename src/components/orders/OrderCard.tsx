@@ -156,8 +156,8 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
               setNotesExpanded(!notesExpanded);
             }}
           >
-            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center">
-              <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <StickyNote className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             </div>
             <p className={cn(
               "text-xs text-muted-foreground italic pt-1.5 group-hover/notes:text-foreground transition-colors",
