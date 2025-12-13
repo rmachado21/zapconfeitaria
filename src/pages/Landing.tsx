@@ -7,7 +7,6 @@ import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, Arr
 import logo from '@/assets/zap-confeitaria-logo.png';
 import appMockup from '@/assets/app-mockup.png';
 import desktopMockup from '@/assets/desktop-mockup.png';
-
 const features = [{
   icon: ClipboardList,
   title: 'Gestão de Pedidos',
@@ -33,7 +32,6 @@ const features = [{
   title: 'App Mobile (PWA)',
   description: 'Instale no celular como um app nativo. Funciona offline e notifica entregas.'
 }];
-
 const plans = [{
   id: 'monthly',
   name: 'Mensal',
@@ -50,7 +48,6 @@ const plans = [{
   badge: 'Mais popular',
   features: ['Tudo do plano mensal', 'Economia de R$ 24,90', 'Suporte prioritário', 'Funcionalidades beta']
 }];
-
 const testimonials = [{
   name: 'Maria Silva',
   role: 'Confeiteira Artesanal',
@@ -67,11 +64,11 @@ const testimonials = [{
   content: 'O controle financeiro me mostrou onde eu estava perdendo dinheiro. Aumentei meu lucro em 30%!',
   rating: 5
 }];
-
 export default function Landing() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-
+  const {
+    user
+  } = useAuth();
   const handleGetStarted = () => {
     if (user) {
       navigate('/dashboard');
@@ -79,9 +76,7 @@ export default function Landing() {
       navigate('/auth');
     }
   };
-
-  return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+  return <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b animate-fade-in">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
@@ -89,20 +84,16 @@ export default function Landing() {
             <img src={logo} alt="ZAP Confeitaria" className="h-8 w-auto" />
           </div>
           <div className="flex items-center gap-4">
-            {user ? (
-              <Button onClick={() => navigate('/dashboard')}>
+            {user ? <Button onClick={() => navigate('/dashboard')}>
                 Acessar App
-              </Button>
-            ) : (
-              <>
+              </Button> : <>
                 <Button variant="ghost" onClick={() => navigate('/auth')}>
                   Entrar
                 </Button>
                 <Button onClick={() => navigate('/auth')}>
                   Criar Conta
                 </Button>
-              </>
-            )}
+              </>}
           </div>
         </div>
       </header>
@@ -112,47 +103,66 @@ export default function Landing() {
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-float" />
-          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-terracotta-light/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-terracotta-light/10 rounded-full blur-3xl animate-float" style={{
+          animationDelay: '1.5s'
+        }} />
         </div>
         
         <div className="container mx-auto px-4 relative">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Text Content */}
             <div className="text-center lg:text-left">
-              <Badge className="mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s' }} variant="secondary">
+              <Badge className="mb-4 opacity-0 animate-fade-in-up" style={{
+              animationDelay: '0.1s'
+            }} variant="secondary">
                 <Sparkles className="h-3 w-3 mr-1" />
                 Gestão completa para confeitarias
               </Badge>
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 opacity-0 animate-fade-in-up" style={{
+              animationDelay: '0.2s'
+            }}>
                 Organize sua confeitaria e{' '}
                 <span className="text-primary">aumente seus lucros</span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 opacity-0 animate-fade-in-up" style={{
+              animationDelay: '0.3s'
+            }}>
                 Chega de perder pedidos no WhatsApp e esquecer de cobrar o sinal. 
                 Gerencie pedidos, clientes, produtos e finanças em um só lugar.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-up" style={{
+              animationDelay: '0.4s'
+            }}>
                 <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 transition-transform hover:scale-105">
                   Começar agora
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="transition-transform hover:scale-105">
+                <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({
+                behavior: 'smooth'
+              })} className="transition-transform hover:scale-105">
                   Ver funcionalidades
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground mt-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+              <p className="text-sm text-muted-foreground mt-4 opacity-0 animate-fade-in-up" style={{
+              animationDelay: '0.5s'
+            }}>
                 Escolha seu plano e comece hoje.
               </p>
             </div>
 
             {/* Device Mockups - Desktop + Mobile Overlay */}
-            <div className="flex justify-center lg:justify-end animate-slide-in-right" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
+            <div className="flex justify-center lg:justify-end animate-slide-in-right" style={{
+            animationDelay: '0.3s',
+            animationFillMode: 'both'
+          }}>
               <div className="relative">
                 {/* Glow effect behind mockups */}
                 <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-90" />
                 
                 {/* Desktop Mockup - Hidden on small screens */}
-                <div className="hidden md:block relative animate-float" style={{ animationDelay: '0.3s' }}>
+                <div className="hidden md:block relative animate-float" style={{
+                animationDelay: '0.3s'
+              }}>
                   {/* Monitor Frame */}
                   <div className="relative w-[400px] lg:w-[480px] xl:w-[520px]">
                     {/* Monitor body */}
@@ -167,11 +177,7 @@ export default function Landing() {
                         <div className="flex-1 bg-gray-700 rounded h-5 ml-2" />
                       </div>
                       {/* Screenshot */}
-                      <img 
-                        src={desktopMockup} 
-                        alt="ZAP Confeitaria Desktop" 
-                        className="rounded w-full h-auto"
-                      />
+                      <img src={desktopMockup} alt="ZAP Confeitaria Desktop" className="rounded w-full h-auto" />
                     </div>
                     {/* Monitor stand */}
                     <div className="w-16 h-6 mx-auto bg-gray-700 rounded-b-sm" />
@@ -180,7 +186,9 @@ export default function Landing() {
                 </div>
                 
                 {/* Mobile Mockup - Overlaps on desktop, standalone on mobile */}
-                <div className="md:absolute md:-bottom-6 md:-right-6 lg:-bottom-4 lg:-right-4 z-10 w-48 sm:w-56 md:w-44 lg:w-52 animate-float" style={{ animationDelay: '0.6s' }}>
+                <div className="md:absolute md:-bottom-6 md:-right-6 lg:-bottom-4 lg:-right-4 z-10 w-48 sm:w-56 md:w-44 lg:w-52 animate-float" style={{
+                animationDelay: '0.6s'
+              }}>
                   {/* Phone body */}
                   <div className="relative bg-gray-900 rounded-[2rem] md:rounded-[1.5rem] lg:rounded-[2rem] p-1.5 md:p-1 lg:p-1.5 shadow-2xl ring-4 ring-background">
                     {/* Top notch */}
@@ -188,11 +196,7 @@ export default function Landing() {
                     
                     {/* Screen */}
                     <div className="relative rounded-[1.5rem] md:rounded-[1.25rem] lg:rounded-[1.5rem] overflow-hidden bg-black">
-                      <img 
-                        src={appMockup} 
-                        alt="ZAP Confeitaria Mobile" 
-                        className="w-full h-auto"
-                      />
+                      <img src={appMockup} alt="ZAP Confeitaria Mobile" className="w-full h-auto" />
                     </div>
                     
                     {/* Side buttons */}
@@ -203,9 +207,11 @@ export default function Landing() {
                 </div>
 
                 {/* Badge - Use anywhere */}
-                <div className="hidden md:flex absolute -bottom-14 left-1/2 -translate-x-1/2 items-center gap-2 bg-muted/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg animate-fade-in" style={{ animationDelay: '0.8s' }}>
+                <div className="hidden md:flex absolute -bottom-14 left-1/2 -translate-x-1/2 items-center gap-2 bg-muted/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg animate-fade-in" style={{
+                animationDelay: '0.8s'
+              }}>
                   <span className="text-lg">📱💻</span>
-                  <span className="text-sm font-medium text-muted-foreground">Use no celular ou no computador</span>
+                  <span className="text-sm font-medium text-muted-foreground">Use no celular, tablet ou no computador</span>
                 </div>
               </div>
             </div>
@@ -316,12 +322,9 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature, index) => (
-              <Card 
-                key={index} 
-                className="border-0 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
+            {features.map((feature, index) => <Card key={index} className="border-0 shadow-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-1 group" style={{
+            animationDelay: `${index * 0.1}s`
+          }}>
                 <CardHeader>
                   <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:bg-primary/20">
                     <feature.icon className="h-6 w-6 text-primary" />
@@ -331,8 +334,7 @@ export default function Landing() {
                 <CardContent>
                   <p className="text-muted-foreground">{feature.description}</p>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -349,20 +351,12 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {testimonials.map((testimonial, index) => (
-              <Card 
-                key={index} 
-                className="border-0 shadow-sm transition-all duration-300 hover:shadow-lg"
-              >
+            {testimonials.map((testimonial, index) => <Card key={index} className="border-0 shadow-sm transition-all duration-300 hover:shadow-lg">
                 <CardHeader>
                   <div className="flex gap-1 mb-2">
-                    {[...Array(testimonial.rating)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className="h-4 w-4 fill-primary text-primary transition-transform duration-200" 
-                        style={{ animationDelay: `${i * 0.1}s` }}
-                      />
-                    ))}
+                    {[...Array(testimonial.rating)].map((_, i) => <Star key={i} className="h-4 w-4 fill-primary text-primary transition-transform duration-200" style={{
+                  animationDelay: `${i * 0.1}s`
+                }} />)}
                   </div>
                   <CardDescription className="text-foreground text-base">
                     "{testimonial.content}"
@@ -374,8 +368,7 @@ export default function Landing() {
                     <p className="text-sm text-muted-foreground">{testimonial.role}</p>
                   </div>
                 </CardFooter>
-              </Card>
-            ))}
+              </Card>)}
           </div>
         </div>
       </section>
@@ -392,18 +385,10 @@ export default function Landing() {
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            {plans.map((plan, index) => (
-              <Card 
-                key={plan.id} 
-                className={`relative flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${
-                  plan.badge ? 'border-primary shadow-lg ring-2 ring-primary/20' : ''
-                }`}
-              >
-                {plan.badge && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary animate-pulse">
+            {plans.map((plan, index) => <Card key={plan.id} className={`relative flex flex-col transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${plan.badge ? 'border-primary shadow-lg ring-2 ring-primary/20' : ''}`}>
+                {plan.badge && <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary animate-pulse">
                     {plan.badge}
-                  </Badge>
-                )}
+                  </Badge>}
                 
                 <CardHeader className="text-center pb-4">
                   <CardTitle className="text-2xl">{plan.name}</CardTitle>
@@ -416,27 +401,19 @@ export default function Landing() {
                 
                 <CardContent className="flex-1">
                   <ul className="space-y-3">
-                    {plan.features.map((feature, featureIndex) => (
-                      <li key={featureIndex} className="flex items-start gap-2">
+                    {plan.features.map((feature, featureIndex) => <li key={featureIndex} className="flex items-start gap-2">
                         <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                         <span className="text-sm">{feature}</span>
-                      </li>
-                    ))}
+                      </li>)}
                   </ul>
                 </CardContent>
                 
                 <CardFooter>
-                  <Button 
-                    className="w-full transition-transform hover:scale-[1.02]" 
-                    size="lg" 
-                    variant={plan.badge ? 'default' : 'outline'} 
-                    onClick={handleGetStarted}
-                  >
+                  <Button className="w-full transition-transform hover:scale-[1.02]" size="lg" variant={plan.badge ? 'default' : 'outline'} onClick={handleGetStarted}>
                     Começar agora
                   </Button>
                 </CardFooter>
-              </Card>
-            ))}
+              </Card>)}
           </div>
           <p className="text-center text-sm text-muted-foreground mt-8">
             Pagamento seguro via Stripe. Cancele quando quiser.
@@ -478,6 +455,5 @@ export default function Landing() {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 }
