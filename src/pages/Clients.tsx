@@ -154,6 +154,7 @@ const Clients = () => {
                     address: client.address || undefined,
                     email: client.email || undefined,
                     birthday: client.birthday || undefined,
+                    cpfCnpj: client.cpf_cnpj || undefined,
                     createdAt: client.created_at,
                     orderCount: client.order_count,
                   }}

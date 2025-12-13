@@ -5,6 +5,7 @@ export interface Client {
   email?: string;
   birthday?: string;
   address?: string;
+  cpfCnpj?: string;
   createdAt: string;
 }
 
