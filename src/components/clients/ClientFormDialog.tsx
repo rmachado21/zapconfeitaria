@@ -102,9 +102,9 @@ export function ClientFormDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
-            <ScrollArea className="max-h-[70dvh] pr-3">
-              <div className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col max-h-[80dvh]">
+            <ScrollArea className="flex-1 max-h-[calc(80dvh-120px)]">
+              <div className="space-y-4 pr-4">
                 <FormField
               control={form.control}
               name="name"
