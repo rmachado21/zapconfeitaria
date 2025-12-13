@@ -220,6 +220,38 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Stats Section */}
+      <section className="py-16 bg-primary/5">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto text-center">
+            <div className="group">
+              <p className="text-3xl md:text-4xl font-bold text-primary transition-transform duration-300 group-hover:scale-110">
+                500+
+              </p>
+              <p className="text-muted-foreground mt-1">Confeiteiras ativas</p>
+            </div>
+            <div className="group">
+              <p className="text-3xl md:text-4xl font-bold text-primary transition-transform duration-300 group-hover:scale-110">
+                15.000+
+              </p>
+              <p className="text-muted-foreground mt-1">Pedidos gerenciados</p>
+            </div>
+            <div className="group">
+              <p className="text-3xl md:text-4xl font-bold text-primary transition-transform duration-300 group-hover:scale-110">
+                R$ 2M+
+              </p>
+              <p className="text-muted-foreground mt-1">Em vendas processadas</p>
+            </div>
+            <div className="group">
+              <p className="text-3xl md:text-4xl font-bold text-primary transition-transform duration-300 group-hover:scale-110">
+                4.9★
+              </p>
+              <p className="text-muted-foreground mt-1">Avaliação média</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
