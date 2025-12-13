@@ -1,8 +1,9 @@
 import { Client } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Phone, Mail, Cake, ChevronRight, Trash2, MapPin, ShoppingBag } from 'lucide-react';
+import { Phone, Mail, Cake, ChevronRight, Trash2, MapPin, ShoppingBag, CreditCard } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
+import { maskCpfCnpj } from '@/lib/masks';
 import { ptBR } from 'date-fns/locale';
 import { openWhatsApp } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
@@ -85,6 +86,12 @@ export function ClientCard({ client, onClick, onDelete }: ClientCardProps) {
                   <span>
                     {format(parseISO(client.birthday), "dd 'de' MMM", { locale: ptBR })}
                   </span>
+                </div>
+              )}
+              {client.cpfCnpj && (
+                <div className="flex items-center gap-1">
+                  <CreditCard className="h-3 w-3 flex-shrink-0" />
+                  <span className="font-mono text-[10px]">{maskCpfCnpj(client.cpfCnpj)}</span>
                 </div>
               )}
             </div>
