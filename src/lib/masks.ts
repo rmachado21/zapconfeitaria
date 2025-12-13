@@ -82,3 +82,24 @@ export function formatCpfCnpj(value: string): string {
 export function unformatCpfCnpj(value: string): string {
   return value.replace(/\D/g, '');
 }
+
+// Mask CPF: ***.***. 789-00 (show only last 5 digits for privacy)
+export function maskCpf(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length < 11) return formatCpf(digits);
+  return `***.***. ${digits.slice(6, 9)}-${digits.slice(9, 11)}`;
+}
+
+// Mask CNPJ: **.***.***/ 0001-00 (show only last 7 digits for privacy)
+export function maskCnpj(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length < 14) return formatCnpj(digits);
+  return `**.***.***/${digits.slice(8, 12)}-${digits.slice(12, 14)}`;
+}
+
+// Mask CPF/CNPJ: auto-detect and mask for privacy
+export function maskCpfCnpj(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length <= 11) return maskCpf(digits);
+  return maskCnpj(digits);
+}
