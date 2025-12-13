@@ -156,9 +156,11 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
               setNotesExpanded(!notesExpanded);
             }}
           >
-            <StickyNote className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <div className="flex-shrink-0 w-7 h-7 rounded-full bg-muted flex items-center justify-center">
+              <StickyNote className="h-3.5 w-3.5 text-muted-foreground" />
+            </div>
             <p className={cn(
-              "text-xs text-muted-foreground italic group-hover/notes:text-foreground transition-colors",
+              "text-xs text-muted-foreground italic pt-1.5 group-hover/notes:text-foreground transition-colors",
               !notesExpanded && "line-clamp-2"
             )}>
               {order.notes}
