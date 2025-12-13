@@ -24,7 +24,7 @@ export default function CheckoutSuccess() {
   }, [checkSubscription]);
 
   const handleContinue = () => {
-    navigate('/');
+    navigate('/dashboard');
   };
 
   return (

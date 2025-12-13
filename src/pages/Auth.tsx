@@ -21,7 +21,7 @@ export default function Auth() {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate("/", {
+      navigate("/pricing", {
         replace: true,
       });
     }
