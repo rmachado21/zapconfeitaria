@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, ArrowRight, Sparkles, Star } from 'lucide-react';
 import logo from '@/assets/zap-confeitaria-logo.png';
+import appMockup from '@/assets/app-mockup.png';
 
 const features = [{
   icon: ClipboardList,
@@ -106,38 +107,57 @@ export default function Landing() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20 md:py-32 relative">
+      <section className="py-16 md:py-24 relative">
         {/* Background decorations */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-float" />
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-terracotta-light/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1.5s' }} />
         </div>
         
-        <div className="container mx-auto px-4 text-center relative">
-          <Badge className="mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s' }} variant="secondary">
-            <Sparkles className="h-3 w-3 mr-1" />
-            Gestão completa para confeitarias
-          </Badge>
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tight mb-6 max-w-4xl mx-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            Organize sua confeitaria e{' '}
-            <span className="text-primary">aumente seus lucros</span>
-          </h1>
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            Chega de perder pedidos no WhatsApp e esquecer de cobrar o sinal. 
-            Gerencie pedidos, clientes, produtos e finanças em um só lugar.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 transition-transform hover:scale-105">
-              Começar agora
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Button>
-            <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="transition-transform hover:scale-105">
-              Ver funcionalidades
-            </Button>
+        <div className="container mx-auto px-4 relative">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Text Content */}
+            <div className="text-center lg:text-left">
+              <Badge className="mb-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.1s' }} variant="secondary">
+                <Sparkles className="h-3 w-3 mr-1" />
+                Gestão completa para confeitarias
+              </Badge>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                Organize sua confeitaria e{' '}
+                <span className="text-primary">aumente seus lucros</span>
+              </h1>
+              <p className="text-lg md:text-xl text-muted-foreground mb-8 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+                Chega de perder pedidos no WhatsApp e esquecer de cobrar o sinal. 
+                Gerencie pedidos, clientes, produtos e finanças em um só lugar.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start opacity-0 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                <Button size="lg" onClick={handleGetStarted} className="text-lg px-8 transition-transform hover:scale-105">
+                  Começar agora
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
+                <Button size="lg" variant="outline" onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="transition-transform hover:scale-105">
+                  Ver funcionalidades
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground mt-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
+                Escolha seu plano e comece hoje.
+              </p>
+            </div>
+
+            {/* App Mockup */}
+            <div className="flex justify-center lg:justify-end opacity-0 animate-slide-in-right" style={{ animationDelay: '0.3s' }}>
+              <div className="relative">
+                {/* Glow effect behind mockup */}
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
+                <img 
+                  src={appMockup} 
+                  alt="ZAP Confeitaria App" 
+                  className="relative w-72 md:w-80 lg:w-96 h-auto drop-shadow-2xl animate-float"
+                  style={{ animationDelay: '0.5s' }}
+                />
+              </div>
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground mt-4 opacity-0 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-            Escolha seu plano e comece hoje.
-          </p>
         </div>
       </section>
 
