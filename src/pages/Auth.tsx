@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Mail, Lock, Building2 } from "lucide-react";
+import { Loader2, Mail, Lock, Building2, ArrowLeft } from "lucide-react";
 import zapLogo from "@/assets/zap-confeitaria-logo.png";
 export default function Auth() {
   const [email, setEmail] = useState("");
@@ -228,7 +228,15 @@ export default function Auth() {
           </Tabs>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground mt-6">
+        <button
+          onClick={() => navigate('/')}
+          className="flex items-center justify-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mx-auto mt-6"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar para o início
+        </button>
+
+        <p className="text-center text-xs text-muted-foreground mt-4">
           Ao criar uma conta, você concorda com nossos termos de uso e política de privacidade.
         </p>
       </div>
