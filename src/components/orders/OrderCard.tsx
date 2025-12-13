@@ -1,3 +1,4 @@
+import React from 'react';
 import { Order, ORDER_STATUS_CONFIG } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,6 +16,7 @@ interface OrderCardProps {
 }
 
 export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
+  const [notesExpanded, setNotesExpanded] = React.useState(false);
   const statusConfig = ORDER_STATUS_CONFIG[order.status];
 
   const formatCurrency = (value: number) => {
@@ -147,9 +149,18 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
 
         {/* Notes preview - discrete display */}
         {order.notes && (
-          <div className="flex items-start gap-2 mb-3 p-2 rounded-md bg-muted/50 border border-border/50">
+          <div 
+            className="flex items-start gap-2 mb-3 cursor-pointer group/notes"
+            onClick={(e) => {
+              e.stopPropagation();
+              setNotesExpanded(!notesExpanded);
+            }}
+          >
             <StickyNote className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-muted-foreground line-clamp-2 italic">
+            <p className={cn(
+              "text-xs text-muted-foreground italic group-hover/notes:text-foreground transition-colors",
+              !notesExpanded && "line-clamp-2"
+            )}>
               {order.notes}
             </p>
           </div>
