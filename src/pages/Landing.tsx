@@ -161,6 +161,65 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* How It Works Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Como funciona
+            </h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Em 3 passos simples você organiza toda sua confeitaria
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            {/* Step 1 */}
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                  <span className="text-2xl font-bold text-primary">1</span>
+                </div>
+                {/* Connector line - hidden on mobile */}
+                <div className="hidden md:block absolute top-1/2 left-[calc(50%+40px)] w-[calc(100%-80px)] h-0.5 bg-border" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Cadastre seus produtos</h3>
+              <p className="text-muted-foreground">
+                Adicione seu catálogo com fotos, preços e custos para calcular lucros automaticamente.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                  <span className="text-2xl font-bold text-primary">2</span>
+                </div>
+                {/* Connector line - hidden on mobile */}
+                <div className="hidden md:block absolute top-1/2 left-[calc(50%+40px)] w-[calc(100%-80px)] h-0.5 bg-border" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Crie pedidos e orçamentos</h3>
+              <p className="text-muted-foreground">
+                Gere PDFs profissionais e envie pelo WhatsApp. Nunca mais esqueça de cobrar o sinal.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="text-center group">
+              <div className="relative mb-6">
+                <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/20">
+                  <span className="text-2xl font-bold text-primary">3</span>
+                </div>
+              </div>
+              <h3 className="text-xl font-semibold mb-2">Acompanhe tudo no Kanban</h3>
+              <p className="text-muted-foreground">
+                Visualize seus pedidos do orçamento à entrega e controle seu financeiro em tempo real.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="features" className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
