@@ -10,7 +10,8 @@ import desktopMockup from '@/assets/desktop-mockup.png';
 const features = [{
   icon: ClipboardList,
   title: 'Gestão de Pedidos',
-  description: 'Kanban visual para acompanhar todos os pedidos, do orçamento à entrega.'
+  description: 'Kanban visual para acompanhar todos os pedidos, do orçamento à entrega.',
+  note: 'Kanban disponível em telas maiores'
 }, {
   icon: Users,
   title: 'Cadastro de Clientes',
@@ -283,6 +284,10 @@ export default function Landing() {
               <p className="text-muted-foreground">
                 Visualize seus pedidos do orçamento à entrega e controle seu financeiro em tempo real.
               </p>
+              <p className="text-xs text-muted-foreground/70 mt-2 flex items-center justify-center gap-1">
+                <Laptop className="h-3 w-3" />
+                Kanban disponível em telas maiores
+              </p>
             </div>
           </div>
         </div>
@@ -343,6 +348,12 @@ export default function Landing() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-muted-foreground">{feature.description}</p>
+                  {feature.note && (
+                    <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
+                      <Laptop className="h-3 w-3" />
+                      {feature.note}
+                    </p>
+                  )}
                 </CardContent>
               </Card>)}
           </div>
