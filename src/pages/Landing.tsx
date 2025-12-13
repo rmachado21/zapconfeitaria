@@ -3,7 +3,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, ArrowRight, Sparkles, Star } from 'lucide-react';
+import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, Laptop, ArrowRight, Sparkles, Star } from 'lucide-react';
 import logo from '@/assets/zap-confeitaria-logo.png';
 import appMockup from '@/assets/app-mockup.png';
 import desktopMockup from '@/assets/desktop-mockup.png';
@@ -207,11 +207,25 @@ export default function Landing() {
                 </div>
 
                 {/* Badge - Use anywhere */}
-                <div className="flex absolute -bottom-10 sm:-bottom-12 md:-bottom-14 left-1/2 -translate-x-1/2 items-center gap-1.5 sm:gap-2 bg-muted/80 backdrop-blur-sm rounded-full px-2 sm:px-3 md:px-4 py-1 sm:py-1.5 md:py-2 shadow-lg animate-fade-in" style={{
-                animationDelay: '0.8s'
-              }}>
-                  <span className="text-lg">📱💻</span>
-                  <span className="text-sm font-medium text-muted-foreground">Use no celular, tablet ou no computador</span>
+                <div 
+                  className="absolute -bottom-16 sm:-bottom-20 left-1/2 -translate-x-1/2 flex items-center gap-3 sm:gap-4 bg-card/90 backdrop-blur-md rounded-2xl px-4 sm:px-6 py-3 sm:py-4 shadow-xl border border-border/50 animate-fade-in" 
+                  style={{ animationDelay: '0.8s' }}
+                >
+                  <div className="flex flex-col gap-1.5 sm:gap-2">
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
+                      <Smartphone className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                    </div>
+                    <div className="p-1.5 sm:p-2 rounded-xl bg-primary/10">
+                      <Laptop className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+                    </div>
+                  </div>
+                  <div className="text-left">
+                    <span className="text-sm sm:text-base font-medium text-foreground leading-tight block">
+                      Use no celular,<br />
+                      tablet ou<br />
+                      computador
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
