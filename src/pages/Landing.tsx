@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, ArrowRight, Sparkles, Star } from 'lucide-react';
 import logo from '@/assets/zap-confeitaria-logo.png';
 import appMockup from '@/assets/app-mockup.png';
+import desktopMockup from '@/assets/desktop-mockup.png';
 
 const features = [{
   icon: ClipboardList,
@@ -144,37 +145,67 @@ export default function Landing() {
               </p>
             </div>
 
-            {/* App Mockup with Phone Frame */}
+            {/* Device Mockups - Desktop + Mobile Overlay */}
             <div className="flex justify-center lg:justify-end animate-slide-in-right" style={{ animationDelay: '0.3s', animationFillMode: 'both' }}>
               <div className="relative">
-                {/* Glow effect behind mockup */}
-                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-75" />
+                {/* Glow effect behind mockups */}
+                <div className="absolute inset-0 bg-primary/20 blur-3xl rounded-full scale-90" />
                 
-                {/* Phone Frame */}
-                <div className="relative w-64 md:w-72 lg:w-80 animate-float" style={{ animationDelay: '0.5s' }}>
+                {/* Desktop Mockup - Hidden on small screens */}
+                <div className="hidden md:block relative animate-float" style={{ animationDelay: '0.3s' }}>
+                  {/* Monitor Frame */}
+                  <div className="relative w-[400px] lg:w-[480px] xl:w-[520px]">
+                    {/* Monitor body */}
+                    <div className="bg-gray-800 rounded-lg pt-4 px-3 pb-3 shadow-2xl">
+                      {/* Browser bar */}
+                      <div className="flex items-center gap-2 mb-2 px-2">
+                        <div className="flex gap-1.5">
+                          <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-yellow-500" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                        </div>
+                        <div className="flex-1 bg-gray-700 rounded h-5 ml-2" />
+                      </div>
+                      {/* Screenshot */}
+                      <img 
+                        src={desktopMockup} 
+                        alt="ZAP Confeitaria Desktop" 
+                        className="rounded w-full h-auto"
+                      />
+                    </div>
+                    {/* Monitor stand */}
+                    <div className="w-16 h-6 mx-auto bg-gray-700 rounded-b-sm" />
+                    <div className="w-24 h-2 mx-auto bg-gray-600 rounded-b-lg" />
+                  </div>
+                </div>
+                
+                {/* Mobile Mockup - Overlaps on desktop, standalone on mobile */}
+                <div className="md:absolute md:-bottom-6 md:-right-6 lg:-bottom-4 lg:-right-4 z-10 w-48 sm:w-56 md:w-44 lg:w-52 animate-float" style={{ animationDelay: '0.6s' }}>
                   {/* Phone body */}
-                  <div className="relative bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl">
-                    {/* Top notch/dynamic island */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-gray-900 rounded-b-2xl z-10" />
+                  <div className="relative bg-gray-900 rounded-[2rem] md:rounded-[1.5rem] lg:rounded-[2rem] p-1.5 md:p-1 lg:p-1.5 shadow-2xl ring-4 ring-background">
+                    {/* Top notch */}
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 md:w-12 lg:w-16 h-4 md:h-3 lg:h-4 bg-gray-900 rounded-b-xl z-10" />
                     
-                    {/* Screen bezel */}
-                    <div className="relative rounded-[2rem] overflow-hidden bg-black">
-                      {/* Status bar simulation */}
-                      <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/20 to-transparent z-10" />
-                      
-                      {/* App Screenshot */}
+                    {/* Screen */}
+                    <div className="relative rounded-[1.5rem] md:rounded-[1.25rem] lg:rounded-[1.5rem] overflow-hidden bg-black">
                       <img 
                         src={appMockup} 
-                        alt="ZAP Confeitaria App" 
+                        alt="ZAP Confeitaria Mobile" 
                         className="w-full h-auto"
                       />
                     </div>
                     
-                    {/* Side buttons simulation */}
-                    <div className="absolute -right-1 top-24 w-1 h-8 bg-gray-700 rounded-r-sm" />
-                    <div className="absolute -right-1 top-36 w-1 h-12 bg-gray-700 rounded-r-sm" />
-                    <div className="absolute -left-1 top-28 w-1 h-10 bg-gray-700 rounded-l-sm" />
+                    {/* Side buttons */}
+                    <div className="absolute -right-0.5 top-16 md:top-12 lg:top-16 w-0.5 h-6 md:h-4 lg:h-6 bg-gray-700 rounded-r-sm" />
+                    <div className="absolute -right-0.5 top-24 md:top-18 lg:top-24 w-0.5 h-8 md:h-6 lg:h-8 bg-gray-700 rounded-r-sm" />
+                    <div className="absolute -left-0.5 top-20 md:top-14 lg:top-20 w-0.5 h-6 md:h-5 lg:h-6 bg-gray-700 rounded-l-sm" />
                   </div>
+                </div>
+
+                {/* Badge - Use anywhere */}
+                <div className="hidden md:flex absolute -bottom-14 left-1/2 -translate-x-1/2 items-center gap-2 bg-muted/80 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg animate-fade-in" style={{ animationDelay: '0.8s' }}>
+                  <span className="text-lg">📱💻</span>
+                  <span className="text-sm font-medium text-muted-foreground">Use no celular ou no computador</span>
                 </div>
               </div>
             </div>
