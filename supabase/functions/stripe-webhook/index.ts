@@ -22,6 +22,18 @@ const logStep = (step: string, details?: any) => {
   console.log(`[STRIPE-WEBHOOK] ${step}${detailsStr}`);
 };
 
+// Safe timestamp conversion with validation
+const safeTimestampToISO = (timestamp: number | undefined | null): string | null => {
+  if (!timestamp || typeof timestamp !== 'number' || timestamp <= 0) {
+    return null;
+  }
+  try {
+    return new Date(timestamp * 1000).toISOString();
+  } catch {
+    return null;
+  }
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -65,6 +77,12 @@ serve(async (req) => {
           const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
           const customerEmail = session.customer_email || session.customer_details?.email;
           
+          logStep("Subscription retrieved", { 
+            subscriptionId: subscription.id,
+            periodStart: subscription.current_period_start,
+            periodEnd: subscription.current_period_end 
+          });
+          
           if (customerEmail) {
             // Find user by email
             const { data: authUsers } = await supabase.auth.admin.listUsers();
@@ -74,19 +92,31 @@ serve(async (req) => {
               const interval = subscription.items.data[0]?.price?.recurring?.interval;
               const planType = interval === 'year' ? 'yearly' : 'monthly';
               
+              const periodStart = safeTimestampToISO(subscription.current_period_start);
+              const periodEnd = safeTimestampToISO(subscription.current_period_end);
+              
+              logStep("Upserting subscription", { 
+                userId: user.id, 
+                planType,
+                periodStart,
+                periodEnd 
+              });
+              
               await supabase.from('subscriptions').upsert({
                 user_id: user.id,
                 stripe_customer_id: session.customer as string,
                 stripe_subscription_id: subscription.id,
                 status: 'active',
                 plan_type: planType,
-                current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-                current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-                cancel_at_period_end: subscription.cancel_at_period_end,
+                current_period_start: periodStart,
+                current_period_end: periodEnd,
+                cancel_at_period_end: subscription.cancel_at_period_end ?? false,
                 updated_at: new Date().toISOString(),
               }, { onConflict: 'user_id' });
               
               logStep("Subscription created/updated", { userId: user.id, planType });
+            } else {
+              logStep("User not found for email", { email: customerEmail });
             }
           }
         }
@@ -108,12 +138,15 @@ serve(async (req) => {
           const interval = subscription.items.data[0]?.price?.recurring?.interval;
           const planType = interval === 'year' ? 'yearly' : 'monthly';
           
+          const periodStart = safeTimestampToISO(subscription.current_period_start);
+          const periodEnd = safeTimestampToISO(subscription.current_period_end);
+          
           await supabase.from('subscriptions').update({
             status: subscription.status === 'active' ? 'active' : subscription.status,
             plan_type: planType,
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
+            current_period_start: periodStart,
+            current_period_end: periodEnd,
+            cancel_at_period_end: subscription.cancel_at_period_end ?? false,
             updated_at: new Date().toISOString(),
           }).eq('id', existingSub.id);
           
@@ -159,10 +192,13 @@ serve(async (req) => {
             // Refresh subscription data from Stripe
             const subscription = await stripe.subscriptions.retrieve(invoice.subscription as string);
             
+            const periodStart = safeTimestampToISO(subscription.current_period_start);
+            const periodEnd = safeTimestampToISO(subscription.current_period_end);
+            
             await supabase.from('subscriptions').update({
               status: 'active',
-              current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-              current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+              current_period_start: periodStart,
+              current_period_end: periodEnd,
               updated_at: new Date().toISOString(),
             }).eq('id', existingSub.id);
             

@@ -95,8 +95,21 @@ serve(async (req) => {
     }
 
     const subscription = subscriptions.data[0];
-    const subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-    const subscriptionStart = new Date(subscription.current_period_start * 1000).toISOString();
+    
+    // Safe timestamp conversion with validation
+    const safeTimestampToISO = (timestamp: number | undefined | null): string | null => {
+      if (!timestamp || typeof timestamp !== 'number' || timestamp <= 0) {
+        return null;
+      }
+      try {
+        return new Date(timestamp * 1000).toISOString();
+      } catch {
+        return null;
+      }
+    };
+    
+    const subscriptionEnd = safeTimestampToISO(subscription.current_period_end);
+    const subscriptionStart = safeTimestampToISO(subscription.current_period_start);
     
     // Determine plan type based on interval
     const interval = subscription.items.data[0]?.price?.recurring?.interval;
@@ -120,7 +133,7 @@ serve(async (req) => {
         plan_type: planType,
         current_period_start: subscriptionStart,
         current_period_end: subscriptionEnd,
-        cancel_at_period_end: subscription.cancel_at_period_end,
+        cancel_at_period_end: subscription.cancel_at_period_end ?? false,
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
 
