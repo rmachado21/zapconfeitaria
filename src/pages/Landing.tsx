@@ -7,7 +7,6 @@ import { Check, ClipboardList, Users, Package, Wallet, FileText, Smartphone, Lap
 import logo from '@/assets/zap-confeitaria-logo.png';
 import appMockup from '@/assets/app-mockup.png';
 import desktopMockup from '@/assets/desktop-mockup.png';
-import mobileOrdersListMockup from '@/assets/mobile-orders-list-mockup.png';
 const features = [{
   icon: ClipboardList,
   title: 'Gestão de Pedidos',
@@ -187,7 +186,7 @@ export default function Landing() {
                   </div>
                 </div>
                 
-                {/* Mobile Mockup 1 - Kanban (Overlaps desktop) */}
+                {/* Mobile Mockup - Overlaps desktop */}
                 <div className="absolute -bottom-4 -right-2 sm:-bottom-5 sm:-right-3 md:-bottom-6 md:-right-4 lg:-bottom-4 lg:-right-4 z-10 w-24 sm:w-32 md:w-44 lg:w-52 animate-float" style={{
                 animationDelay: '0.6s'
               }}>
@@ -206,31 +205,6 @@ export default function Landing() {
                     <div className="absolute -right-0.5 top-12 sm:top-16 md:top-18 lg:top-24 w-0.5 h-4 sm:h-5 md:h-6 lg:h-8 bg-gray-700 rounded-r-sm" />
                     <div className="absolute -left-0.5 top-10 sm:top-12 md:top-14 lg:top-20 w-0.5 h-3 sm:h-4 md:h-5 lg:h-6 bg-gray-700 rounded-l-sm" />
                   </div>
-                  {/* Label */}
-                  <p className="text-[8px] sm:text-[10px] text-center text-muted-foreground mt-1 sm:mt-2">Desktop</p>
-                </div>
-
-                {/* Mobile Mockup 2 - Orders List (Far right) */}
-                <div className="absolute -bottom-4 right-[-70px] sm:-bottom-5 sm:right-[-90px] md:-bottom-6 md:right-[-120px] lg:-bottom-4 lg:right-[-140px] z-20 w-20 sm:w-28 md:w-36 lg:w-44 animate-float" style={{
-                animationDelay: '0.9s'
-              }}>
-                  {/* Phone body */}
-                  <div className="relative bg-gray-900 rounded-[1rem] sm:rounded-[1.25rem] md:rounded-[1.5rem] lg:rounded-[2rem] p-1 sm:p-1 md:p-1 lg:p-1.5 shadow-2xl ring-2 sm:ring-4 ring-background">
-                    {/* Top notch */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 sm:w-10 md:w-12 lg:w-16 h-2 sm:h-2.5 md:h-3 lg:h-4 bg-gray-900 rounded-b-xl z-10" />
-                    
-                    {/* Screen */}
-                    <div className="relative rounded-[0.75rem] sm:rounded-[1rem] md:rounded-[1.25rem] lg:rounded-[1.5rem] overflow-hidden bg-black">
-                      <img src={mobileOrdersListMockup} alt="ZAP Confeitaria Lista de Pedidos Mobile" className="w-full h-auto" />
-                    </div>
-                    
-                    {/* Side buttons */}
-                    <div className="absolute -right-0.5 top-8 sm:top-10 md:top-12 lg:top-16 w-0.5 h-3 sm:h-4 md:h-4 lg:h-6 bg-gray-700 rounded-r-sm" />
-                    <div className="absolute -right-0.5 top-12 sm:top-16 md:top-18 lg:top-24 w-0.5 h-4 sm:h-5 md:h-6 lg:h-8 bg-gray-700 rounded-r-sm" />
-                    <div className="absolute -left-0.5 top-10 sm:top-12 md:top-14 lg:top-20 w-0.5 h-3 sm:h-4 md:h-5 lg:h-6 bg-gray-700 rounded-l-sm" />
-                  </div>
-                  {/* Label */}
-                  <p className="text-[8px] sm:text-[10px] text-center text-muted-foreground mt-1 sm:mt-2">Mobile</p>
                 </div>
 
                 {/* Badge - Use anywhere */}
