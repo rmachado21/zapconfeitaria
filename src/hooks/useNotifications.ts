@@ -1,17 +1,18 @@
 import { useMemo } from 'react';
 import { useClients } from './useClients';
 import { useOrders } from './useOrders';
+import { useProfile } from './useProfile';
 import { parseISO, isToday, isTomorrow, addDays, isBefore, format, differenceInDays, getMonth, getDate, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export interface Notification {
   id: string;
-  type: 'birthday' | 'delivery' | 'deposit_overdue';
+  type: 'birthday' | 'delivery' | 'deposit_overdue' | 'pwa_install';
   title: string;
   description: string;
   date: Date;
   priority: 'high' | 'medium' | 'low';
-  icon: 'cake' | 'truck' | 'alert';
+  icon: 'cake' | 'truck' | 'alert' | 'smartphone';
   clientName?: string;
   orderId?: string;
   // Extra fields for template processing
@@ -24,10 +25,28 @@ export interface Notification {
 export function useNotifications() {
   const { clients } = useClients();
   const { orders } = useOrders();
+  const { profile } = useProfile();
 
   const notifications = useMemo(() => {
     const notifs: Notification[] = [];
     const today = startOfDay(new Date());
+
+    // Check if PWA install suggestion should be shown
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches;
+    const showPWASuggestion = isMobile && !isPWA && profile && !profile.pwa_install_suggested;
+
+    if (showPWASuggestion) {
+      notifs.push({
+        id: 'pwa-install-suggestion',
+        type: 'pwa_install',
+        title: 'Instale o App',
+        description: 'Adicione à tela inicial para acesso rápido',
+        date: new Date(),
+        priority: 'medium',
+        icon: 'smartphone',
+      });
+    }
     const nextWeek = addDays(today, 7);
 
     // Check birthdays
@@ -177,7 +196,7 @@ export function useNotifications() {
       if (priorityDiff !== 0) return priorityDiff;
       return a.date.getTime() - b.date.getTime();
     });
-  }, [clients, orders]);
+  }, [clients, orders, profile]);
 
   const highPriorityCount = notifications.filter(n => n.priority === 'high').length;
   const totalCount = notifications.length;

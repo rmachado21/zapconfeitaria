@@ -268,6 +268,7 @@ export type Database = {
           logo_url: string | null
           order_number_start: number
           pix_key: string | null
+          pwa_install_suggested: boolean | null
           updated_at: string
           user_id: string
         }
@@ -283,6 +284,7 @@ export type Database = {
           logo_url?: string | null
           order_number_start?: number
           pix_key?: string | null
+          pwa_install_suggested?: boolean | null
           updated_at?: string
           user_id: string
         }
@@ -298,6 +300,7 @@ export type Database = {
           logo_url?: string | null
           order_number_start?: number
           pix_key?: string | null
+          pwa_install_suggested?: boolean | null
           updated_at?: string
           user_id?: string
         }
