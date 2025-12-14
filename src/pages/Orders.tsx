@@ -80,7 +80,11 @@ const Orders = () => {
       });
     }
 
-    return result;
+    // Move cancelled orders to the end
+    const activeOrders = result.filter(order => order.status !== 'cancelled');
+    const cancelledOrders = result.filter(order => order.status === 'cancelled');
+
+    return [...activeOrders, ...cancelledOrders];
   }, [orders, searchQuery, sortOrder]);
 
   const handleCreate = () => {
