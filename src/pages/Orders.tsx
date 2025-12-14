@@ -12,7 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { Plus, Loader2, Search, ArrowUpDown } from "lucide-react";
+import { Plus, Loader2, Search, ArrowUpDown, EyeOff, Eye } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 const Orders = () => {
   const location = useLocation();
@@ -22,6 +24,15 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("asc");
+  const [hideCancelled, setHideCancelled] = useState(() => {
+    const saved = localStorage.getItem("hideCancelledOrders");
+    return saved === "true";
+  });
+
+  const handleHideCancelledChange = (checked: boolean) => {
+    setHideCancelled(checked);
+    localStorage.setItem("hideCancelledOrders", String(checked));
+  };
 
   const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, markFullPayment, undoFullPayment, deleteOrder } =
     useOrders();
@@ -80,12 +91,16 @@ const Orders = () => {
       });
     }
 
-    // Move cancelled orders to the end
+    // Hide or move cancelled orders to the end
+    if (hideCancelled) {
+      return result.filter(order => order.status !== 'cancelled');
+    }
+
     const activeOrders = result.filter(order => order.status !== 'cancelled');
     const cancelledOrders = result.filter(order => order.status === 'cancelled');
 
     return [...activeOrders, ...cancelledOrders];
-  }, [orders, searchQuery, sortOrder]);
+  }, [orders, searchQuery, sortOrder, hideCancelled]);
 
   const handleCreate = () => {
     setSelectedOrder(null);
@@ -200,6 +215,23 @@ const Orders = () => {
               <SelectItem value="none">Sem ordenação</SelectItem>
             </SelectContent>
           </Select>
+
+          {/* Hide Cancelled Toggle */}
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="hideCancelled"
+              checked={hideCancelled}
+              onCheckedChange={handleHideCancelledChange}
+            />
+            <Label
+              htmlFor="hideCancelled"
+              className="text-sm text-muted-foreground cursor-pointer flex items-center gap-1.5"
+            >
+              {hideCancelled ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+              <span className="hidden sm:inline">Ocultar cancelados</span>
+              <span className="sm:hidden">Cancelados</span>
+            </Label>
+          </div>
 
           {/* Kanban Column Settings - Desktop only */}
           <div className="hidden md:block">
