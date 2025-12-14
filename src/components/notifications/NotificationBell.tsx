@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Cake, Truck, AlertTriangle } from 'lucide-react';
+import { Bell, Cake, Truck, AlertTriangle, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useClients } from '@/hooks/useClients';
 import { useProfile } from '@/hooks/useProfile';
+import { useOrders } from '@/hooks/useOrders';
 import { cn } from '@/lib/utils';
 import { openWhatsAppWithTemplate } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
@@ -21,6 +22,7 @@ export function NotificationBell() {
   const { notifications, highPriorityCount, totalCount } = useNotifications();
   const { clients } = useClients();
   const { profile } = useProfile();
+  const { orders, updateOrderStatus } = useOrders();
   const [open, setOpen] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
@@ -30,6 +32,24 @@ export function NotificationBell() {
     } else if (notification.type === 'birthday') {
       navigate('/clients');
     }
+  };
+
+  const handleMarkAsDelivered = async (e: React.MouseEvent, notification: Notification) => {
+    e.stopPropagation();
+    if (!notification.orderId) return;
+    
+    const order = orders.find(o => o.id === notification.orderId);
+    if (!order) return;
+
+    await updateOrderStatus.mutateAsync({ 
+      id: notification.orderId, 
+      status: 'delivered',
+      clientName: order.client?.name,
+      totalAmount: order.total_amount,
+      previousStatus: order.status,
+      fullPaymentReceived: order.full_payment_received
+    });
+    setOpen(false);
   };
 
   const handleWhatsAppBirthday = (e: React.MouseEvent, notification: Notification) => {
@@ -156,31 +176,46 @@ export function NotificationBell() {
                     </div>
                   </button>
                   
-                  {/* WhatsApp button for birthday notifications */}
-                  {notification.type === 'birthday' && getClientPhone(notification.clientName) && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="flex-shrink-0 text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
-                      onClick={(e) => handleWhatsAppBirthday(e, notification)}
-                      title="Enviar felicitação por WhatsApp"
-                    >
-                      <WhatsAppIcon />
-                    </Button>
-                  )}
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    {/* Mark as delivered button for delivery notifications */}
+                    {notification.type === 'delivery' && notification.orderId && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                        onClick={(e) => handleMarkAsDelivered(e, notification)}
+                        title="Marcar como entregue"
+                      >
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    )}
 
-                  {/* WhatsApp button for deposit overdue notifications */}
-                  {notification.type === 'deposit_overdue' && getClientPhone(notification.clientName) && (
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      className="flex-shrink-0 text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
-                      onClick={(e) => handleWhatsAppDeposit(e, notification)}
-                      title="Cobrar sinal via WhatsApp"
-                    >
-                      <WhatsAppIcon />
-                    </Button>
-                  )}
+                    {/* WhatsApp button for birthday notifications */}
+                    {notification.type === 'birthday' && getClientPhone(notification.clientName) && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
+                        onClick={(e) => handleWhatsAppBirthday(e, notification)}
+                        title="Enviar felicitação por WhatsApp"
+                      >
+                        <WhatsAppIcon />
+                      </Button>
+                    )}
+
+                    {/* WhatsApp button for deposit overdue notifications */}
+                    {notification.type === 'deposit_overdue' && getClientPhone(notification.clientName) && (
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
+                        onClick={(e) => handleWhatsAppDeposit(e, notification)}
+                        title="Cobrar sinal via WhatsApp"
+                      >
+                        <WhatsAppIcon />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
