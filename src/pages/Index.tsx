@@ -75,7 +75,7 @@ const Index = () => {
   // Calculate stats from filtered data
   const activeOrders = filteredOrders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const pendingDepositOrders = filteredOrders.filter(
-    (o) => !o.deposit_paid && o.status !== "delivered" && o.status !== "cancelled"
+    (o) => !o.deposit_paid && o.status !== "delivered" && o.status !== "cancelled",
   );
   const pendingDeposits = pendingDepositOrders.reduce((sum, o) => sum + o.total_amount / 2, 0);
   const periodIncome = filteredOrders
@@ -86,23 +86,23 @@ const Index = () => {
   const { grossProfitTotals, deliveredOrdersForProfit } = useMemo(() => {
     const now = new Date();
     let startDate: Date | null = null;
-    
+
     switch (period) {
-      case 'week':
+      case "week":
         startDate = startOfWeek(now, { weekStartsOn: 0 });
         break;
-      case 'month':
+      case "month":
         startDate = startOfMonth(now);
         break;
-      case 'year':
+      case "year":
         startDate = startOfYear(now);
         break;
     }
 
-    const deliveredOrders = orders.filter(order => {
-      if (order.status !== 'delivered') return false;
+    const deliveredOrders = orders.filter((order) => {
+      if (order.status !== "delivered") return false;
       if (!startDate) return true;
-      
+
       const orderDate = parseISO(order.updated_at);
       return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
     });
@@ -112,9 +112,9 @@ const Index = () => {
     const costs = deliveredOrders.reduce((orderSum, order) => {
       const itemsCost = (order.order_items || []).reduce((itemSum, item) => {
         if (item.is_gift) return itemSum;
-        const product = products.find(p => p.id === item.product_id);
+        const product = products.find((p) => p.id === item.product_id);
         const costPrice = product?.cost_price || 0;
-        return itemSum + (costPrice * item.quantity);
+        return itemSum + costPrice * item.quantity;
       }, 0);
       return orderSum + itemsCost;
     }, 0);
@@ -122,9 +122,9 @@ const Index = () => {
     const profit = revenue - costs;
     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
 
-    return { 
+    return {
       grossProfitTotals: { profit, margin, revenue, costs },
-      deliveredOrdersForProfit: deliveredOrders 
+      deliveredOrdersForProfit: deliveredOrders,
     };
   }, [orders, products, period]);
   const formatCurrency = (value: number) => {
@@ -215,7 +215,7 @@ const Index = () => {
               <>
                 <div className="animate-fade-in stagger-1">
                   <StatsCard
-                    title={`Faturamento (${periodLabels[period]})`}
+                    title={`Faturamento </br>(${periodLabels[period]})`}
                     value={formatCurrency(periodIncome)}
                     subtitle={`${filteredOrders.filter((o) => o.status === "delivered").length} pedidos entregues`}
                     icon={TrendingUp}
