@@ -4,6 +4,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StatsCardSkeleton } from "@/components/dashboard/StatsCardSkeleton";
 import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
 import { ActiveOrdersDialog } from "@/components/dashboard/ActiveOrdersDialog";
+import { GrossProfitDetailDialog } from "@/components/finances/GrossProfitDetailDialog";
 import { KanbanBoard } from "@/components/orders/KanbanBoard";
 import { OrdersList } from "@/components/orders/OrdersList";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
 import { ShoppingBag, TrendingUp, Clock, Plus, Loader2, CalendarDays } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { subDays, subMonths, subYears, isAfter, parseISO } from "date-fns";
+import { subDays, subMonths, subYears, isAfter, parseISO, startOfWeek, startOfMonth, startOfYear } from "date-fns";
 type PeriodFilter = "week" | "month" | "year" | "all";
 const periodLabels: Record<PeriodFilter, string> = {
   week: "Esta Semana",
@@ -28,6 +29,7 @@ const Index = () => {
   const [period, setPeriod] = useState<PeriodFilter>("month");
   const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
   const [activeOrdersOpen, setActiveOrdersOpen] = useState(false);
+  const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
   const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
   const { clients, isLoading: clientsLoading } = useClients();
   const { products, isLoading: productsLoading } = useProducts();
@@ -79,6 +81,52 @@ const Index = () => {
   const periodIncome = filteredOrders
     .filter((o) => o.status === "delivered")
     .reduce((sum, o) => sum + o.total_amount, 0);
+
+  // Calculate gross profit data for delivered orders
+  const { grossProfitTotals, deliveredOrdersForProfit } = useMemo(() => {
+    const now = new Date();
+    let startDate: Date | null = null;
+    
+    switch (period) {
+      case 'week':
+        startDate = startOfWeek(now, { weekStartsOn: 0 });
+        break;
+      case 'month':
+        startDate = startOfMonth(now);
+        break;
+      case 'year':
+        startDate = startOfYear(now);
+        break;
+    }
+
+    const deliveredOrders = orders.filter(order => {
+      if (order.status !== 'delivered') return false;
+      if (!startDate) return true;
+      
+      const orderDate = parseISO(order.updated_at);
+      return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
+    });
+
+    const revenue = deliveredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+    const costs = deliveredOrders.reduce((orderSum, order) => {
+      const itemsCost = (order.order_items || []).reduce((itemSum, item) => {
+        if (item.is_gift) return itemSum;
+        const product = products.find(p => p.id === item.product_id);
+        const costPrice = product?.cost_price || 0;
+        return itemSum + (costPrice * item.quantity);
+      }, 0);
+      return orderSum + itemsCost;
+    }, 0);
+
+    const profit = revenue - costs;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+
+    return { 
+      grossProfitTotals: { profit, margin, revenue, costs },
+      deliveredOrdersForProfit: deliveredOrders 
+    };
+  }, [orders, products, period]);
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -172,6 +220,7 @@ const Index = () => {
                     subtitle={`${filteredOrders.filter((o) => o.status === "delivered").length} pedidos entregues`}
                     icon={TrendingUp}
                     variant="primary"
+                    onClick={() => setGrossProfitDialogOpen(true)}
                   />
                 </div>
                 <div className="animate-fade-in stagger-2">
@@ -280,6 +329,15 @@ const Index = () => {
             setActiveOrdersOpen(false);
             navigate("/orders", { state: { openOrderId: order.id } });
           }}
+        />
+
+        {/* Gross Profit Detail Dialog */}
+        <GrossProfitDetailDialog
+          open={grossProfitDialogOpen}
+          onOpenChange={setGrossProfitDialogOpen}
+          orders={deliveredOrdersForProfit}
+          products={products}
+          totals={grossProfitTotals}
         />
       </div>
     </AppLayout>
