@@ -14,7 +14,6 @@ export interface Profile {
   custom_terms: string | null;
   hidden_kanban_columns: string[] | null;
   order_number_start: number;
-  hide_cancelled_orders: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -28,7 +27,6 @@ export interface ProfileFormData {
   custom_terms?: string;
   hidden_kanban_columns?: string[];
   order_number_start?: number;
-  hide_cancelled_orders?: boolean;
 }
 
 export function useProfile() {
@@ -73,7 +71,6 @@ export function useProfile() {
       if (formData.custom_terms !== undefined) updateData.custom_terms = formData.custom_terms || null;
       if (formData.hidden_kanban_columns !== undefined) updateData.hidden_kanban_columns = formData.hidden_kanban_columns;
       if (formData.order_number_start !== undefined) updateData.order_number_start = formData.order_number_start;
-      if (formData.hide_cancelled_orders !== undefined) updateData.hide_cancelled_orders = formData.hide_cancelled_orders;
 
       const { data, error } = await supabase
         .from('profiles')
