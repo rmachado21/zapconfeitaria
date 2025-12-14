@@ -233,22 +233,13 @@ const Orders = () => {
           </Select>
 
           {/* Hide Cancelled Toggle */}
-          <div className="flex items-center space-x-2 sm:ml-auto">
-            <Checkbox
-              id="hideCancelled"
-              checked={hideCancelled}
-              onCheckedChange={handleHideCancelledChange}
-              className="border-muted-foreground/50 data-[state=checked]:bg-slate-400 data-[state=checked]:border-slate-400"
-            />
-            <Label
-              htmlFor="hideCancelled"
-              className="text-sm text-muted-foreground cursor-pointer flex items-center gap-1.5"
-            >
-              {hideCancelled ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
-              <span className="hidden sm:inline">Ocultar cancelados</span>
-              <span className="sm:hidden">cancelados</span>
-            </Label>
-          </div>
+          <button
+            onClick={() => handleHideCancelledChange(!hideCancelled)}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors sm:ml-auto"
+          >
+            {hideCancelled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            <span>Cancelados</span>
+          </button>
 
           {/* Kanban Column Settings - Desktop only */}
           <div className="hidden md:block">
