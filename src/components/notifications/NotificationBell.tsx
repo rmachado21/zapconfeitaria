@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Cake, Truck, AlertTriangle, Check } from 'lucide-react';
+import { Bell, Cake, Truck, AlertTriangle, Check, Smartphone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Popover,
@@ -26,18 +26,28 @@ import { useOrders } from '@/hooks/useOrders';
 import { cn } from '@/lib/utils';
 import { openWhatsAppWithTemplate } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
+import { PWAInstallGuide } from '@/components/shared/PWAInstallGuide';
 
 export function NotificationBell() {
   const navigate = useNavigate();
   const { notifications, highPriorityCount, totalCount } = useNotifications();
   const { clients } = useClients();
-  const { profile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const { orders, updateOrderStatus } = useOrders();
   const [open, setOpen] = useState(false);
   const [confirmDelivery, setConfirmDelivery] = useState<Notification | null>(null);
+  const [showPWAGuide, setShowPWAGuide] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
     setOpen(false);
+    
+    if (notification.type === 'pwa_install') {
+      setShowPWAGuide(true);
+      // Mark as suggested in the database
+      updateProfile.mutate({ pwa_install_suggested: true });
+      return;
+    }
+    
     if ((notification.type === 'delivery' || notification.type === 'deposit_overdue') && notification.orderId) {
       navigate('/orders', { state: { openOrderId: notification.orderId } });
     } else if (notification.type === 'birthday') {
@@ -115,6 +125,8 @@ export function NotificationBell() {
         return <Truck className="h-4 w-4" />;
       case 'alert':
         return <AlertTriangle className="h-4 w-4" />;
+      case 'smartphone':
+        return <Smartphone className="h-4 w-4" />;
     }
   };
 
@@ -274,6 +286,9 @@ export function NotificationBell() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* PWA Install Guide Modal */}
+      <PWAInstallGuide open={showPWAGuide} onOpenChange={setShowPWAGuide} />
     </>
   );
 }
