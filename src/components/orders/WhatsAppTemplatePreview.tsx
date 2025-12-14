@@ -111,7 +111,7 @@ export function WhatsAppTemplatePreview({
                 <Eye className="h-3.5 w-3.5" />
                 Preview da mensagem:
               </div>
-              <ScrollArea className="max-h-40">
+              <ScrollArea className="h-32">
                 <div className="bg-background rounded-lg p-3 text-sm whitespace-pre-wrap border shadow-sm">
                   {previewMessage}
                 </div>
