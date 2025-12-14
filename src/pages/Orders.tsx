@@ -234,11 +234,11 @@ const Orders = () => {
 
           {/* Hide Cancelled Toggle */}
           <div className="flex items-center space-x-2 sm:ml-auto">
-            <Checkbox 
-              id="hideCancelled" 
-              checked={hideCancelled} 
+            <Checkbox
+              id="hideCancelled"
+              checked={hideCancelled}
               onCheckedChange={handleHideCancelledChange}
-              className="border-muted-foreground/50 data-[state=checked]:bg-muted-foreground data-[state=checked]:border-muted-foreground"
+              className="border-muted-foreground/50 data-[state=checked]:bg-muted-foreground data-[state=checked]:border-0"
             />
             <Label
               htmlFor="hideCancelled"
