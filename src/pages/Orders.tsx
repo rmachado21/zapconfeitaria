@@ -238,7 +238,7 @@ const Orders = () => {
               id="hideCancelled"
               checked={hideCancelled}
               onCheckedChange={handleHideCancelledChange}
-              className="border-muted-foreground/50 data-[state=checked]:bg-muted-foreground data-[state=checked]:border-0"
+              className="border-muted-foreground/50 data-[state=checked]:bg-slate-100 data-[state=checked]:border-slate-100"
             />
             <Label
               htmlFor="hideCancelled"
