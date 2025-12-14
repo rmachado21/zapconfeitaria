@@ -7,6 +7,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
@@ -24,6 +34,7 @@ export function NotificationBell() {
   const { profile } = useProfile();
   const { orders, updateOrderStatus } = useOrders();
   const [open, setOpen] = useState(false);
+  const [confirmDelivery, setConfirmDelivery] = useState<Notification | null>(null);
 
   const handleNotificationClick = (notification: Notification) => {
     setOpen(false);
@@ -34,28 +45,32 @@ export function NotificationBell() {
     }
   };
 
-  const handleMarkAsDelivered = async (e: React.MouseEvent, notification: Notification) => {
+  const handleMarkAsDeliveredClick = (e: React.MouseEvent, notification: Notification) => {
     e.stopPropagation();
-    if (!notification.orderId) return;
+    setConfirmDelivery(notification);
+  };
+
+  const handleConfirmDelivery = async () => {
+    if (!confirmDelivery?.orderId) return;
     
-    const order = orders.find(o => o.id === notification.orderId);
+    const order = orders.find(o => o.id === confirmDelivery.orderId);
     if (!order) return;
 
     await updateOrderStatus.mutateAsync({ 
-      id: notification.orderId, 
+      id: confirmDelivery.orderId, 
       status: 'delivered',
       clientName: order.client?.name,
       totalAmount: order.total_amount,
       previousStatus: order.status,
       fullPaymentReceived: order.full_payment_received
     });
+    setConfirmDelivery(null);
     setOpen(false);
   };
 
   const handleWhatsAppBirthday = (e: React.MouseEvent, notification: Notification) => {
     e.stopPropagation();
     
-    // Find the client to get their phone number
     const client = clients.find(c => c.name === notification.clientName);
     if (!client?.phone) return;
 
@@ -110,126 +125,155 @@ export function NotificationBell() {
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {totalCount > 0 && (
-            <span className={cn(
-              "absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center",
-              highPriorityCount > 0
-                ? "bg-destructive text-destructive-foreground animate-pulse"
-                : "bg-primary text-primary-foreground"
-            )}>
-              {totalCount > 99 ? '99+' : totalCount}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b border-border">
-          <h3 className="font-semibold">Notificações</h3>
-          {highPriorityCount > 0 && (
-            <Badge variant="destructive" className="text-[10px]">
-              {highPriorityCount} urgente{highPriorityCount > 1 ? 's' : ''}
-            </Badge>
-          )}
-        </div>
-        
-        <ScrollArea className="max-h-[400px]">
-          {notifications.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground">
-              <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">Nenhuma notificação</p>
-              <p className="text-xs mt-1">Você está em dia!</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-border">
-              {notifications.map((notification) => (
-                <div
-                  key={notification.id}
-                  className={cn(
-                    "w-full p-4 hover:bg-muted/50 transition-colors flex items-start gap-3",
-                    notification.priority === 'high' && "bg-destructive/5"
-                  )}
-                >
-                  <button
-                    onClick={() => handleNotificationClick(notification)}
-                    className="flex items-start gap-3 flex-1 text-left"
-                  >
-                    <div className={cn(
-                      "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border",
-                      getPriorityColor(notification.priority)
-                    )}>
-                      {getIcon(notification.icon)}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">{notification.title}</p>
-                      <p className={cn(
-                        "text-xs mt-0.5",
-                        notification.priority === 'high' 
-                          ? "text-destructive font-medium" 
-                          : "text-muted-foreground"
-                      )}>
-                        {notification.description}
-                      </p>
-                    </div>
-                  </button>
-                  
-                  <div className="flex items-center gap-1 flex-shrink-0">
-                    {/* Mark as delivered button for delivery notifications */}
-                    {notification.type === 'delivery' && notification.orderId && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                        onClick={(e) => handleMarkAsDelivered(e, notification)}
-                        title="Marcar como entregue"
-                      >
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    )}
-
-                    {/* WhatsApp button for birthday notifications */}
-                    {notification.type === 'birthday' && getClientPhone(notification.clientName) && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
-                        onClick={(e) => handleWhatsAppBirthday(e, notification)}
-                        title="Enviar felicitação por WhatsApp"
-                      >
-                        <WhatsAppIcon />
-                      </Button>
-                    )}
-
-                    {/* WhatsApp button for deposit overdue notifications */}
-                    {notification.type === 'deposit_overdue' && getClientPhone(notification.clientName) && (
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        className="text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
-                        onClick={(e) => handleWhatsAppDeposit(e, notification)}
-                        title="Cobrar sinal via WhatsApp"
-                      >
-                        <WhatsAppIcon />
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </ScrollArea>
-
-        {notifications.length > 0 && (
-          <div className="p-3 border-t border-border bg-muted/30">
-            <p className="text-xs text-center text-muted-foreground">
-              Clique em uma notificação para ver detalhes
-            </p>
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            {totalCount > 0 && (
+              <span className={cn(
+                "absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full text-[10px] font-bold flex items-center justify-center",
+                highPriorityCount > 0
+                  ? "bg-destructive text-destructive-foreground animate-pulse"
+                  : "bg-primary text-primary-foreground"
+              )}>
+                {totalCount > 99 ? '99+' : totalCount}
+              </span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-0" align="end">
+          <div className="flex items-center justify-between p-4 border-b border-border">
+            <h3 className="font-semibold">Notificações</h3>
+            {highPriorityCount > 0 && (
+              <Badge variant="destructive" className="text-[10px]">
+                {highPriorityCount} urgente{highPriorityCount > 1 ? 's' : ''}
+              </Badge>
+            )}
           </div>
-        )}
-      </PopoverContent>
-    </Popover>
+          
+          <ScrollArea className="max-h-[400px]">
+            {notifications.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                <Bell className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm">Nenhuma notificação</p>
+                <p className="text-xs mt-1">Você está em dia!</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={cn(
+                      "w-full p-4 hover:bg-muted/50 transition-colors flex items-start gap-3",
+                      notification.priority === 'high' && "bg-destructive/5"
+                    )}
+                  >
+                    <button
+                      onClick={() => handleNotificationClick(notification)}
+                      className="flex items-start gap-3 flex-1 text-left"
+                    >
+                      <div className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 border",
+                        getPriorityColor(notification.priority)
+                      )}>
+                        {getIcon(notification.icon)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm truncate">{notification.title}</p>
+                        <p className={cn(
+                          "text-xs mt-0.5",
+                          notification.priority === 'high' 
+                            ? "text-destructive font-medium" 
+                            : "text-muted-foreground"
+                        )}>
+                          {notification.description}
+                        </p>
+                      </div>
+                    </button>
+                    
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      {/* Mark as delivered button for delivery notifications */}
+                      {notification.type === 'delivery' && notification.orderId && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                          onClick={(e) => handleMarkAsDeliveredClick(e, notification)}
+                          title="Marcar como entregue"
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      )}
+
+                      {/* WhatsApp button for birthday notifications */}
+                      {notification.type === 'birthday' && getClientPhone(notification.clientName) && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
+                          onClick={(e) => handleWhatsAppBirthday(e, notification)}
+                          title="Enviar felicitação por WhatsApp"
+                        >
+                          <WhatsAppIcon />
+                        </Button>
+                      )}
+
+                      {/* WhatsApp button for deposit overdue notifications */}
+                      {notification.type === 'deposit_overdue' && getClientPhone(notification.clientName) && (
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          className="text-[#25D366] hover:text-[#25D366] hover:bg-[#25D366]/10"
+                          onClick={(e) => handleWhatsAppDeposit(e, notification)}
+                          title="Cobrar sinal via WhatsApp"
+                        >
+                          <WhatsAppIcon />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </ScrollArea>
+
+          {notifications.length > 0 && (
+            <div className="p-3 border-t border-border bg-muted/30">
+              <p className="text-xs text-center text-muted-foreground">
+                Clique em uma notificação para ver detalhes
+              </p>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!confirmDelivery} onOpenChange={(open) => !open && setConfirmDelivery(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar entrega</AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja marcar o pedido de <span className="font-medium text-foreground">{confirmDelivery?.clientName}</span> como entregue?
+              {confirmDelivery?.totalAmount && (
+                <span className="block mt-2 text-sm">
+                  O pagamento final será registrado automaticamente.
+                </span>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleConfirmDelivery}
+              className="bg-emerald-600 hover:bg-emerald-700"
+            >
+              <Check className="h-4 w-4 mr-2" />
+              Confirmar Entrega
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
