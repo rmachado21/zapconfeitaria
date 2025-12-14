@@ -26,7 +26,7 @@ export function NotificationBell() {
   const handleNotificationClick = (notification: Notification) => {
     setOpen(false);
     if ((notification.type === 'delivery' || notification.type === 'deposit_overdue') && notification.orderId) {
-      navigate('/orders');
+      navigate('/orders', { state: { openOrderId: notification.orderId } });
     } else if (notification.type === 'birthday') {
       navigate('/clients');
     }
