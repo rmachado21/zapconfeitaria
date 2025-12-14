@@ -24,18 +24,21 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("asc");
-  const [hideCancelled, setHideCancelled] = useState(() => {
-    const saved = localStorage.getItem("hideCancelledOrders");
-    return saved === "true";
-  });
-
-  const handleHideCancelledChange = (checked: boolean) => {
-    setHideCancelled(checked);
-    localStorage.setItem("hideCancelledOrders", String(checked));
-  };
-
   const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, markFullPayment, undoFullPayment, deleteOrder } =
     useOrders();
+
+  const { profile, updateProfile } = useProfile();
+
+  // Count cancelled orders for display
+  const cancelledOrdersCount = useMemo(() => {
+    return orders.filter(order => order.status === 'cancelled').length;
+  }, [orders]);
+
+  const hideCancelled = profile?.hide_cancelled_orders ?? false;
+
+  const handleHideCancelledChange = (checked: boolean) => {
+    updateProfile.mutate({ hide_cancelled_orders: checked });
+  };
 
   // Open form or detail dialog automatically based on navigation state
   useEffect(() => {
@@ -54,8 +57,6 @@ const Orders = () => {
       navigate(location.pathname, { replace: true, state: {} });
     }
   }, [location.state, navigate, location.pathname, orders]);
-
-  const { profile, updateProfile } = useProfile();
 
   const hiddenColumns = (profile?.hidden_kanban_columns || []) as OrderStatus[];
 
@@ -222,6 +223,7 @@ const Orders = () => {
               id="hideCancelled"
               checked={hideCancelled}
               onCheckedChange={handleHideCancelledChange}
+              disabled={updateProfile.isPending}
             />
             <Label
               htmlFor="hideCancelled"
@@ -230,6 +232,11 @@ const Orders = () => {
               {hideCancelled ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               <span className="hidden sm:inline">Ocultar cancelados</span>
               <span className="sm:hidden">Cancelados</span>
+              {hideCancelled && cancelledOrdersCount > 0 && (
+                <span className="text-xs bg-muted px-1.5 py-0.5 rounded-full">
+                  {cancelledOrdersCount}
+                </span>
+              )}
             </Label>
           </div>
 

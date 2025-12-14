@@ -262,6 +262,7 @@ export type Database = {
           created_at: string
           custom_terms: string | null
           hidden_kanban_columns: string[] | null
+          hide_cancelled_orders: boolean
           id: string
           include_terms_in_pdf: boolean
           logo_url: string | null
@@ -276,6 +277,7 @@ export type Database = {
           created_at?: string
           custom_terms?: string | null
           hidden_kanban_columns?: string[] | null
+          hide_cancelled_orders?: boolean
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null
@@ -290,6 +292,7 @@ export type Database = {
           created_at?: string
           custom_terms?: string | null
           hidden_kanban_columns?: string[] | null
+          hide_cancelled_orders?: boolean
           id?: string
           include_terms_in_pdf?: boolean
           logo_url?: string | null
