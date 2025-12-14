@@ -40,7 +40,9 @@ import {
   AlertTriangle,
   CheckCircle,
   RefreshCw,
+  Smartphone,
 } from 'lucide-react';
+import { PWAInstallGuide } from '@/components/shared/PWAInstallGuide';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -234,6 +236,22 @@ const Profile = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Install App Section */}
+        <Card className="border-dashed">
+          <CardContent className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+                <Smartphone className="h-5 w-5 text-primary" />
+              </div>
+              <div>
+                <p className="font-medium text-sm">Instalar no celular</p>
+                <p className="text-xs text-muted-foreground">Acesse como um app nativo</p>
+              </div>
+            </div>
+            <PWAInstallGuide />
+          </CardContent>
+        </Card>
 
         {/* Tabs for Profile and Subscription */}
         <Tabs defaultValue="profile" className="w-full">
