@@ -34,8 +34,17 @@ const Orders = () => {
     localStorage.setItem("hideCancelledOrders", String(checked));
   };
 
-  const { orders, isLoading, createOrder, updateOrder, updateOrderStatus, updateDepositPaid, markFullPayment, undoFullPayment, deleteOrder } =
-    useOrders();
+  const {
+    orders,
+    isLoading,
+    createOrder,
+    updateOrder,
+    updateOrderStatus,
+    updateDepositPaid,
+    markFullPayment,
+    undoFullPayment,
+    deleteOrder,
+  } = useOrders();
 
   // Open form or detail dialog automatically based on navigation state
   useEffect(() => {
@@ -93,11 +102,11 @@ const Orders = () => {
 
     // Hide or move cancelled orders to the end
     if (hideCancelled) {
-      return result.filter(order => order.status !== 'cancelled');
+      return result.filter((order) => order.status !== "cancelled");
     }
 
-    const activeOrders = result.filter(order => order.status !== 'cancelled');
-    const cancelledOrders = result.filter(order => order.status === 'cancelled');
+    const activeOrders = result.filter((order) => order.status !== "cancelled");
+    const cancelledOrders = result.filter((order) => order.status === "cancelled");
 
     return [...activeOrders, ...cancelledOrders];
   }, [orders, searchQuery, sortOrder, hideCancelled]);
@@ -139,26 +148,33 @@ const Orders = () => {
     previousStatus?: OrderStatus,
     fullPaymentReceived?: boolean,
   ) => {
-    updateOrderStatus.mutate({ id: orderId, status: newStatus, clientName, totalAmount, previousStatus, fullPaymentReceived });
+    updateOrderStatus.mutate({
+      id: orderId,
+      status: newStatus,
+      clientName,
+      totalAmount,
+      previousStatus,
+      fullPaymentReceived,
+    });
   };
 
   const handleFullPayment = (
     orderId: string,
-    paymentMethod: 'pix' | 'credit_card' | 'link',
+    paymentMethod: "pix" | "credit_card" | "link",
     fee: number,
     orderNumber: number | null,
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
   ) => {
-    markFullPayment.mutate({ 
-      orderId, 
-      paymentMethod, 
-      fee, 
-      orderNumber, 
-      clientName, 
-      totalAmount: totalAmount || 0, 
-      currentStatus 
+    markFullPayment.mutate({
+      orderId,
+      paymentMethod,
+      fee,
+      orderNumber,
+      clientName,
+      totalAmount: totalAmount || 0,
+      currentStatus,
     });
   };
 
@@ -218,18 +234,14 @@ const Orders = () => {
 
           {/* Hide Cancelled Toggle */}
           <div className="flex items-center space-x-2 sm:ml-auto">
-            <Checkbox
-              id="hideCancelled"
-              checked={hideCancelled}
-              onCheckedChange={handleHideCancelledChange}
-            />
+            <Checkbox id="hideCancelled" checked={hideCancelled} onCheckedChange={handleHideCancelledChange} />
             <Label
               htmlFor="hideCancelled"
               className="text-sm text-muted-foreground cursor-pointer flex items-center gap-1.5"
             >
               {hideCancelled ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
               <span className="hidden sm:inline">Ocultar cancelados</span>
-              <span className="sm:hidden">Cancelados</span>
+              <span className="sm:hidden">cancelados</span>
             </Label>
           </div>
 
