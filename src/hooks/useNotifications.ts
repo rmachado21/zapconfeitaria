@@ -14,6 +14,11 @@ export interface Notification {
   icon: 'cake' | 'truck' | 'alert';
   clientName?: string;
   orderId?: string;
+  // Extra fields for template processing
+  orderNumber?: number | null;
+  totalAmount?: number;
+  deliveryDate?: string | null;
+  deliveryTime?: string | null;
 }
 
 export function useNotifications() {
@@ -153,6 +158,11 @@ export function useNotifications() {
             icon: 'alert',
             clientName,
             orderId: order.id,
+            // Extra fields for template processing
+            orderNumber: order.order_number,
+            totalAmount: order.total_amount,
+            deliveryDate: order.delivery_date,
+            deliveryTime: order.delivery_time,
           });
         }
       } catch (e) {

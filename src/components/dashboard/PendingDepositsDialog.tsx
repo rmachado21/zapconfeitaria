@@ -6,7 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Clock, AlertTriangle, Check } from "lucide-react";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { formatOrderNumber } from "@/hooks/useOrders";
-import { openWhatsApp } from "@/lib/whatsapp";
+import { openWhatsAppWithTemplate } from "@/lib/whatsapp";
+import { useProfile } from "@/hooks/useProfile";
 import { differenceInDays, parseISO, format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { OrderStatus } from "@/types";
@@ -18,6 +19,8 @@ interface Order {
   deposit_paid: boolean;
   status: OrderStatus;
   created_at: string;
+  delivery_date?: string | null;
+  delivery_time?: string | null;
   client?: {
     name: string;
     phone?: string | null;
@@ -43,6 +46,8 @@ export function PendingDepositsDialog({
   orders,
   onDepositPaid,
 }: PendingDepositsDialogProps) {
+  const { profile } = useProfile();
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -67,10 +72,17 @@ export function PendingDepositsDialog({
     );
   };
 
-  const handleWhatsApp = (phone: string | null | undefined) => {
-    if (phone) {
-      openWhatsApp(phone);
-    }
+  const handleWhatsApp = (order: Order) => {
+    if (!order.client?.phone) return;
+    
+    openWhatsAppWithTemplate(order.client.phone, 'deposit_collection', {
+      clientName: order.client.name,
+      companyName: profile?.company_name || undefined,
+      orderNumber: order.order_number,
+      totalAmount: order.total_amount,
+      deliveryDate: order.delivery_date,
+      deliveryTime: order.delivery_time,
+    });
   };
 
   return (
@@ -162,10 +174,10 @@ export function PendingDepositsDialog({
                               variant="outline"
                               size="sm"
                               className="flex-1 text-xs"
-                              onClick={() => handleWhatsApp(order.client?.phone)}
+                              onClick={() => handleWhatsApp(order)}
                             >
                               <WhatsAppIcon className="h-3.5 w-3.5 mr-1" />
-                              WhatsApp
+                              Cobrar
                             </Button>
                           )}
                           <Button

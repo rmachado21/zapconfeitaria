@@ -1,3 +1,5 @@
+import { processTemplate, TemplateType, TemplateContext } from './whatsappTemplates';
+
 /**
  * Utility to open WhatsApp links reliably across different environments
  * Uses native anchor element to bypass iframe restrictions
@@ -26,4 +28,16 @@ export function openWhatsApp(phone: string, message?: string): void {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+/**
+ * Open WhatsApp with a pre-filled message using a template
+ */
+export function openWhatsAppWithTemplate(
+  phone: string,
+  templateType: TemplateType,
+  context: TemplateContext
+): void {
+  const message = processTemplate(templateType, context);
+  openWhatsApp(phone, message);
 }

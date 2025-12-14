@@ -11,14 +11,16 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
 import { useClients } from '@/hooks/useClients';
+import { useProfile } from '@/hooks/useProfile';
 import { cn } from '@/lib/utils';
-import { openWhatsApp } from '@/lib/whatsapp';
+import { openWhatsAppWithTemplate } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 
 export function NotificationBell() {
   const navigate = useNavigate();
   const { notifications, highPriorityCount, totalCount } = useNotifications();
   const { clients } = useClients();
+  const { profile } = useProfile();
   const [open, setOpen] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
@@ -37,7 +39,10 @@ export function NotificationBell() {
     const client = clients.find(c => c.name === notification.clientName);
     if (!client?.phone) return;
 
-    openWhatsApp(client.phone);
+    openWhatsAppWithTemplate(client.phone, 'birthday', {
+      clientName: notification.clientName,
+      companyName: profile?.company_name || undefined,
+    });
   };
 
   const handleWhatsAppDeposit = (e: React.MouseEvent, notification: Notification) => {
@@ -46,7 +51,14 @@ export function NotificationBell() {
     const client = clients.find(c => c.name === notification.clientName);
     if (!client?.phone) return;
 
-    openWhatsApp(client.phone);
+    openWhatsAppWithTemplate(client.phone, 'deposit_collection', {
+      clientName: notification.clientName,
+      companyName: profile?.company_name || undefined,
+      orderNumber: notification.orderNumber,
+      totalAmount: notification.totalAmount,
+      deliveryDate: notification.deliveryDate,
+      deliveryTime: notification.deliveryTime,
+    });
   };
 
   const getPriorityColor = (priority: Notification['priority']) => {
