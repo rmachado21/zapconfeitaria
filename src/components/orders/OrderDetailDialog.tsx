@@ -18,17 +18,11 @@ import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Order, formatOrderNumber } from "@/hooks/useOrders";
 import { useQuotePdf } from "@/hooks/useQuotePdf";
 import { useProfile } from "@/hooks/useProfile";
-import { openWhatsAppWithTemplate } from "@/lib/whatsapp";
-import { WHATSAPP_TEMPLATES, TemplateType, getAvailableTemplates } from "@/lib/whatsappTemplates";
+import { getAvailableTemplates } from "@/lib/whatsappTemplates";
+import { WhatsAppTemplatePreview } from "./WhatsAppTemplatePreview";
 import { ORDER_STATUS_CONFIG, OrderStatus } from "@/types";
 import {
   Calendar,
@@ -39,7 +33,6 @@ import {
   User,
   Package,
   Banknote,
-  ChevronDown,
   Pencil,
   Trash2,
   AlertTriangle,
@@ -47,14 +40,12 @@ import {
   PackagePlus,
   CreditCard,
   Check,
-  MessageCircle,
 } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { formatPhone } from "@/lib/masks";
 import { CurrencyInput } from "@/components/shared/CurrencyInput";
-import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 
 interface OrderDetailDialogProps {
   open: boolean;
@@ -258,24 +249,16 @@ export function OrderDetailDialog({
     await sharePdf(order.id);
   };
 
-  const handleOpenWhatsApp = (templateType: TemplateType) => {
-    if (!order.client?.phone) return;
-    
-    const remainingAmount = displayDepositPaid 
-      ? order.total_amount / 2 
-      : order.total_amount;
-    
-    openWhatsAppWithTemplate(order.client.phone, templateType, {
-      clientName: order.client.name,
-      companyName: profile?.company_name || undefined,
-      orderNumber: order.order_number,
-      totalAmount: order.total_amount,
-      depositAmount: order.total_amount / 2,
-      remainingAmount,
-      deliveryDate: order.delivery_date,
-      deliveryTime: order.delivery_time,
-      depositPaid: displayDepositPaid,
-    });
+  const whatsAppContext = {
+    clientName: order.client?.name,
+    companyName: profile?.company_name || undefined,
+    orderNumber: order.order_number,
+    totalAmount: order.total_amount,
+    depositAmount: order.total_amount / 2,
+    remainingAmount: displayDepositPaid ? order.total_amount / 2 : order.total_amount,
+    deliveryDate: order.delivery_date,
+    deliveryTime: order.delivery_time,
+    depositPaid: displayDepositPaid,
   };
 
   const availableTemplates = getAvailableTemplates({
@@ -774,55 +757,12 @@ export function OrderDetailDialog({
                   )}
                   Orçamento em PDF
                 </Button>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white"
-                      disabled={!order.client?.phone}
-                    >
-                      <WhatsAppIcon className="mr-2 h-4 w-4" />
-                      WhatsApp
-                      <ChevronDown className="ml-2 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
-                    {availableTemplates.map((templateType) => {
-                      const template = WHATSAPP_TEMPLATES[templateType];
-                      return (
-                        <DropdownMenuItem
-                          key={templateType}
-                          onClick={() => handleOpenWhatsApp(templateType)}
-                          className="flex flex-col items-start py-2"
-                        >
-                          <span className="font-medium">{template.name}</span>
-                          <span className="text-xs text-muted-foreground">{template.description}</span>
-                        </DropdownMenuItem>
-                      );
-                    })}
-                    <DropdownMenuItem
-                      onClick={() => {
-                        if (order.client?.phone) {
-                          const link = document.createElement('a');
-                          const cleanPhone = order.client.phone.replace(/\D/g, '');
-                          const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-                          link.href = `https://wa.me/${formattedPhone}`;
-                          link.target = '_blank';
-                          link.rel = 'noopener noreferrer';
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                        }
-                      }}
-                      className="flex flex-col items-start py-2 border-t"
-                    >
-                      <span className="font-medium flex items-center gap-1.5">
-                        <MessageCircle className="h-3.5 w-3.5" />
-                        Conversa Livre
-                      </span>
-                      <span className="text-xs text-muted-foreground">Abrir sem mensagem pré-definida</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <WhatsAppTemplatePreview
+                  phone={order.client?.phone || ''}
+                  context={whatsAppContext}
+                  availableTemplates={availableTemplates}
+                  disabled={!order.client?.phone}
+                />
               </div>
 
               {/* Edit/Delete buttons for quote and awaiting_deposit */}
