@@ -60,7 +60,7 @@ export default function Pricing() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/30">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-muted-foreground">Verificando sua assinatura...</p>
+          <p className="text-muted-foreground">Carregando...</p>
         </div>
       </div>
     );
