@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, Building2, ArrowLeft } from "lucide-react";
 import zapLogo from "@/assets/zap-confeitaria-logo.png";
@@ -13,6 +14,7 @@ export default function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
@@ -62,6 +64,14 @@ export default function Auth() {
       toast({
         title: "Campos obrigatórios",
         description: "Por favor, preencha todos os campos.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!acceptedTerms) {
+      toast({
+        title: "Termos não aceitos",
+        description: "Você precisa aceitar os Termos de Serviço e a Política de Privacidade.",
         variant: "destructive",
       });
       return;
@@ -215,7 +225,30 @@ export default function Auth() {
                     </div>
                   </div>
 
-                  <Button type="submit" className="w-full" variant="warm" disabled={loading}>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="accept-terms"
+                      checked={acceptedTerms}
+                      onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+                      disabled={loading}
+                      className="mt-0.5"
+                    />
+                    <Label
+                      htmlFor="accept-terms"
+                      className="text-sm font-normal leading-snug text-muted-foreground cursor-pointer"
+                    >
+                      Li e concordo com os{" "}
+                      <Link to="/terms" target="_blank" className="text-primary hover:underline">
+                        Termos de Serviço
+                      </Link>{" "}
+                      e a{" "}
+                      <Link to="/privacy" target="_blank" className="text-primary hover:underline">
+                        Política de Privacidade
+                      </Link>
+                    </Label>
+                  </div>
+
+                  <Button type="submit" className="w-full" variant="warm" disabled={loading || !acceptedTerms}>
                     {loading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -240,7 +273,7 @@ export default function Auth() {
         </button>
 
         <p className="text-center text-xs text-muted-foreground mt-4">
-          Ao criar uma conta, você concorda com nossos termos de uso e política de privacidade.
+          © {new Date().getFullYear()} ZAP Confeitaria
         </p>
       </div>
     </div>
