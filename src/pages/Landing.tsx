@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -559,6 +559,15 @@ export default function Landing() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <img src={logo} alt="ZAP Confeitaria" className="h-6 w-auto" />
+            </div>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <Link to="/privacy" className="hover:text-foreground transition-colors">
+                Política de Privacidade
+              </Link>
+              <span>•</span>
+              <Link to="/terms" className="hover:text-foreground transition-colors">
+                Termos de Serviço
+              </Link>
             </div>
             <p className="text-sm text-muted-foreground">
               © {new Date().getFullYear()} ZAP Confeitaria. Todos os direitos reservados.
