@@ -65,6 +65,10 @@ export function StatsCard({
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-1.5 mb-1">
+              <Icon className={cn(
+                "md:hidden h-4 w-4",
+                variant === 'primary' ? 'text-primary-foreground/80' : 'text-primary'
+              )} />
               <p className={cn(
                 "text-xs font-medium",
                 variant === 'primary' ? 'text-primary-foreground/80' : 'text-muted-foreground'
@@ -120,7 +124,7 @@ export function StatsCard({
             )}
           </div>
           <div className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center",
+            "hidden md:flex w-10 h-10 rounded-xl items-center justify-center",
             iconStyles[variant]
           )}>
             <Icon className="h-5 w-5" />
