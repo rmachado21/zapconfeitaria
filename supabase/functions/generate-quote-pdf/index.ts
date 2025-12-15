@@ -462,9 +462,6 @@ const handler = async (req: Request): Promise<Response> => {
     // Terms (only if enabled)
     const includeTerms = typedProfile?.include_terms_in_pdf ?? true;
     if (includeTerms) {
-      doc.setFontSize(8);
-      doc.setTextColor(120, 120, 120);
-      
       // Use custom terms if provided, otherwise use default
       const defaultTerms = [
         "TERMOS DE SERVIÇO:",
@@ -481,20 +478,35 @@ const handler = async (req: Request): Promise<Response> => {
         terms = defaultTerms;
       }
       
+      // Calculate height needed for terms + footer
+      const termsHeight = terms.length * 5 + 10;
+      const footerHeight = 25;
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const maxContentY = pageHeight - footerHeight;
+      
+      // If terms won't fit, add new page
+      if (yPos + termsHeight > maxContentY) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(8);
+      doc.setTextColor(120, 120, 120);
+      
       for (const term of terms) {
         doc.text(term.substring(0, 90), margin, yPos);
         yPos += 5;
       }
     }
 
-    // Footer
-    yPos = doc.internal.pageSize.getHeight() - 15;
+    // Footer - always at the bottom of the current page
+    const currentPageHeight = doc.internal.pageSize.getHeight();
     doc.setFontSize(9);
     doc.setTextColor(150, 150, 150);
     doc.text(
       `Orçamento gerado em ${new Date().toLocaleDateString("pt-BR")} - ${companyName}`,
       pageWidth / 2,
-      yPos,
+      currentPageHeight - 15,
       { align: "center" }
     );
 
