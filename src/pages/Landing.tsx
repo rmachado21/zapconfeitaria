@@ -91,7 +91,7 @@ export default function Landing() {
                 <Button variant="ghost" onClick={() => navigate('/auth')}>
                   Entrar
                 </Button>
-                <Button onClick={() => navigate('/auth')} className="rounded-full px-4 py-1 h-auto">
+                <Button onClick={() => navigate('/auth?tab=signup')} className="rounded-full px-4 py-1 h-auto">
                   Criar Conta
                 </Button>
               </>}

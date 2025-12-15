@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,10 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  
+  const defaultTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
 
   // Redirect if already logged in
   useEffect(() => {
@@ -104,7 +107,7 @@ export default function Auth() {
         </div>
 
         <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
-          <Tabs defaultValue="login" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <CardHeader className="pb-4">
               <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="login">Entrar</TabsTrigger>
