@@ -53,7 +53,7 @@ const profileSchema = z.object({
   pix_key: z.string().max(100).optional().or(z.literal('')),
   bank_details: z.string().max(500).optional().or(z.literal('')),
   include_terms_in_pdf: z.boolean().optional(),
-  custom_terms: z.string().max(1000).optional().or(z.literal('')),
+  custom_terms: z.string().max(2000).optional().or(z.literal('')),
   order_number_start: z.coerce.number().min(1, 'Número deve ser no mínimo 1').optional(),
 });
 
@@ -414,13 +414,17 @@ const Profile = () => {
                             <FormLabel>Termos de Serviço</FormLabel>
                             <FormControl>
                               <Textarea
-                                className="resize-none text-sm"
-                                rows={5}
+                                className="resize-y text-sm min-h-[120px]"
+                                rows={8}
+                                placeholder="Adicione cada termo em uma nova linha..."
                                 {...field}
                               />
                             </FormControl>
                             <p className="text-xs text-muted-foreground mt-1">
-                              Edite os termos acima conforme necessário. Cada linha será um item no PDF.
+                              Cada linha será um item separado no PDF. Use Enter para adicionar novos termos.
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {field.value?.length || 0}/2000 caracteres
                             </p>
                           </FormItem>
                         )}
