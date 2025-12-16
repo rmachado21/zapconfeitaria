@@ -123,7 +123,7 @@ export function ProductFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogContent className="sm:max-w-[500px] mx-4 max-h-[90dvh]" onInteractOutside={(e) => e.preventDefault()}>
           <DialogHeader>
             <DialogTitle className="font-display">
               {isEditing ? 'Editar Produto' : 'Novo Produto'}
