@@ -146,8 +146,8 @@ export function TransactionFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] mx-4 max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader className="shrink-0">
+      <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader>
           <DialogTitle className="font-display flex items-center gap-2">
             {transactionType === 'income' ? (
               <TrendingUp className="h-5 w-5 text-success" />
@@ -166,8 +166,8 @@ export function TransactionFormDialog({
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0">
-            <ScrollArea className="flex-1 min-h-0 pr-3">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <ScrollArea className="max-h-[70dvh] pr-3">
               <div className="space-y-4">
                 <FormField
                   control={form.control}

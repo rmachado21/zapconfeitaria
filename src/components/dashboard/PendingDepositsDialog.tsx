@@ -88,10 +88,10 @@ export function PendingDepositsDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-md mx-4 max-h-[90dvh] flex flex-col overflow-hidden"
+        className="max-w-md mx-4"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader className="shrink-0">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Clock className="h-5 w-5 text-amber-500" />
             Sinais Pendentes
@@ -119,7 +119,7 @@ export function PendingDepositsDialog({
               <p>Nenhum sinal pendente!</p>
             </div>
           ) : (
-            <ScrollArea className="flex-1 min-h-0">
+            <ScrollArea className="max-h-[50vh]">
               <div className="space-y-3 pr-2">
                 {sortedOrders.map((order) => {
                   const daysPending = differenceInDays(
