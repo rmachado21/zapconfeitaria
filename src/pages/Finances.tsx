@@ -511,67 +511,51 @@ const Finances = () => {
                     <div
                       key={transaction.id}
                       className={cn(
-                        "flex items-center justify-between p-4 hover:bg-muted/50 transition-colors group",
+                        "flex items-center gap-3 p-4 hover:bg-muted/50 transition-colors group overflow-hidden",
                         "animate-slide-up",
                         `stagger-${Math.min(index + 1, 5)}`
                       )}
                       style={{ opacity: 0, animationFillMode: 'forwards' }}
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center",
-                          transaction.type === 'income' 
-                            ? 'bg-success/10 text-success' 
-                            : 'bg-destructive/10 text-destructive'
-                        )}>
-                          {transaction.type === 'income' ? (
-                            <ArrowUpRight className="h-5 w-5" />
-                          ) : (
-                            <ArrowDownRight className="h-5 w-5" />
-                          )}
+                      <div className={cn(
+                        "w-10 h-10 rounded-full flex items-center justify-center shrink-0",
+                        transaction.type === 'income' 
+                          ? 'bg-success/10 text-success' 
+                          : 'bg-destructive/10 text-destructive'
+                      )}>
+                        {transaction.type === 'income' ? (
+                          <ArrowUpRight className="h-5 w-5" />
+                        ) : (
+                          <ArrowDownRight className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1 overflow-hidden">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-sm truncate">
+                            {parseTransaction(transaction.description).cleanDescription}
+                          </p>
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium text-sm truncate">
-                              {parseTransaction(transaction.description).cleanDescription}
-                            </p>
-                            {(() => {
-                              const { category } = parseTransaction(transaction.description);
-                              if (!category) return null;
-                              const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS['Outros'];
-                              return (
-                                <span className={cn(
-                                  "text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap",
-                                  colors.bg,
-                                  colors.text
-                                )}>
-                                  {category}
-                                </span>
-                              );
-                            })()}
-                          </div>
-                          <div className="flex items-center gap-2 mt-0.5">
-                            {transaction.order_id && (
-                              <Badge 
-                                variant="muted" 
-                                className="text-[10px] cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
-                                onClick={() => handleOrderClick(transaction.order_id!)}
-                              >
-                                <ExternalLink className="h-3 w-3 mr-1" />
-                                {orderNumberMap[transaction.order_id] 
-                                  ? formatOrderNumber(orderNumberMap[transaction.order_id])
-                                  : 'Pedido'}
-                              </Badge>
-                            )}
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(transaction.date)}
-                            </span>
-                          </div>
+                        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                          {transaction.order_id && (
+                            <Badge 
+                              variant="muted" 
+                              className="text-[10px] cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors shrink-0"
+                              onClick={() => handleOrderClick(transaction.order_id!)}
+                            >
+                              <ExternalLink className="h-3 w-3 mr-1" />
+                              {orderNumberMap[transaction.order_id] 
+                                ? formatOrderNumber(orderNumberMap[transaction.order_id])
+                                : 'Pedido'}
+                            </Badge>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {formatDate(transaction.date)}
+                          </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 shrink-0">
                         <span className={cn(
-                          "font-semibold",
+                          "font-semibold text-sm whitespace-nowrap",
                           transaction.type === 'income' ? 'text-success' : 'text-destructive'
                         )}>
                           {transaction.type === 'income' ? '+' : '-'}
@@ -580,7 +564,7 @@ const Finances = () => {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          className="hidden sm:flex opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted"
                           onClick={() => handleEdit(transaction)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -588,7 +572,7 @@ const Finances = () => {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          className="hidden sm:flex opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => handleDelete(transaction)}
                         >
                           <Trash2 className="h-4 w-4" />
