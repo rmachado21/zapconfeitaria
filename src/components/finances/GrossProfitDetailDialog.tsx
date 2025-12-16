@@ -84,8 +84,8 @@ export function GrossProfitDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg mx-4 max-h-[90dvh] flex flex-col" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="max-w-lg mx-4 max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-success" />
             Detalhamento do Lucro Bruto
@@ -127,7 +127,7 @@ export function GrossProfitDetailDialog({
             Pedidos Entregues ({ordersWithProfit.length})
           </h3>
           
-          <ScrollArea className="max-h-[40vh]">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="space-y-2 pr-4">
               {ordersWithProfit.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
