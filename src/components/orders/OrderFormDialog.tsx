@@ -358,7 +358,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
 
         <ScrollArea className="flex-1 min-h-0 pr-4">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 overflow-hidden">
+            <form className="space-y-4">
               {/* Client Selection with Search */}
               <FormField
                 control={form.control}
@@ -648,17 +648,18 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                             {/* Linha 1: Nome + Preço */}
                             <div className="flex items-start justify-between gap-2 min-w-0">
                               <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
+                                <div className="flex items-center gap-1.5 min-w-0">
                                   {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
                                   {isAdditional && !isGift && (
                                     <PackagePlus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
                                   )}
                                   <span
                                     className={cn(
-                                      "font-medium",
+                                      "font-medium truncate",
                                       isGift && "text-success",
                                       isAdditional && !isGift && "text-blue-700 dark:text-blue-300",
                                     )}
+                                    title={item.product_name}
                                   >
                                     {item.product_name}
                                   </span>
@@ -1005,29 +1006,30 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                   </CardContent>
                 </Card>
               )}
-
-              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  variant="warm"
-                  className="w-full sm:w-auto"
-                  disabled={isLoading || items.length === 0}
-                >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEditMode ? "Salvar Alterações" : "Criar Pedido"}
-                </Button>
-              </div>
             </form>
           </Form>
         </ScrollArea>
+
+        <div className="shrink-0 border-t pt-4 flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto"
+            onClick={() => onOpenChange(false)}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
+            variant="warm"
+            className="w-full sm:w-auto"
+            disabled={isLoading || items.length === 0}
+            onClick={form.handleSubmit(handleSubmit)}
+          >
+            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isEditMode ? "Salvar Alterações" : "Criar Pedido"}
+          </Button>
+        </div>
       </DialogContent>
 
       {/* New Client Dialog */}
