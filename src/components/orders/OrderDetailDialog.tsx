@@ -303,15 +303,15 @@ export function OrderDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] mx-4 max-h-[90dvh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[550px] mx-4 max-h-[90dvh] flex flex-col overflow-hidden">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-display flex items-center gap-3">
             <Package className="h-5 w-5 text-primary" />
             {order.order_number ? `Pedido ${formatOrderNumber(order.order_number)}` : "Detalhes do Pedido"}
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[75dvh] pr-1">
+        <ScrollArea className="flex-1 min-h-0 pr-1">
           <div className="space-y-4 pr-2">
           {/* Status Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
