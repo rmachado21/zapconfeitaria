@@ -346,8 +346,8 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] mx-4 max-h-[90dvh] flex flex-col" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[700px] mx-4 max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-display flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
             {isEditMode
@@ -356,7 +356,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[75dvh] pr-4">
+        <ScrollArea className="flex-1 min-h-0 pr-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 overflow-hidden">
               {/* Client Selection with Search */}
