@@ -123,16 +123,17 @@ export function ProductFormDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px]" onInteractOutside={(e) => e.preventDefault()}>
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[500px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
+          <DialogHeader className="shrink-0">
             <DialogTitle className="font-display">
               {isEditing ? 'Editar Produto' : 'Novo Produto'}
             </DialogTitle>
           </DialogHeader>
 
-          <ScrollArea className="max-h-[70dvh] pr-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+              <ScrollArea className="flex-1 min-h-0 pr-4">
+                <div className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
@@ -319,23 +320,25 @@ export function ProductFormDialog({
                   )}
                 />
 
-                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full sm:w-auto"
-                    onClick={() => onOpenChange(false)}
-                  >
-                    Cancelar
-                  </Button>
-                  <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {isEditing ? 'Salvar' : 'Cadastrar'}
-                  </Button>
                 </div>
-              </form>
-            </Form>
-          </ScrollArea>
+              </ScrollArea>
+
+              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                  onClick={() => onOpenChange(false)}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {isEditing ? 'Salvar' : 'Cadastrar'}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
 

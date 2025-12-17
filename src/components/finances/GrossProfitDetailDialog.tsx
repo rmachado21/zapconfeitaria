@@ -84,8 +84,8 @@ export function GrossProfitDetailDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90dvh]" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5 text-success" />
             Detalhamento do Lucro Bruto
@@ -93,7 +93,7 @@ export function GrossProfitDetailDialog({
         </DialogHeader>
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="shrink-0 grid grid-cols-2 gap-3">
           <Card className="bg-success/10 border-success/20">
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">Faturamento</p>
@@ -121,13 +121,13 @@ export function GrossProfitDetailDialog({
         </div>
 
         {/* Orders List */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+        <div className="flex flex-col flex-1 min-h-0 space-y-2">
+          <h3 className="shrink-0 text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Package className="h-4 w-4" />
             Pedidos Entregues ({ordersWithProfit.length})
           </h3>
           
-          <ScrollArea className="max-h-[40vh]">
+          <ScrollArea className="flex-1 min-h-0">
             <div className="space-y-2 pr-4">
               {ordersWithProfit.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">

@@ -94,17 +94,17 @@ export function ClientFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[425px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-display">
             {isEditing ? 'Editar Cliente' : 'Novo Cliente'}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col max-h-[80dvh]">
-            <ScrollArea className="flex-1 max-h-[calc(80dvh-120px)]">
-              <div className="space-y-4 pr-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="flex-1 min-h-0 pr-4">
+              <div className="space-y-4">
                 <FormField
               control={form.control}
               name="name"
