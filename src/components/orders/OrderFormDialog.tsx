@@ -77,12 +77,14 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
   const [quantity, setQuantity] = useState<number>(1);
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
   const [productSearchOpen, setProductSearchOpen] = useState(false);
+  const [justAddedProduct, setJustAddedProduct] = useState(false);
 
   // Additional items state
   const [additionalItemName, setAdditionalItemName] = useState("");
   const [additionalItemQty, setAdditionalItemQty] = useState<number>(1);
   const [additionalItemPrice, setAdditionalItemPrice] = useState<number>(0);
   const [additionalItemError, setAdditionalItemError] = useState(false);
+  const [justAddedAdditional, setJustAddedAdditional] = useState(false);
 
   const isEditMode = !!editOrder;
 
@@ -197,6 +199,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       title: "Item adicional incluído",
       description: `${itemQty}x ${itemName}`,
     });
+
+    // Visual feedback
+    setJustAddedAdditional(true);
+    setTimeout(() => setJustAddedAdditional(false), 600);
   };
 
   const selectedProductData = products.find((p) => p.id === selectedProduct);
@@ -262,6 +268,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       title: "Produto adicionado",
       description: `${validQuantity} ${unitLabel} de ${selectedProductData.name}`,
     });
+
+    // Visual feedback
+    setJustAddedProduct(true);
+    setTimeout(() => setJustAddedProduct(false), 600);
 
     setSelectedProduct("");
     setQuantity(1);
@@ -497,8 +507,10 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                       role="combobox"
                       aria-expanded={productSearchOpen}
                       className={cn(
-                        "w-full justify-between font-normal overflow-hidden",
+                        "w-full justify-between font-normal overflow-hidden transition-all",
                         !selectedProduct && "text-muted-foreground",
+                        selectedProduct && "ring-2 ring-primary/50 border-primary",
+                        justAddedProduct && "animate-pulse bg-success/10 ring-success/50 border-success",
                       )}
                     >
                       {selectedProductData ? (
@@ -596,6 +608,12 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                             setQuantity(numValue);
                           } else if (value === "" || value === ".") {
                             setQuantity(0);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddItem();
                           }
                         }}
                         className="w-16 pr-8 text-center"
@@ -795,9 +813,16 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                     setAdditionalItemName(e.target.value);
                     if (additionalItemError) setAdditionalItemError(false);
                   }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddAdditionalItem();
+                    }
+                  }}
                   className={cn(
-                    "min-w-0 w-full",
+                    "min-w-0 w-full transition-all",
                     additionalItemError && "border-destructive focus-visible:ring-destructive",
+                    justAddedAdditional && "animate-pulse bg-success/10 ring-2 ring-success/50 border-success",
                   )}
                 />
 
@@ -827,6 +852,12 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                             setAdditionalItemQty(value);
                           } else if (e.target.value === "") {
                             setAdditionalItemQty(1);
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddAdditionalItem();
                           }
                         }}
                         className="w-16 pr-7 text-center"
