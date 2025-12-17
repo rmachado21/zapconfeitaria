@@ -359,7 +359,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
             <ScrollArea className="flex-1 min-h-0 pr-4">
-              <div className="space-y-4 overflow-hidden">
+              <div className="space-y-4">
               {/* Client Selection with Search */}
               <FormField
                 control={form.control}
