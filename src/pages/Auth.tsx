@@ -226,16 +226,7 @@ export default function Auth() {
                     </div>
 
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <Label htmlFor="login-password">Senha</Label>
-                        <button
-                          type="button"
-                          onClick={() => setShowForgotPassword(true)}
-                          className="text-xs text-primary hover:underline"
-                        >
-                          Esqueci minha senha
-                        </button>
-                      </div>
+                      <Label htmlFor="login-password">Senha</Label>
                       <div className="relative">
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input
@@ -248,6 +239,13 @@ export default function Auth() {
                           disabled={loading}
                         />
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowForgotPassword(true)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Esqueci minha senha
+                      </button>
                     </div>
 
                     <Button type="submit" className="w-full" variant="warm" disabled={loading}>
