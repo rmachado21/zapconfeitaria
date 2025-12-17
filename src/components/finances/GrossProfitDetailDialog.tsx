@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Package, DollarSign, Percent } from 'lucide-react';
@@ -127,7 +127,7 @@ export function GrossProfitDetailDialog({
             Pedidos Entregues ({ordersWithProfit.length})
           </h3>
           
-          <ScrollArea className="flex-1 min-h-0">
+          <ScrollAreaWithIndicator className="pr-4">
             <div className="space-y-2 pr-4">
               {ordersWithProfit.length === 0 ? (
                 <p className="text-sm text-muted-foreground text-center py-4">
@@ -171,7 +171,7 @@ export function GrossProfitDetailDialog({
                 ))
               )}
             </div>
-          </ScrollArea>
+          </ScrollAreaWithIndicator>
         </div>
       </DialogContent>
     </Dialog>

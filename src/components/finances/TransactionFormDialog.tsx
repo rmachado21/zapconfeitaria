@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
 import {
   Form,
   FormControl,
@@ -167,7 +167,7 @@ export function TransactionFormDialog({
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <ScrollArea className="flex-1 min-h-0 pr-4">
+            <ScrollAreaWithIndicator className="pr-4">
               <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -297,7 +297,7 @@ export function TransactionFormDialog({
                   )}
                 />
               </div>
-            </ScrollArea>
+            </ScrollAreaWithIndicator>
 
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
               <Button

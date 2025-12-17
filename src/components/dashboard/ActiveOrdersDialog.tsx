@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Package, Clock, CheckCircle, FileText, XCircle } from "lucide-react";
 import { formatOrderNumber } from "@/hooks/useOrders";
@@ -96,7 +96,7 @@ export function ActiveOrdersDialog({
               <p>Nenhum pedido ativo no momento</p>
             </div>
           ) : (
-            <ScrollArea className="flex-1 min-h-0">
+            <ScrollAreaWithIndicator className="pr-4">
               <div className="space-y-3 pr-4">
                 {sortedOrders.map((order) => {
                   const config = ORDER_STATUS_CONFIG[order.status];
@@ -145,7 +145,7 @@ export function ActiveOrdersDialog({
                   );
                 })}
               </div>
-            </ScrollArea>
+            </ScrollAreaWithIndicator>
           )}
         </div>
       </DialogContent>

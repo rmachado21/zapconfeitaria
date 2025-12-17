@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -311,7 +311,7 @@ export function OrderDetailDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0 pr-4">
+        <ScrollAreaWithIndicator className="pr-4">
           <div className="space-y-4">
             {/* Status Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -750,7 +750,7 @@ export function OrderDetailDialog({
 
           </div>
           </div>
-        </ScrollArea>
+        </ScrollAreaWithIndicator>
 
         {/* Actions - Footer fixo fora do scroll */}
         <div className="shrink-0 border-t pt-4 mt-4 space-y-3">

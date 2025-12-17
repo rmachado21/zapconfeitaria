@@ -31,7 +31,7 @@ import { Product, ProductFormData } from '@/hooks/useProducts';
 import { useProductCategories, getCategoryColorClasses } from '@/hooks/useProductCategories';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
 import { formatCurrency } from '@/lib/masks';
 import { CategoryFormDialog } from './CategoryFormDialog';
 import { cn } from '@/lib/utils';
@@ -132,7 +132,7 @@ export function ProductFormDialog({
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="flex-1 min-h-0 pr-4">
+              <ScrollAreaWithIndicator className="pr-4">
                 <div className="space-y-4">
                 <FormField
                   control={form.control}
@@ -321,7 +321,7 @@ export function ProductFormDialog({
                 />
 
                 </div>
-              </ScrollArea>
+              </ScrollAreaWithIndicator>
 
               <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
                 <Button
