@@ -1,11 +1,5 @@
 import { useMemo } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
+import { ResponsivePanel } from '@/components/ui/responsive-panel';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { TrendingUp, Package, DollarSign, Percent } from 'lucide-react';
@@ -83,17 +77,15 @@ export function GrossProfitDetailDialog({
   }, [orders, products]);
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5 text-success" />
-            Detalhamento do Lucro Bruto
-          </DialogTitle>
-        </DialogHeader>
-
+    <ResponsivePanel
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Detalhamento do Lucro Bruto"
+      onInteractOutside={(e) => e.preventDefault()}
+    >
+      <div className="space-y-4">
         {/* Summary Cards */}
-        <div className="shrink-0 grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3">
           <Card className="bg-success/10 border-success/20">
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">Faturamento</p>
@@ -121,59 +113,57 @@ export function GrossProfitDetailDialog({
         </div>
 
         {/* Orders List */}
-        <div className="flex flex-col flex-1 min-h-0 space-y-2">
-          <h3 className="shrink-0 text-sm font-medium text-muted-foreground flex items-center gap-2">
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Package className="h-4 w-4" />
             Pedidos Entregues ({ordersWithProfit.length})
           </h3>
           
-          <ScrollAreaWithIndicator className="pr-4">
-            <div className="space-y-2 pr-4">
-              {ordersWithProfit.length === 0 ? (
-                <p className="text-sm text-muted-foreground text-center py-4">
-                  Nenhum pedido entregue no período selecionado
-                </p>
-              ) : (
-                ordersWithProfit.map(order => (
-                  <Card key={order.id} className="border">
-                    <CardContent className="p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="font-mono text-xs">
-                              {formatOrderNumber(order.order_number)}
-                            </Badge>
-                            <span className="text-sm font-medium truncate">
-                              {order.client?.name || 'Cliente não informado'}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1">
-                              <DollarSign className="h-3 w-3" />
-                              {formatCurrency(order.revenue)}
-                            </span>
-                            <span>-</span>
-                            <span className="text-warning">{formatCurrency(order.cost)}</span>
-                          </div>
+          <div className="space-y-2">
+            {ordersWithProfit.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhum pedido entregue no período selecionado
+              </p>
+            ) : (
+              ordersWithProfit.map(order => (
+                <Card key={order.id} className="border">
+                  <CardContent className="p-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {formatOrderNumber(order.order_number)}
+                          </Badge>
+                          <span className="text-sm font-medium truncate">
+                            {order.client?.name || 'Cliente não informado'}
+                          </span>
                         </div>
-                        <div className="text-right">
-                          <p className={`text-sm font-bold ${order.profit >= 0 ? 'text-success' : 'text-destructive'}`}>
-                            {formatCurrency(order.profit)}
-                          </p>
-                          <p className="text-xs text-muted-foreground flex items-center gap-0.5 justify-end">
-                            <Percent className="h-3 w-3" />
-                            {order.margin.toFixed(1)}%
-                          </p>
+                        <div className="flex items-center gap-3 mt-2 text-xs text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <DollarSign className="h-3 w-3" />
+                            {formatCurrency(order.revenue)}
+                          </span>
+                          <span>-</span>
+                          <span className="text-warning">{formatCurrency(order.cost)}</span>
                         </div>
                       </div>
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </div>
-          </ScrollAreaWithIndicator>
+                      <div className="text-right">
+                        <p className={`text-sm font-bold ${order.profit >= 0 ? 'text-success' : 'text-destructive'}`}>
+                          {formatCurrency(order.profit)}
+                        </p>
+                        <p className="text-xs text-muted-foreground flex items-center gap-0.5 justify-end">
+                          <Percent className="h-3 w-3" />
+                          {order.margin.toFixed(1)}%
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))
+            )}
+          </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </ResponsivePanel>
   );
 }

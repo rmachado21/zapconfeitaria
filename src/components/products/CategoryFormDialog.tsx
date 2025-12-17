@@ -2,13 +2,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
+import { ResponsivePanel } from '@/components/ui/responsive-panel';
 import {
   Form,
   FormControl,
@@ -86,131 +80,133 @@ export function CategoryFormDialog({
   const selectedEmoji = form.watch('emoji');
   const selectedColor = form.watch('color');
 
+  const footerContent = (
+    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full sm:w-auto"
+        onClick={() => onOpenChange(false)}
+      >
+        Cancelar
+      </Button>
+      <Button 
+        type="submit" 
+        variant="warm" 
+        className="w-full sm:w-auto" 
+        disabled={isLoading}
+        form="category-form"
+      >
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isEditing ? 'Salvar' : 'Criar'}
+      </Button>
+    </div>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="font-display">
-            {isEditing ? 'Editar Categoria' : 'Nova Categoria'}
-          </DialogTitle>
-        </DialogHeader>
+    <ResponsivePanel
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditing ? 'Editar Categoria' : 'Nova Categoria'}
+      footer={footerContent}
+      onInteractOutside={(e) => e.preventDefault()}
+    >
+      <Form {...form}>
+        <form id="category-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+          {/* Preview */}
+          <div className="flex items-center justify-center">
+            <span className={cn(
+              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium",
+              getCategoryColorClasses(selectedColor)
+            )}>
+              {selectedEmoji} {form.watch('name') || 'Nome da categoria'}
+            </span>
+          </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <ScrollAreaWithIndicator className="pr-4">
-              <div className="space-y-5">
-                {/* Preview */}
-                <div className="flex items-center justify-center">
-              <span className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium",
-                getCategoryColorClasses(selectedColor)
-              )}>
-                {selectedEmoji} {form.watch('name') || 'Nome da categoria'}
-              </span>
-            </div>
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <Tag className="h-4 w-4" />
+                  Nome *
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Bolos Decorados" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <Tag className="h-4 w-4" />
-                    Nome *
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Bolos Decorados" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="emoji"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <Smile className="h-4 w-4" />
+                  Emoji
+                </FormLabel>
+                <FormControl>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORY_EMOJIS.map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => field.onChange(emoji)}
+                        className={cn(
+                          "w-9 h-9 text-lg rounded-lg border-2 transition-all hover:scale-110",
+                          field.value === emoji
+                            ? "border-primary bg-primary/10"
+                            : "border-transparent bg-muted hover:bg-muted/80"
+                        )}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="emoji"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <Smile className="h-4 w-4" />
-                    Emoji
-                  </FormLabel>
-                  <FormControl>
-                    <div className="flex flex-wrap gap-2">
-                      {CATEGORY_EMOJIS.map((emoji) => (
-                        <button
-                          key={emoji}
-                          type="button"
-                          onClick={() => field.onChange(emoji)}
-                          className={cn(
-                            "w-9 h-9 text-lg rounded-lg border-2 transition-all hover:scale-110",
-                            field.value === emoji
-                              ? "border-primary bg-primary/10"
-                              : "border-transparent bg-muted hover:bg-muted/80"
-                          )}
-                        >
-                          {emoji}
-                        </button>
-                      ))}
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-                <FormField
-                  control={form.control}
-                  name="color"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Palette className="h-4 w-4" />
-                        Cor
-                      </FormLabel>
-                      <FormControl>
-                        <div className="flex flex-wrap gap-2">
-                          {CATEGORY_COLORS.map((color) => (
-                            <button
-                              key={color.value}
-                              type="button"
-                              onClick={() => field.onChange(color.value)}
-                              className={cn(
-                                "w-9 h-9 rounded-lg border-2 transition-all hover:scale-110",
-                                color.bg,
-                                field.value === color.value
-                                  ? "border-primary ring-2 ring-primary/30"
-                                  : "border-transparent"
-                              )}
-                              title={color.label}
-                            />
-                          ))}
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </ScrollAreaWithIndicator>
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? 'Salvar' : 'Criar'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          <FormField
+            control={form.control}
+            name="color"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <Palette className="h-4 w-4" />
+                  Cor
+                </FormLabel>
+                <FormControl>
+                  <div className="flex flex-wrap gap-2">
+                    {CATEGORY_COLORS.map((color) => (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => field.onChange(color.value)}
+                        className={cn(
+                          "w-9 h-9 rounded-lg border-2 transition-all hover:scale-110",
+                          color.bg,
+                          field.value === color.value
+                            ? "border-primary ring-2 ring-primary/30"
+                            : "border-transparent"
+                        )}
+                        title={color.label}
+                      />
+                    ))}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </ResponsivePanel>
   );
 }
