@@ -195,11 +195,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
     setAdditionalItemPrice(0);
     setAdditionalItemError(false);
 
-    toast({
-      title: "Item adicional incluído",
-      description: `${itemQty}x ${itemName}`,
-    });
-
     // Visual feedback
     setJustAddedAdditional(true);
     setTimeout(() => setJustAddedAdditional(false), 600);
@@ -263,11 +258,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
         },
       ]);
     }
-
-    toast({
-      title: "Produto adicionado",
-      description: `${validQuantity} ${unitLabel} de ${selectedProductData.name}`,
-    });
 
     // Visual feedback
     setJustAddedProduct(true);
@@ -616,7 +606,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                             handleAddItem();
                           }
                         }}
-                        className="w-16 pr-8 text-center"
+                        className="w-20 pr-9 text-center"
                         placeholder="Qtd"
                       />
                       {selectedProductData && (
@@ -860,7 +850,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                             handleAddAdditionalItem();
                           }
                         }}
-                        className="w-16 pr-7 text-center"
+                        className="w-20 pr-8 text-center"
                         placeholder="Qtd"
                       />
                       <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
