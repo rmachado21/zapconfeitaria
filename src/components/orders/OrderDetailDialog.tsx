@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
+import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -301,19 +300,77 @@ export function OrderDetailDialog({
   // Show deposit card only if full payment has not been received
   const showDepositCard = !displayFullPayment;
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[550px] max-h-[90dvh] flex flex-col overflow-hidden">
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="font-display flex items-center gap-3">
-            <Package className="h-5 w-5 text-primary" />
-            {order.order_number ? `Pedido ${formatOrderNumber(order.order_number)}` : "Detalhes do Pedido"}
-          </DialogTitle>
-        </DialogHeader>
+  const title = order.order_number ? `Pedido ${formatOrderNumber(order.order_number)}` : "Detalhes do Pedido";
 
-        <ScrollAreaWithIndicator className="pr-4">
-          <div className="space-y-4">
-            {/* Status Selector */}
+  const footerContent = (
+    <div className="space-y-3">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <Button
+          variant="outline"
+          className="flex-1 h-11 sm:h-10"
+          onClick={handlePdfAction}
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : isMobile ? (
+            <Share2 className="mr-2 h-4 w-4" />
+          ) : (
+            <Download className="mr-2 h-4 w-4" />
+          )}
+          Orçamento em PDF
+        </Button>
+        <WhatsAppTemplatePreview
+          phone={order.client?.phone || ''}
+          context={whatsAppContext}
+          availableTemplates={availableTemplates}
+          disabled={!order.client?.phone}
+        />
+      </div>
+
+      {/* Edit/Delete buttons for quote and awaiting_deposit */}
+      {canEditOrDelete && (
+        <div className="flex justify-center sm:justify-start gap-4">
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground h-10 px-4"
+              onClick={() => {
+                onEdit(order);
+                onOpenChange(false);
+              }}
+            >
+              <Pencil className="mr-1.5 h-3.5 w-3.5" />
+              Editar
+            </Button>
+          )}
+          {onDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-destructive h-10 px-4"
+              onClick={() => setDeleteDialogOpen(true)}
+            >
+              <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+              Excluir
+            </Button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <>
+      <ResponsivePanel
+        open={open}
+        onOpenChange={onOpenChange}
+        title={title}
+        footer={footerContent}
+      >
+        <div className="space-y-4">
+          {/* Status Selector */}
           <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
             <span className="text-sm text-muted-foreground">Status:</span>
             {onStatusChange ? (
@@ -747,69 +804,9 @@ export function OrderDetailDialog({
                 </CardContent>
               </Card>
             )}
-
           </div>
-          </div>
-        </ScrollAreaWithIndicator>
-
-        {/* Actions - Footer fixo fora do scroll */}
-        <div className="shrink-0 border-t pt-4 mt-4 space-y-3">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Button
-              variant="outline"
-              className="flex-1 h-11 sm:h-10"
-              onClick={handlePdfAction}
-              disabled={isGenerating}
-            >
-              {isGenerating ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : isMobile ? (
-                <Share2 className="mr-2 h-4 w-4" />
-              ) : (
-                <Download className="mr-2 h-4 w-4" />
-              )}
-              Orçamento em PDF
-            </Button>
-            <WhatsAppTemplatePreview
-              phone={order.client?.phone || ''}
-              context={whatsAppContext}
-              availableTemplates={availableTemplates}
-              disabled={!order.client?.phone}
-            />
-          </div>
-
-          {/* Edit/Delete buttons for quote and awaiting_deposit */}
-          {canEditOrDelete && (
-            <div className="flex justify-center sm:justify-start gap-4">
-              {onEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-foreground h-10 px-4"
-                  onClick={() => {
-                    onEdit(order);
-                    onOpenChange(false);
-                  }}
-                >
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                  Editar
-                </Button>
-              )}
-              {onDelete && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-destructive h-10 px-4"
-                  onClick={() => setDeleteDialogOpen(true)}
-                >
-                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
-                  Excluir
-                </Button>
-              )}
-            </div>
-          )}
         </div>
-      </DialogContent>
+      </ResponsivePanel>
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
@@ -902,6 +899,6 @@ export function OrderDetailDialog({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </Dialog>
+    </>
   );
 }
