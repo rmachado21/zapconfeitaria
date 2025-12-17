@@ -1,6 +1,5 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import { Card } from "@/components/ui/card";
-import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Package, Clock, CheckCircle, FileText, XCircle } from "lucide-react";
 import { formatOrderNumber } from "@/hooks/useOrders";
@@ -63,92 +62,83 @@ export function ActiveOrdersDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-md max-h-[90dvh] flex flex-col overflow-hidden"
-        onInteractOutside={(e) => e.preventDefault()}
-      >
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            Pedidos Ativos
-          </DialogTitle>
-        </DialogHeader>
+    <ResponsivePanel
+      open={open}
+      onOpenChange={onOpenChange}
+      title="Pedidos Ativos"
+      onInteractOutside={(e) => e.preventDefault()}
+    >
+      <div className="space-y-4">
+        {/* Summary Card */}
+        <Card className="p-4 bg-primary/5 border-primary/20">
+          <div className="text-center">
+            <p className="text-sm text-muted-foreground">Total em Andamento</p>
+            <p className="text-2xl font-bold text-primary">
+              {formatCurrency(totalValue)}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {orders.length} {orders.length === 1 ? "pedido" : "pedidos"} ativos
+            </p>
+          </div>
+        </Card>
 
-        <div className="flex flex-col flex-1 min-h-0 space-y-4">
-          {/* Summary Card */}
-          <Card className="shrink-0 p-4 bg-primary/5 border-primary/20">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total em Andamento</p>
-              <p className="text-2xl font-bold text-primary">
-                {formatCurrency(totalValue)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {orders.length} {orders.length === 1 ? "pedido" : "pedidos"} ativos
-              </p>
-            </div>
-          </Card>
+        {/* Orders List */}
+        {orders.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <ShoppingBag className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>Nenhum pedido ativo no momento</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {sortedOrders.map((order) => {
+              const config = ORDER_STATUS_CONFIG[order.status];
+              const StatusIcon = statusIcons[order.status];
 
-          {/* Orders List */}
-          {orders.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <ShoppingBag className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Nenhum pedido ativo no momento</p>
-            </div>
-          ) : (
-            <ScrollAreaWithIndicator className="pr-4">
-              <div className="space-y-3 pr-4">
-                {sortedOrders.map((order) => {
-                  const config = ORDER_STATUS_CONFIG[order.status];
-                  const StatusIcon = statusIcons[order.status];
-
-                  return (
-                    <Card
-                      key={order.id}
-                      className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
-                      onClick={() => onOrderClick?.(order)}
-                    >
-                      <div className="flex flex-col gap-2">
-                        {/* Header */}
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-semibold text-sm">
-                                {formatOrderNumber(order.order_number)}
-                              </span>
-                              <Badge className={`text-xs px-1.5 py-0.5 ${config.bgColor} ${config.color}`}>
-                                <StatusIcon className="h-3 w-3 mr-1" />
-                                {config.label}
-                              </Badge>
-                            </div>
-                            <p className="text-sm text-foreground">
-                              {order.client?.name || "Cliente não informado"}
-                            </p>
-                          </div>
-                          <span className="font-bold text-foreground">
-                            {formatCurrency(order.total_amount)}
+              return (
+                <Card
+                  key={order.id}
+                  className="p-3 cursor-pointer hover:bg-accent/50 transition-colors"
+                  onClick={() => onOrderClick?.(order)}
+                >
+                  <div className="flex flex-col gap-2">
+                    {/* Header */}
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-sm">
+                            {formatOrderNumber(order.order_number)}
                           </span>
+                          <Badge className={`text-xs px-1.5 py-0.5 ${config.bgColor} ${config.color}`}>
+                            <StatusIcon className="h-3 w-3 mr-1" />
+                            {config.label}
+                          </Badge>
                         </div>
-
-                        {/* Delivery info */}
-                        {order.delivery_date && (
-                          <p className="text-xs text-muted-foreground">
-                            Entrega:{" "}
-                            {format(parseISO(order.delivery_date), "dd/MM/yyyy", {
-                              locale: ptBR,
-                            })}
-                            {order.delivery_time && ` às ${order.delivery_time.slice(0, 5)}`}
-                          </p>
-                        )}
+                        <p className="text-sm text-foreground">
+                          {order.client?.name || "Cliente não informado"}
+                        </p>
                       </div>
-                    </Card>
-                  );
-                })}
-              </div>
-            </ScrollAreaWithIndicator>
-          )}
-        </div>
-      </DialogContent>
-    </Dialog>
+                      <span className="font-bold text-foreground">
+                        {formatCurrency(order.total_amount)}
+                      </span>
+                    </div>
+
+                    {/* Delivery info */}
+                    {order.delivery_date && (
+                      <p className="text-xs text-muted-foreground">
+                        Entrega:{" "}
+                        {format(parseISO(order.delivery_date), "dd/MM/yyyy", {
+                          locale: ptBR,
+                        })}
+                        {order.delivery_time && ` às ${order.delivery_time.slice(0, 5)}`}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </ResponsivePanel>
   );
 }

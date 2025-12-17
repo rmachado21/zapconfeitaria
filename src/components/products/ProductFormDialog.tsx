@@ -2,12 +2,7 @@ import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { ResponsivePanel } from '@/components/ui/responsive-panel';
 import {
   Form,
   FormControl,
@@ -31,7 +26,6 @@ import { Product, ProductFormData } from '@/hooks/useProducts';
 import { useProductCategories, getCategoryColorClasses } from '@/hooks/useProductCategories';
 import { ImageUpload } from '@/components/shared/ImageUpload';
 import { CurrencyInput } from '@/components/shared/CurrencyInput';
-import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
 import { formatCurrency } from '@/lib/masks';
 import { CategoryFormDialog } from './CategoryFormDialog';
 import { cn } from '@/lib/utils';
@@ -120,227 +114,228 @@ export function ProductFormDialog({
   const profit = salePrice - costPrice;
   const profitMargin = salePrice > 0 ? ((profit / salePrice) * 100).toFixed(0) : '0';
 
+  const footerContent = (
+    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full sm:w-auto"
+        onClick={() => onOpenChange(false)}
+      >
+        Cancelar
+      </Button>
+      <Button 
+        type="submit" 
+        variant="warm" 
+        className="w-full sm:w-auto" 
+        disabled={isLoading}
+        form="product-form"
+      >
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isEditing ? 'Salvar' : 'Cadastrar'}
+      </Button>
+    </div>
+  );
+
   return (
     <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
-          <DialogHeader className="shrink-0">
-            <DialogTitle className="font-display">
-              {isEditing ? 'Editar Produto' : 'Novo Produto'}
-            </DialogTitle>
-          </DialogHeader>
+      <ResponsivePanel
+        open={open}
+        onOpenChange={onOpenChange}
+        title={isEditing ? 'Editar Produto' : 'Novo Produto'}
+        footer={footerContent}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
+        <Form {...form}>
+          <form id="product-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Package className="h-4 w-4" />
+                    Nome *
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nome do produto" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-              <ScrollAreaWithIndicator className="pr-4">
-                <div className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Package className="h-4 w-4" />
-                        Nome *
-                      </FormLabel>
+            <FormField
+              control={form.control}
+              name="category_id"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Layers className="h-4 w-4" />
+                    Categoria
+                  </FormLabel>
+                  <div className="flex gap-2">
+                    <Select 
+                      onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
+                      value={field.value || 'none'}
+                    >
                       <FormControl>
-                        <Input placeholder="Nome do produto" {...field} />
+                        <SelectTrigger className="flex-1">
+                          <SelectValue placeholder="Selecione a categoria" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="category_id"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Layers className="h-4 w-4" />
-                        Categoria
-                      </FormLabel>
-                      <div className="flex gap-2">
-                        <Select 
-                          onValueChange={(value) => field.onChange(value === 'none' ? null : value)} 
-                          value={field.value || 'none'}
-                        >
-                          <FormControl>
-                            <SelectTrigger className="flex-1">
-                              <SelectValue placeholder="Selecione a categoria" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">Sem categoria</SelectItem>
-                            {categories.map((cat) => (
-                              <SelectItem key={cat.id} value={cat.id}>
-                                <span className={cn(
-                                  "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium",
-                                  getCategoryColorClasses(cat.color)
-                                )}>
-                                  {cat.emoji} {cat.name}
-                                </span>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button 
-                          type="button" 
-                          variant="outline" 
-                          size="icon"
-                          onClick={() => setCategoryFormOpen(true)}
-                        >
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <FileText className="h-4 w-4" />
-                        Descrição
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea
-                          placeholder="Descrição do produto..."
-                          className="resize-none"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="cost_price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5">
-                          <DollarSign className="h-4 w-4" />
-                          Preço de Custo *
-                        </FormLabel>
-                        <FormControl>
-                          <CurrencyInput
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="R$ 0,00"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="sale_price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="flex items-center gap-1.5">
-                          <Tag className="h-4 w-4" />
-                          Preço de Venda *
-                        </FormLabel>
-                        <FormControl>
-                          <CurrencyInput
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="R$ 0,00"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {salePrice > 0 && (
-                  <div className="p-3 rounded-lg bg-success/10 border border-success/20">
-                    <p className="text-sm text-success font-medium">
-                      Lucro: {formatCurrency(profit)} ({profitMargin}% de margem)
-                    </p>
+                      <SelectContent>
+                        <SelectItem value="none">Sem categoria</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat.id} value={cat.id}>
+                            <span className={cn(
+                              "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium",
+                              getCategoryColorClasses(cat.color)
+                            )}>
+                              {cat.emoji} {cat.name}
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Button 
+                      type="button" 
+                      variant="outline" 
+                      size="icon"
+                      onClick={() => setCategoryFormOpen(true)}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
                   </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4" />
+                    Descrição
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Descrição do produto..."
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="grid grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="cost_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <DollarSign className="h-4 w-4" />
+                      Preço de Custo *
+                    </FormLabel>
+                    <FormControl>
+                      <CurrencyInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="R$ 0,00"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="unit_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Ruler className="h-4 w-4" />
-                        Tipo de Unidade *
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione o tipo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="unit">Por Unidade (Un)</SelectItem>
-                          <SelectItem value="kg">Por Kg</SelectItem>
-                          <SelectItem value="cento">Por Cento</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="sale_price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Tag className="h-4 w-4" />
+                      Preço de Venda *
+                    </FormLabel>
+                    <FormControl>
+                      <CurrencyInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="R$ 0,00"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
-                <FormField
-                  control={form.control}
-                  name="photo_url"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Image className="h-4 w-4" />
-                        Foto do Produto
-                      </FormLabel>
-                      <FormControl>
-                        <ImageUpload
-                          bucket="product-images"
-                          currentUrl={field.value}
-                          onUpload={(url) => field.onChange(url)}
-                          onRemove={() => field.onChange('')}
-                          aspectRatio="compact"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                </div>
-              </ScrollAreaWithIndicator>
-
-              <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full sm:w-auto"
-                  onClick={() => onOpenChange(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isEditing ? 'Salvar' : 'Cadastrar'}
-                </Button>
+            {salePrice > 0 && (
+              <div className="p-3 rounded-lg bg-success/10 border border-success/20">
+                <p className="text-sm text-success font-medium">
+                  Lucro: {formatCurrency(profit)} ({profitMargin}% de margem)
+                </p>
               </div>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+            )}
+
+            <FormField
+              control={form.control}
+              name="unit_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Ruler className="h-4 w-4" />
+                    Tipo de Unidade *
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o tipo" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="unit">Por Unidade (Un)</SelectItem>
+                      <SelectItem value="kg">Por Kg</SelectItem>
+                      <SelectItem value="cento">Por Cento</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="photo_url"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Image className="h-4 w-4" />
+                    Foto do Produto
+                  </FormLabel>
+                  <FormControl>
+                    <ImageUpload
+                      bucket="product-images"
+                      currentUrl={field.value}
+                      onUpload={(url) => field.onChange(url)}
+                      onRemove={() => field.onChange('')}
+                      aspectRatio="compact"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
+      </ResponsivePanel>
 
       <CategoryFormDialog
         open={categoryFormOpen}

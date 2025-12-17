@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
 import {
   Loader2,
   Plus,
@@ -109,7 +108,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       setAdditionalItemQty(1);
       setAdditionalItemPrice(0);
     } else if (editOrder) {
-      // Populate form with existing order data
       form.reset({
         client_id: editOrder.client_id || "",
         delivery_date: editOrder.delivery_date || "",
@@ -118,7 +116,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
         delivery_fee: editOrder.delivery_fee || 0,
         notes: editOrder.notes || "",
       });
-      // Populate items
       setItems(
         (editOrder.order_items || []).map((item) => ({
           product_id: item.product_id || null,
@@ -139,7 +136,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       const selectedClient = clients.find((c) => c.id === watchedClientId);
       if (selectedClient?.address) {
         const currentAddress = form.getValues("delivery_address");
-        // Only auto-fill if delivery address is empty
         if (!currentAddress) {
           form.setValue("delivery_address", selectedClient.address);
         }
@@ -192,7 +188,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       },
     ]);
 
-    // Reset additional item fields
     setAdditionalItemName("");
     setAdditionalItemQty(1);
     setAdditionalItemPrice(0);
@@ -215,7 +210,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       return;
     }
 
-    // Validate quantity - must be positive
     if (!quantity || quantity <= 0 || isNaN(quantity)) {
       toast({
         title: "Quantidade inválida",
@@ -225,7 +219,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       return;
     }
 
-    // Validate based on unit type
     const unitType = selectedProductData.unit_type;
     const getMinQuantity = (type: string) => {
       if (type === "kg") return 0.5;
@@ -243,7 +236,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       return;
     }
 
-    // Normalize quantity: 2 decimals for Kg, integer for UN/Cento
     const validQuantity = unitType === "kg" ? Math.round(quantity * 100) / 100 : Math.floor(quantity);
 
     const existingIndex = items.findIndex((i) => i.product_id === selectedProduct);
@@ -309,7 +301,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
     setItems(newItems);
   };
 
-  // Only count non-gift items in total
   const totalItems = items.reduce((sum, item) => {
     if (item.is_gift) return sum;
     return sum + item.quantity * item.unit_price;
@@ -344,694 +335,682 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
     onOpenChange(false);
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="font-display flex items-center gap-2">
-            <ShoppingBag className="h-5 w-5 text-primary" />
-            {isEditMode
-              ? `Editar Pedido ${editOrder?.order_number ? formatOrderNumber(editOrder.order_number) : ""}`
-              : "Novo Pedido"}
-          </DialogTitle>
-        </DialogHeader>
+  const title = isEditMode
+    ? `Editar Pedido ${editOrder?.order_number ? formatOrderNumber(editOrder.order_number) : ""}`
+    : "Novo Pedido";
 
+  const footerContent = (
+    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full sm:w-auto"
+        onClick={() => onOpenChange(false)}
+      >
+        Cancelar
+      </Button>
+      <Button
+        type="submit"
+        variant="warm"
+        className="w-full sm:w-auto"
+        disabled={isLoading || items.length === 0}
+        form="order-form"
+      >
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isEditMode ? "Salvar Alterações" : "Criar Pedido"}
+      </Button>
+    </div>
+  );
+
+  return (
+    <>
+      <ResponsivePanel
+        open={open}
+        onOpenChange={onOpenChange}
+        title={title}
+        footer={footerContent}
+        onInteractOutside={(e) => e.preventDefault()}
+      >
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <ScrollAreaWithIndicator className="pr-4">
-              <div className="space-y-4">
-              {/* Client Selection with Search */}
-              <FormField
-                control={form.control}
-                name="client_id"
-                render={({ field }) => {
-                  const selectedClient = clients.find((c) => c.id === field.value);
-                  return (
-                    <FormItem className="flex flex-col">
-                      <FormLabel className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-orange-600" />
-                        Cliente *
-                      </FormLabel>
-                      <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant="outline"
-                              role="combobox"
-                              aria-expanded={clientSearchOpen}
-                              className={cn(
-                                "w-full justify-between font-normal",
-                                !field.value && "text-muted-foreground",
+          <form id="order-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            {/* Client Selection with Search */}
+            <FormField
+              control={form.control}
+              name="client_id"
+              render={({ field }) => {
+                const selectedClient = clients.find((c) => c.id === field.value);
+                return (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="flex items-center gap-2">
+                      <User className="h-4 w-4 text-orange-600" />
+                      Cliente *
+                    </FormLabel>
+                    <Popover open={clientSearchOpen} onOpenChange={setClientSearchOpen}>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant="outline"
+                            role="combobox"
+                            aria-expanded={clientSearchOpen}
+                            className={cn(
+                              "w-full justify-between font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {selectedClient ? selectedClient.name : "Buscar cliente..."}
+                            <div className="flex items-center gap-1 ml-2 shrink-0">
+                              {field.value && (
+                                <X
+                                  className="h-4 w-4 opacity-50 hover:opacity-100"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    field.onChange("");
+                                  }}
+                                />
                               )}
-                            >
-                              {selectedClient ? selectedClient.name : "Buscar cliente..."}
-                              <div className="flex items-center gap-1 ml-2 shrink-0">
-                                {field.value && (
-                                  <X
-                                    className="h-4 w-4 opacity-50 hover:opacity-100"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      field.onChange("");
-                                    }}
-                                  />
-                                )}
-                                <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                              </div>
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                          <Command>
-                            <CommandInput placeholder="Digite para buscar..." />
-                            <CommandList>
-                              <CommandEmpty>
-                                <div className="py-2 text-center">
-                                  <p className="text-sm text-muted-foreground mb-2">Nenhum cliente encontrado.</p>
-                                  <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="gap-1"
-                                    onClick={() => {
-                                      setClientSearchOpen(false);
-                                      setShowNewClientDialog(true);
-                                    }}
-                                  >
-                                    <UserPlus className="h-3.5 w-3.5" />
-                                    Criar novo cliente
-                                  </Button>
-                                </div>
-                              </CommandEmpty>
-                              <CommandGroup>
-                                {clients.map((client) => (
-                                  <CommandItem
-                                    key={client.id}
-                                    value={client.name}
-                                    onSelect={() => {
-                                      field.onChange(client.id);
-                                      setClientSearchOpen(false);
-                                    }}
-                                  >
-                                    <Check
-                                      className={cn(
-                                        "mr-2 h-4 w-4",
-                                        field.value === client.id ? "opacity-100" : "opacity-0",
-                                      )}
-                                    />
-                                    {client.name}
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                              <div className="p-1 border-t">
+                              <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                            </div>
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                        <Command>
+                          <CommandInput placeholder="Digite para buscar..." />
+                          <CommandList>
+                            <CommandEmpty>
+                              <div className="py-2 text-center">
+                                <p className="text-sm text-muted-foreground mb-2">Nenhum cliente encontrado.</p>
                                 <Button
                                   type="button"
-                                  variant="ghost"
+                                  variant="outline"
                                   size="sm"
-                                  className="w-full justify-start gap-2 text-muted-foreground"
+                                  className="gap-1"
                                   onClick={() => {
                                     setClientSearchOpen(false);
                                     setShowNewClientDialog(true);
                                   }}
                                 >
-                                  <UserPlus className="h-4 w-4" />
+                                  <UserPlus className="h-3.5 w-3.5" />
                                   Criar novo cliente
                                 </Button>
                               </div>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  );
-                }}
-              />
-
-              {/* Products Section */}
-              <div className="space-y-3 overflow-hidden min-w-0">
-                <FormLabel className="flex items-center gap-2">
-                  <Package className="h-4 w-4 text-red-600" />
-                  Produtos *
-                </FormLabel>
-
-                {/* Add Product Row */}
-                <div className="flex flex-col sm:flex-row gap-2 overflow-hidden">
-                  <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        aria-expanded={productSearchOpen}
-                        className={cn(
-                          "w-full sm:flex-1 sm:min-w-0 max-w-full justify-between font-normal overflow-hidden",
-                          !selectedProduct && "text-muted-foreground",
-                        )}
-                      >
-                        {selectedProductData ? (
-                          <span className="truncate">
-                            {selectedProductData.name} - {formatCurrency(selectedProductData.sale_price)}/
-                            {selectedProductData.unit_type === "kg"
-                              ? "Kg"
-                              : selectedProductData.unit_type === "cento"
-                                ? "Cento"
-                                : "Un"}
-                          </span>
-                        ) : (
-                          "Buscar produto..."
-                        )}
-                        <div className="flex items-center gap-1 ml-2 shrink-0">
-                          {selectedProduct && (
-                            <X
-                              className="h-4 w-4 opacity-50 hover:opacity-100"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedProduct("");
-                              }}
-                            />
-                          )}
-                          <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                        </div>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                      <Command>
-                        <CommandInput placeholder="Digite para buscar..." />
-                        <CommandList>
-                          <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
-                          <CommandGroup>
-                            {products.map((product) => {
-                              const unitLabel =
-                                product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
-                              return (
+                            </CommandEmpty>
+                            <CommandGroup>
+                              {clients.map((client) => (
                                 <CommandItem
-                                  key={product.id}
-                                  value={product.name}
+                                  key={client.id}
+                                  value={client.name}
                                   onSelect={() => {
-                                    setSelectedProduct(product.id);
-                                    // Define quantidade inicial baseada no tipo de produto
-                                    setQuantity(product.unit_type === "kg" ? 0.5 : 1);
-                                    setProductSearchOpen(false);
+                                    field.onChange(client.id);
+                                    setClientSearchOpen(false);
                                   }}
                                 >
                                   <Check
                                     className={cn(
                                       "mr-2 h-4 w-4",
-                                      selectedProduct === product.id ? "opacity-100" : "opacity-0",
+                                      field.value === client.id ? "opacity-100" : "opacity-0",
                                     )}
                                   />
-                                  <span className="flex-1 truncate">{product.name}</span>
-                                  <span className="text-xs text-muted-foreground ml-2">
-                                    {formatCurrency(product.sale_price)}/{unitLabel}
-                                  </span>
+                                  {client.name}
                                 </CommandItem>
-                              );
-                            })}
-                          </CommandGroup>
-                        </CommandList>
-                      </Command>
-                    </PopoverContent>
-                  </Popover>
-                  <div className="flex gap-2 items-center shrink-0">
-                    {/* Stepper de quantidade */}
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
-                          const min = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
-                          setQuantity(Math.max(min, quantity - step));
-                        }}
-                        disabled={!selectedProduct || quantity <= (selectedProductData?.unit_type === "kg" ? 0.5 : 1)}
-                        className="h-9 w-9 shrink-0"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
+                              ))}
+                            </CommandGroup>
+                            <div className="p-1 border-t">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="w-full justify-start gap-2 text-muted-foreground"
+                                onClick={() => {
+                                  setClientSearchOpen(false);
+                                  setShowNewClientDialog(true);
+                                }}
+                              >
+                                <UserPlus className="h-4 w-4" />
+                                Criar novo cliente
+                              </Button>
+                            </div>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                );
+              }}
+            />
 
-                      <div className="relative">
-                        <Input
-                          type="text"
-                          inputMode="decimal"
-                          pattern="[0-9]*[.,]?[0-9]*"
-                          value={quantity}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(",", ".");
-                            const numValue = parseFloat(value);
-                            if (!isNaN(numValue) && numValue >= 0) {
-                              setQuantity(numValue);
-                            } else if (value === "" || value === ".") {
-                              setQuantity(0);
-                            }
-                          }}
-                          className="w-20 pr-8 text-center"
-                          placeholder="Qtd"
-                        />
-                        {selectedProductData && (
-                          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                            {selectedProductData.unit_type === "kg"
-                              ? "Kg"
-                              : selectedProductData.unit_type === "cento"
-                                ? "Cto"
-                                : "Un"}
-                          </span>
-                        )}
-                      </div>
+            {/* Products Section */}
+            <div className="space-y-3 overflow-hidden min-w-0">
+              <FormLabel className="flex items-center gap-2">
+                <Package className="h-4 w-4 text-red-600" />
+                Produtos *
+              </FormLabel>
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => {
-                          const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
-                          setQuantity(quantity + step);
-                        }}
-                        disabled={!selectedProduct}
-                        className="h-9 w-9 shrink-0"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Botão Adicionar */}
+              {/* Add Product Row */}
+              <div className="flex flex-col sm:flex-row gap-2 overflow-hidden">
+                <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
+                  <PopoverTrigger asChild>
                     <Button
-                      type="button"
-                      variant="default"
-                      onClick={handleAddItem}
-                      disabled={!selectedProduct}
-                      className="shrink-0 gap-1.5"
+                      variant="outline"
+                      role="combobox"
+                      aria-expanded={productSearchOpen}
+                      className={cn(
+                        "w-full sm:flex-1 sm:min-w-0 max-w-full justify-between font-normal overflow-hidden",
+                        !selectedProduct && "text-muted-foreground",
+                      )}
                     >
-                      <Plus className="h-4 w-4" />
-                      <span className="hidden sm:inline">Adicionar</span>
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Items List */}
-                {items.length > 0 && (
-                  <Card className="overflow-hidden">
-                    <CardContent className="p-2 sm:p-3 space-y-2 overflow-hidden">
-                      {items.map((item, index) => {
-                        const unitLabel = item.unit_type === "kg" ? "Kg" : item.unit_type === "cento" ? "Cento" : "Un";
-                        const isGift = item.is_gift;
-                        const isAdditional = item.product_id === null;
-                        return (
-                          <div
-                            key={index}
-                            className={cn(
-                              "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors overflow-hidden max-w-full",
-                              isGift && "bg-success/10 border border-success/20",
-                              isAdditional &&
-                                !isGift &&
-                                "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30",
-                            )}
-                          >
-                            {/* Linha 1: Nome + Preço */}
-                            <div className="flex items-start justify-between gap-2 min-w-0">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
-                                  {isAdditional && !isGift && (
-                                    <PackagePlus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                                  )}
-                                  <span
-                                    className={cn(
-                                      "font-medium",
-                                      isGift && "text-success",
-                                      isAdditional && !isGift && "text-blue-700 dark:text-blue-300",
-                                    )}
-                                  >
-                                    {item.product_name}
-                                  </span>
-                                  {isGift && (
-                                    <Badge variant="success" className="text-[9px] px-1 py-0">
-                                      BRINDE
-                                    </Badge>
-                                  )}
-                                  {isAdditional && !isGift && (
-                                    <Badge className="text-[9px] px-1 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
-                                      ADICIONAL
-                                    </Badge>
-                                  )}
-                                </div>
-                                {isAdditional ? (
-                                  <div className="flex items-center gap-1 mt-1">
-                                    <CurrencyInput
-                                      value={item.unit_price}
-                                      onChange={(value) => {
-                                        const newItems = [...items];
-                                        newItems[index].unit_price = value;
-                                        setItems(newItems);
-                                      }}
-                                      className="h-7 text-xs w-24"
-                                    />
-                                    <span className="text-muted-foreground text-xs">/{unitLabel}</span>
-                                  </div>
-                                ) : (
-                                  <span className="text-muted-foreground text-xs">
-                                    {formatCurrency(item.unit_price)}/{unitLabel}
-                                  </span>
-                                )}
-                              </div>
-                              <div className="text-right shrink-0">
-                                {isGift ? (
-                                  <div className="flex flex-col items-end">
-                                    <span className="text-[10px] line-through text-muted-foreground">
-                                      {formatCurrency(item.quantity * item.unit_price)}
-                                    </span>
-                                    <span className="font-medium text-success text-xs">R$ 0,00</span>
-                                  </div>
-                                ) : (
-                                  <span className="font-medium">{formatCurrency(item.quantity * item.unit_price)}</span>
-                                )}
-                              </div>
-                            </div>
-
-                            {/* Linha 2: Quantidade + Ações */}
-                            <div className="flex items-center justify-between gap-2 min-w-0">
-                              {/* Quantity Controls */}
-                              <div className="flex items-center gap-1">
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon-sm"
-                                  onClick={() => handleUpdateItemQuantity(index, -1)}
-                                  disabled={item.quantity <= (item.unit_type === "kg" ? 0.5 : 1)}
-                                >
-                                  <Minus className="h-3 w-3" />
-                                </Button>
-                                <span className="min-w-[3.5rem] text-center font-medium text-xs">
-                                  {item.quantity} {unitLabel}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="outline"
-                                  size="icon-sm"
-                                  onClick={() => handleUpdateItemQuantity(index, 1)}
-                                >
-                                  <Plus className="h-3 w-3" />
-                                </Button>
-                              </div>
-
-                              {/* Actions */}
-                              <div className="flex items-center gap-1 shrink-0">
-                                <Button
-                                  type="button"
-                                  variant={isGift ? "default" : "outline"}
-                                  size="icon-sm"
-                                  className={cn("flex-shrink-0", isGift && "bg-success hover:bg-success/90")}
-                                  onClick={() => handleToggleGift(index)}
-                                  title={isGift ? "Remover brinde" : "Marcar como brinde"}
-                                >
-                                  <Gift className="h-3 w-3" />
-                                </Button>
-
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  className="text-destructive flex-shrink-0"
-                                  onClick={() => handleRemoveItem(index)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </CardContent>
-                  </Card>
-                )}
-
-                {items.length === 0 && (
-                  <p className="text-sm text-muted-foreground text-center py-4">Nenhum produto adicionado</p>
-                )}
-              </div>
-
-              {/* Additional Items Section */}
-              <div className="space-y-3 overflow-hidden min-w-0">
-                <FormLabel className="flex items-center gap-2">
-                  <PackagePlus className="h-4 w-4 text-blue-600" />
-                  Itens Adicionais
-                </FormLabel>
-                <p className="text-xs text-muted-foreground -mt-1">Para itens avulsos não cadastrados como produto</p>
-
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Descrição do item"
-                    value={additionalItemName}
-                    onChange={(e) => {
-                      setAdditionalItemName(e.target.value);
-                      if (additionalItemError) setAdditionalItemError(false);
-                    }}
-                    className={cn(
-                      "min-w-0 w-full",
-                      additionalItemError && "border-destructive focus-visible:ring-destructive",
-                    )}
-                  />
-                  <div className="flex flex-wrap items-center gap-2 overflow-hidden">
-                    {/* Stepper de quantidade */}
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setAdditionalItemQty(Math.max(1, additionalItemQty - 1))}
-                        disabled={additionalItemQty <= 1}
-                        className="h-9 w-9 shrink-0"
-                      >
-                        <Minus className="h-4 w-4" />
-                      </Button>
-
-                      <div className="relative">
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          pattern="[0-9]*"
-                          value={additionalItemQty}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            if (!isNaN(value) && value >= 1) {
-                              setAdditionalItemQty(value);
-                            } else if (e.target.value === "") {
-                              setAdditionalItemQty(1);
-                            }
-                          }}
-                          className="w-16 pr-7 text-center"
-                          placeholder="Qtd"
-                        />
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                          Un
+                      {selectedProductData ? (
+                        <span className="truncate">
+                          {selectedProductData.name} - {formatCurrency(selectedProductData.sale_price)}/
+                          {selectedProductData.unit_type === "kg"
+                            ? "Kg"
+                            : selectedProductData.unit_type === "cento"
+                              ? "Cento"
+                              : "Un"}
                         </span>
+                      ) : (
+                        "Buscar produto..."
+                      )}
+                      <div className="flex items-center gap-1 ml-2 shrink-0">
+                        {selectedProduct && (
+                          <X
+                            className="h-4 w-4 opacity-50 hover:opacity-100"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedProduct("");
+                            }}
+                          />
+                        )}
+                        <ChevronsUpDown className="h-4 w-4 opacity-50" />
                       </div>
-
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        onClick={() => setAdditionalItemQty(additionalItemQty + 1)}
-                        className="h-9 w-9 shrink-0"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
-
-                    {/* Campo de preço */}
-                    <div className="flex-1 min-w-[120px]">
-                      <CurrencyInput
-                        value={additionalItemPrice}
-                        onChange={setAdditionalItemPrice}
-                        placeholder="Valor unitário"
-                      />
-                    </div>
-
-                    {/* Botão Adicionar */}
-                    <Button
-                      type="button"
-                      variant="default"
-                      size="icon"
-                      onClick={handleAddAdditionalItem}
-                      disabled={!additionalItemName.trim()}
-                      className="shrink-0 h-9 w-9"
-                    >
-                      <Plus className="h-4 w-4" />
                     </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Delivery Date & Time */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 overflow-hidden">
-                <FormField
-                  control={form.control}
-                  name="delivery_date"
-                  render={({ field }) => (
-                    <FormItem className="overflow-hidden">
-                      <FormLabel className="flex items-center gap-1.5">
-                        <CalendarDays className="h-4 w-4" />
-                        Data de Entrega
-                      </FormLabel>
-                      <FormControl>
-                        <Input type="date" {...field} className="max-w-full" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="delivery_time"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <Clock className="h-4 w-4" />
-                        Horário
-                      </FormLabel>
-                      <Select value={field.value || ""} onValueChange={field.onChange}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {Array.from({ length: 36 }, (_, i) => {
-                            const hour = Math.floor(i / 2) + 6;
-                            const minute = (i % 2) * 30;
-                            const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Digite para buscar..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
+                        <CommandGroup>
+                          {products.map((product) => {
+                            const unitLabel =
+                              product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
                             return (
-                              <SelectItem key={time} value={time}>
-                                {time}
-                              </SelectItem>
+                              <CommandItem
+                                key={product.id}
+                                value={product.name}
+                                onSelect={() => {
+                                  setSelectedProduct(product.id);
+                                  setQuantity(product.unit_type === "kg" ? 0.5 : 1);
+                                  setProductSearchOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedProduct === product.id ? "opacity-100" : "opacity-0",
+                                  )}
+                                />
+                                <span className="flex-1 truncate">{product.name}</span>
+                                <span className="text-xs text-muted-foreground ml-2">
+                                  {formatCurrency(product.sale_price)}/{unitLabel}
+                                </span>
+                              </CommandItem>
                             );
                           })}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+                <div className="flex gap-2 items-center shrink-0">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
+                        const min = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
+                        setQuantity(Math.max(min, quantity - step));
+                      }}
+                      disabled={!selectedProduct || quantity <= (selectedProductData?.unit_type === "kg" ? 0.5 : 1)}
+                      className="h-9 w-9 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        inputMode="decimal"
+                        pattern="[0-9]*[.,]?[0-9]*"
+                        value={quantity}
+                        onChange={(e) => {
+                          const value = e.target.value.replace(",", ".");
+                          const numValue = parseFloat(value);
+                          if (!isNaN(numValue) && numValue >= 0) {
+                            setQuantity(numValue);
+                          } else if (value === "" || value === ".") {
+                            setQuantity(0);
+                          }
+                        }}
+                        className="w-20 pr-8 text-center"
+                        placeholder="Qtd"
+                      />
+                      {selectedProductData && (
+                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                          {selectedProductData.unit_type === "kg"
+                            ? "Kg"
+                            : selectedProductData.unit_type === "cento"
+                              ? "Cto"
+                              : "Un"}
+                        </span>
+                      )}
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => {
+                        const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
+                        setQuantity(quantity + step);
+                      }}
+                      disabled={!selectedProduct}
+                      className="h-9 w-9 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <Button
+                    type="button"
+                    variant="default"
+                    onClick={handleAddItem}
+                    disabled={!selectedProduct}
+                    className="shrink-0 gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Adicionar</span>
+                  </Button>
+                </div>
               </div>
 
-              {/* Delivery Address */}
-              <FormField
-                control={form.control}
-                name="delivery_address"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-1.5">
-                      <MapPin className="h-4 w-4" />
-                      Endereço de Entrega
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="Rua, número, bairro..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Delivery Fee */}
-              <FormField
-                control={form.control}
-                name="delivery_fee"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-1.5">
-                      <Truck className="h-4 w-4" />
-                      Taxa de Entrega
-                    </FormLabel>
-                    <FormControl>
-                      <CurrencyInput value={field.value || 0} onChange={field.onChange} placeholder="R$ 0,00" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Notes */}
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-1.5">
-                      <FileText className="h-4 w-4" />
-                      Observações
-                    </FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Detalhes sobre decoração, restrições alimentares..."
-                        className="resize-none"
-                        rows={2}
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Total */}
+              {/* Items List */}
               {items.length > 0 && (
-                <Card className="bg-primary/5 border-primary/20">
-                  <CardContent className="p-4">
-                    <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Subtotal:</span>
-                        <span>{formatCurrency(totalItems + giftDiscount)}</span>
-                      </div>
-                      {giftDiscount > 0 && (
-                        <div className="flex justify-between text-success">
-                          <span className="flex items-center gap-1">
-                            <Gift className="h-3 w-3" />
-                            Brinde:
-                          </span>
-                          <span>-{formatCurrency(giftDiscount)}</span>
+                <Card className="overflow-hidden">
+                  <CardContent className="p-2 sm:p-3 space-y-2 overflow-hidden">
+                    {items.map((item, index) => {
+                      const unitLabel = item.unit_type === "kg" ? "Kg" : item.unit_type === "cento" ? "Cento" : "Un";
+                      const isGift = item.is_gift;
+                      const isAdditional = item.product_id === null;
+                      return (
+                        <div
+                          key={index}
+                          className={cn(
+                            "flex flex-col gap-2 text-sm p-2 rounded-md transition-colors overflow-hidden max-w-full",
+                            isGift && "bg-success/10 border border-success/20",
+                            isAdditional &&
+                              !isGift &&
+                              "bg-blue-50/50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-800/30",
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-2 min-w-0">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {isGift && <Gift className="h-3.5 w-3.5 text-success flex-shrink-0" />}
+                                {isAdditional && !isGift && (
+                                  <PackagePlus className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                                )}
+                                <span
+                                  className={cn(
+                                    "font-medium",
+                                    isGift && "text-success",
+                                    isAdditional && !isGift && "text-blue-700 dark:text-blue-300",
+                                  )}
+                                >
+                                  {item.product_name}
+                                </span>
+                                {isGift && (
+                                  <Badge variant="success" className="text-[9px] px-1 py-0">
+                                    BRINDE
+                                  </Badge>
+                                )}
+                                {isAdditional && !isGift && (
+                                  <Badge className="text-[9px] px-1 py-0 bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+                                    ADICIONAL
+                                  </Badge>
+                                )}
+                              </div>
+                              {isAdditional ? (
+                                <div className="flex items-center gap-1 mt-1">
+                                  <CurrencyInput
+                                    value={item.unit_price}
+                                    onChange={(value) => {
+                                      const newItems = [...items];
+                                      newItems[index].unit_price = value;
+                                      setItems(newItems);
+                                    }}
+                                    className="h-7 text-xs w-24"
+                                  />
+                                  <span className="text-muted-foreground text-xs">/{unitLabel}</span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground text-xs">
+                                  {formatCurrency(item.unit_price)}/{unitLabel}
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              {isGift ? (
+                                <div className="flex flex-col items-end">
+                                  <span className="text-[10px] line-through text-muted-foreground">
+                                    {formatCurrency(item.quantity * item.unit_price)}
+                                  </span>
+                                  <span className="font-medium text-success text-xs">R$ 0,00</span>
+                                </div>
+                              ) : (
+                                <span className="font-medium">{formatCurrency(item.quantity * item.unit_price)}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-2 min-w-0">
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => handleUpdateItemQuantity(index, -1)}
+                                disabled={item.quantity <= (item.unit_type === "kg" ? 0.5 : 1)}
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="min-w-[3.5rem] text-center font-medium text-xs">
+                                {item.quantity} {unitLabel}
+                              </span>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => handleUpdateItemQuantity(index, 1)}
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+
+                            <div className="flex items-center gap-1 shrink-0">
+                              <Button
+                                type="button"
+                                variant={isGift ? "default" : "outline"}
+                                size="icon-sm"
+                                className={cn("flex-shrink-0", isGift && "bg-success hover:bg-success/90")}
+                                onClick={() => handleToggleGift(index)}
+                                title={isGift ? "Remover brinde" : "Marcar como brinde"}
+                              >
+                                <Gift className="h-3 w-3" />
+                              </Button>
+
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                className="text-destructive flex-shrink-0"
+                                onClick={() => handleRemoveItem(index)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
                         </div>
-                      )}
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Taxa de entrega:</span>
-                        <span>{formatCurrency(deliveryFee)}</span>
-                      </div>
-                      <div className="flex justify-between pt-2 border-t font-semibold text-base">
-                        <span>Total:</span>
-                        <span className="text-primary">{formatCurrency(totalAmount)}</span>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground pt-1">
-                        <span>Sinal 50%:</span>
-                        <Badge variant="warning">{formatCurrency(totalAmount / 2)}</Badge>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </CardContent>
                 </Card>
               )}
 
-              </div>
-            </ScrollAreaWithIndicator>
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                variant="warm"
-                className="w-full sm:w-auto"
-                disabled={isLoading || items.length === 0}
-              >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditMode ? "Salvar Alterações" : "Criar Pedido"}
-              </Button>
+              {items.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-4">Nenhum produto adicionado</p>
+              )}
             </div>
+
+            {/* Additional Items Section */}
+            <div className="space-y-3 overflow-hidden min-w-0">
+              <FormLabel className="flex items-center gap-2">
+                <PackagePlus className="h-4 w-4 text-blue-600" />
+                Itens Adicionais
+              </FormLabel>
+              <p className="text-xs text-muted-foreground -mt-1">Para itens avulsos não cadastrados como produto</p>
+
+              <div className="space-y-2">
+                <Input
+                  placeholder="Descrição do item"
+                  value={additionalItemName}
+                  onChange={(e) => {
+                    setAdditionalItemName(e.target.value);
+                    if (additionalItemError) setAdditionalItemError(false);
+                  }}
+                  className={cn(
+                    "min-w-0 w-full",
+                    additionalItemError && "border-destructive focus-visible:ring-destructive",
+                  )}
+                />
+                <div className="flex flex-wrap items-center gap-2 overflow-hidden">
+                  <div className="flex items-center gap-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setAdditionalItemQty(Math.max(1, additionalItemQty - 1))}
+                      disabled={additionalItemQty <= 1}
+                      className="h-9 w-9 shrink-0"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+
+                    <div className="relative">
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        value={additionalItemQty}
+                        onChange={(e) => {
+                          const value = parseInt(e.target.value);
+                          if (!isNaN(value) && value >= 1) {
+                            setAdditionalItemQty(value);
+                          } else if (e.target.value === "") {
+                            setAdditionalItemQty(1);
+                          }
+                        }}
+                        className="w-16 pr-7 text-center"
+                        placeholder="Qtd"
+                      />
+                      <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
+                        Un
+                      </span>
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setAdditionalItemQty(additionalItemQty + 1)}
+                      className="h-9 w-9 shrink-0"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <CurrencyInput
+                    value={additionalItemPrice}
+                    onChange={setAdditionalItemPrice}
+                    placeholder="R$ 0,00"
+                    className="w-28 min-w-0"
+                  />
+
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddAdditionalItem}
+                    className="shrink-0 gap-1.5"
+                  >
+                    <Plus className="h-4 w-4" />
+                    <span className="hidden sm:inline">Adicionar</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Delivery Date and Time */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="delivery_date"
+                render={({ field }) => (
+                  <FormItem className="overflow-hidden">
+                    <FormLabel className="flex items-center gap-1.5">
+                      <CalendarDays className="h-4 w-4" />
+                      Data de Entrega
+                    </FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} className="max-w-full" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="delivery_time"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4" />
+                      Horário
+                    </FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Array.from({ length: 36 }, (_, i) => {
+                          const hour = Math.floor(i / 2) + 6;
+                          const minute = (i % 2) * 30;
+                          const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+                          return (
+                            <SelectItem key={time} value={time}>
+                              {time}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Delivery Address */}
+            <FormField
+              control={form.control}
+              name="delivery_address"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" />
+                    Endereço de Entrega
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="Rua, número, bairro..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Delivery Fee */}
+            <FormField
+              control={form.control}
+              name="delivery_fee"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <Truck className="h-4 w-4" />
+                    Taxa de Entrega
+                  </FormLabel>
+                  <FormControl>
+                    <CurrencyInput value={field.value || 0} onChange={field.onChange} placeholder="R$ 0,00" />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Notes */}
+            <FormField
+              control={form.control}
+              name="notes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-1.5">
+                    <FileText className="h-4 w-4" />
+                    Observações
+                  </FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Detalhes sobre decoração, restrições alimentares..."
+                      className="resize-none"
+                      rows={2}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Total */}
+            {items.length > 0 && (
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="p-4">
+                  <div className="space-y-1 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Subtotal:</span>
+                      <span>{formatCurrency(totalItems + giftDiscount)}</span>
+                    </div>
+                    {giftDiscount > 0 && (
+                      <div className="flex justify-between text-success">
+                        <span className="flex items-center gap-1">
+                          <Gift className="h-3 w-3" />
+                          Brinde:
+                        </span>
+                        <span>-{formatCurrency(giftDiscount)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Taxa de entrega:</span>
+                      <span>{formatCurrency(deliveryFee)}</span>
+                    </div>
+                    <div className="flex justify-between pt-2 border-t font-semibold text-base">
+                      <span>Total:</span>
+                      <span className="text-primary">{formatCurrency(totalAmount)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-muted-foreground pt-1">
+                      <span>Sinal 50%:</span>
+                      <Badge variant="warning">{formatCurrency(totalAmount / 2)}</Badge>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </form>
         </Form>
-      </DialogContent>
+      </ResponsivePanel>
 
       {/* New Client Dialog */}
       <ClientFormDialog
@@ -1045,6 +1024,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
         }}
         isLoading={createClient.isPending}
       />
-    </Dialog>
+    </>
   );
 }

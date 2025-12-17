@@ -1,14 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { ScrollAreaWithIndicator } from '@/components/ui/scroll-area-with-indicator';
+import { ResponsivePanel } from '@/components/ui/responsive-panel';
 import {
   Form,
   FormControl,
@@ -92,153 +86,155 @@ export function ClientFormDialog({
     form.reset();
   };
 
+  const footerContent = (
+    <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full sm:w-auto"
+        onClick={() => onOpenChange(false)}
+      >
+        Cancelar
+      </Button>
+      <Button 
+        type="submit" 
+        variant="warm" 
+        className="w-full sm:w-auto" 
+        disabled={isLoading}
+        form="client-form"
+      >
+        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+        {isEditing ? 'Salvar' : 'Cadastrar'}
+      </Button>
+    </div>
+  );
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader className="shrink-0">
-          <DialogTitle className="font-display">
-            {isEditing ? 'Editar Cliente' : 'Novo Cliente'}
-          </DialogTitle>
-        </DialogHeader>
+    <ResponsivePanel
+      open={open}
+      onOpenChange={onOpenChange}
+      title={isEditing ? 'Editar Cliente' : 'Novo Cliente'}
+      footer={footerContent}
+      onInteractOutside={(e) => e.preventDefault()}
+    >
+      <Form {...form}>
+        <form id="client-form" onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <User className="h-4 w-4" />
+                  Nome *
+                </FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome do cliente" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <ScrollAreaWithIndicator className="pr-4">
-              <div className="space-y-4">
-                <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <User className="h-4 w-4" />
-                    Nome *
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Nome do cliente" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="phone"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <Phone className="h-4 w-4" />
+                  WhatsApp
+                </FormLabel>
+                <FormControl>
+                  <PhoneInput 
+                    placeholder="(11) 99999-9999" 
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <Phone className="h-4 w-4" />
-                    WhatsApp
-                  </FormLabel>
-                  <FormControl>
-                    <PhoneInput 
-                      placeholder="(11) 99999-9999" 
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="cpf_cnpj"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <CreditCard className="h-4 w-4" />
+                  CPF/CNPJ
+                </FormLabel>
+                <FormControl>
+                  <CpfCnpjInput 
+                    placeholder="123.456.789-00" 
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="cpf_cnpj"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <CreditCard className="h-4 w-4" />
-                    CPF/CNPJ
-                  </FormLabel>
-                  <FormControl>
-                    <CpfCnpjInput 
-                      placeholder="123.456.789-00" 
-                      value={field.value || ''}
-                      onChange={field.onChange}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </FormLabel>
+                <FormControl>
+                  <Input type="email" placeholder="email@exemplo.com" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <Mail className="h-4 w-4" />
-                    Email
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="email" placeholder="email@exemplo.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <FormField
+            control={form.control}
+            name="birthday"
+            render={({ field }) => (
+              <FormItem className="overflow-hidden">
+                <FormLabel className="flex items-center gap-1.5">
+                  <CalendarDays className="h-4 w-4" />
+                  Data de Aniversário
+                </FormLabel>
+                <FormControl>
+                  <Input type="date" {...field} className="max-w-full" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-            <FormField
-              control={form.control}
-              name="birthday"
-              render={({ field }) => (
-                <FormItem className="overflow-hidden">
-                  <FormLabel className="flex items-center gap-1.5">
-                    <CalendarDays className="h-4 w-4" />
-                    Data de Aniversário
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} className="max-w-full" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-                <FormField
-                  control={form.control}
-                  name="address"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center gap-1.5">
-                        <MapPin className="h-4 w-4" />
-                        Endereço / Referência
-                      </FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Rua, número, bairro ou referência" 
-                          className="resize-none"
-                          rows={2}
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </ScrollAreaWithIndicator>
-
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end border-t mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:w-auto"
-                onClick={() => onOpenChange(false)}
-              >
-                Cancelar
-              </Button>
-              <Button type="submit" variant="warm" className="w-full sm:w-auto" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isEditing ? 'Salvar' : 'Cadastrar'}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="flex items-center gap-1.5">
+                  <MapPin className="h-4 w-4" />
+                  Endereço / Referência
+                </FormLabel>
+                <FormControl>
+                  <Textarea 
+                    placeholder="Rua, número, bairro ou referência" 
+                    className="resize-none"
+                    rows={2}
+                    {...field} 
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </form>
+      </Form>
+    </ResponsivePanel>
   );
 }
