@@ -3,6 +3,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { isMobileDevice } from "@/hooks/use-mobile";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -36,8 +37,8 @@ const DialogContent = React.forwardRef<
     <DialogPrimitive.Content
       ref={ref}
       onOpenAutoFocus={(e) => {
-        // Prevent auto-focus on mobile to avoid keyboard popup
-        if (window.innerWidth < 768) {
+        // Prevent auto-focus on mobile/PWA to avoid keyboard popup
+        if (isMobileDevice()) {
           e.preventDefault();
         }
         onOpenAutoFocus?.(e);

@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { isMobileDevice } from "@/hooks/use-mobile";
 
 const Sheet = SheetPrimitive.Root;
 
@@ -59,8 +60,8 @@ const SheetContent = React.forwardRef<React.ElementRef<typeof SheetPrimitive.Con
         ref={ref} 
         className={cn(sheetVariants({ side }), className)} 
         onOpenAutoFocus={(e) => {
-          // Prevent auto-focus on mobile to avoid keyboard popup
-          if (window.innerWidth < 768) {
+          // Prevent auto-focus on mobile/PWA to avoid keyboard popup
+          if (isMobileDevice()) {
             e.preventDefault();
           }
           onOpenAutoFocus?.(e);
