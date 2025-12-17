@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
 import {
   Loader2,
   Plus,
@@ -358,7 +358,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
-            <ScrollArea className="flex-1 min-h-0 pr-4">
+            <ScrollAreaWithIndicator className="pr-4">
               <div className="space-y-4">
               {/* Client Selection with Search */}
               <FormField
@@ -1008,7 +1008,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
               )}
 
               </div>
-            </ScrollArea>
+            </ScrollAreaWithIndicator>
 
             <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
               <Button

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { ScrollAreaWithIndicator } from "@/components/ui/scroll-area-with-indicator";
 import { Badge } from "@/components/ui/badge";
 import { Clock, AlertTriangle, Check } from "lucide-react";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
@@ -119,7 +119,7 @@ export function PendingDepositsDialog({
               <p>Nenhum sinal pendente!</p>
             </div>
           ) : (
-            <ScrollArea className="flex-1 min-h-0">
+            <ScrollAreaWithIndicator className="pr-4">
               <div className="space-y-3 pr-4">
                 {sortedOrders.map((order) => {
                   const daysPending = differenceInDays(
@@ -195,7 +195,7 @@ export function PendingDepositsDialog({
                   );
                 })}
               </div>
-            </ScrollArea>
+            </ScrollAreaWithIndicator>
           )}
         </div>
       </DialogContent>
