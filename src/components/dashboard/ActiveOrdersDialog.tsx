@@ -65,19 +65,19 @@ export function ActiveOrdersDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-md"
+        className="max-w-md max-h-[90dvh] flex flex-col overflow-hidden"
         onInteractOutside={(e) => e.preventDefault()}
       >
-        <DialogHeader>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <ShoppingBag className="h-5 w-5 text-primary" />
             Pedidos Ativos
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex flex-col flex-1 min-h-0 space-y-4">
           {/* Summary Card */}
-          <Card className="p-4 bg-primary/5 border-primary/20">
+          <Card className="shrink-0 p-4 bg-primary/5 border-primary/20">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">Total em Andamento</p>
               <p className="text-2xl font-bold text-primary">
@@ -96,8 +96,8 @@ export function ActiveOrdersDialog({
               <p>Nenhum pedido ativo no momento</p>
             </div>
           ) : (
-            <ScrollArea className="max-h-[50vh]">
-              <div className="space-y-3 pr-2">
+            <ScrollArea className="flex-1 min-h-0">
+              <div className="space-y-3 pr-4">
                 {sortedOrders.map((order) => {
                   const config = ORDER_STATUS_CONFIG[order.status];
                   const StatusIcon = statusIcons[order.status];

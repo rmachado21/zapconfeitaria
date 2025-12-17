@@ -88,16 +88,16 @@ export function CategoryFormDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[400px]" onInteractOutside={(e) => e.preventDefault()}>
-        <DialogHeader>
+      <DialogContent className="sm:max-w-[400px] max-h-[90dvh] flex flex-col overflow-hidden" onInteractOutside={(e) => e.preventDefault()}>
+        <DialogHeader className="shrink-0">
           <DialogTitle className="font-display">
             {isEditing ? 'Editar Categoria' : 'Nova Categoria'}
           </DialogTitle>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-            <ScrollArea className="max-h-[70dvh] pr-3">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <ScrollArea className="flex-1 min-h-0 pr-4">
               <div className="space-y-5">
                 {/* Preview */}
                 <div className="flex items-center justify-center">
@@ -194,7 +194,7 @@ export function CategoryFormDialog({
               </div>
             </ScrollArea>
 
-            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2 sm:justify-end border-t mt-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 sm:justify-end shrink-0 border-t mt-4">
               <Button
                 type="button"
                 variant="outline"
