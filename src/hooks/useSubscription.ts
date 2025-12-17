@@ -48,8 +48,27 @@ export function useSubscription() {
         subscriptionEnd: data.subscription_end ?? null,
         cancelAtPeriodEnd: data.cancel_at_period_end ?? false,
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error checking subscription:', err);
+      
+      // Detect invalid session errors and force local logout
+      const errorMessage = err?.message?.toLowerCase() || '';
+      const isSessionError = 
+        errorMessage.includes('session') ||
+        errorMessage.includes('jwt') ||
+        errorMessage.includes('token') ||
+        err?.status === 403 ||
+        err?.status === 401;
+      
+      if (isSessionError) {
+        console.warn('Invalid session detected, forcing local logout');
+        try {
+          await supabase.auth.signOut({ scope: 'local' });
+        } catch {
+          // Ignore errors
+        }
+      }
+      
       setError(err instanceof Error ? err.message : 'Erro ao verificar assinatura');
       setSubscription({
         subscribed: false,

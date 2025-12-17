@@ -80,6 +80,8 @@ export default function Pricing() {
 
   const handleSignOut = async () => {
     await signOut();
+    toast.success('Sessão encerrada');
+    navigate('/auth', { replace: true });
   };
 
   return (
