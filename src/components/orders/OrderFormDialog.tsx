@@ -341,12 +341,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
 
   const footerContent = (
     <div className="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
-      <Button
-        type="button"
-        variant="outline"
-        className="w-full sm:w-auto"
-        onClick={() => onOpenChange(false)}
-      >
+      <Button type="button" variant="outline" className="w-full sm:w-auto" onClick={() => onOpenChange(false)}>
         Cancelar
       </Button>
       <Button
@@ -883,7 +878,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                     className="shrink-0 gap-1.5"
                   >
                     <Plus className="h-4 w-4" />
-                    Adicionar
                   </Button>
                 </div>
               </div>
