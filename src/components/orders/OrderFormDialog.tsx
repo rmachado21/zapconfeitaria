@@ -488,7 +488,8 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
               </FormLabel>
 
               {/* Add Product Row */}
-              <div className="flex flex-col sm:flex-row gap-2 overflow-hidden">
+              <div className="space-y-2">
+                {/* Line 1: Product Combobox */}
                 <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -496,7 +497,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                       role="combobox"
                       aria-expanded={productSearchOpen}
                       className={cn(
-                        "w-full sm:flex-1 sm:min-w-0 max-w-full justify-between font-normal overflow-hidden",
+                        "w-full justify-between font-normal overflow-hidden",
                         !selectedProduct && "text-muted-foreground",
                       )}
                     >
@@ -563,7 +564,9 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                     </Command>
                   </PopoverContent>
                 </Popover>
-                <div className="flex gap-2 items-center shrink-0">
+
+                {/* Line 2: Quantity Controls + Add Button */}
+                <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
                     <Button
                       type="button"
@@ -595,7 +598,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                             setQuantity(0);
                           }
                         }}
-                        className="w-20 pr-8 text-center"
+                        className="w-16 pr-8 text-center"
                         placeholder="Qtd"
                       />
                       {selectedProductData && (
@@ -632,7 +635,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                     className="shrink-0 gap-1.5"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Adicionar</span>
+                    Adicionar
                   </Button>
                 </div>
               </div>
@@ -784,6 +787,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
               <p className="text-xs text-muted-foreground -mt-1">Para itens avulsos não cadastrados como produto</p>
 
               <div className="space-y-2">
+                {/* Line 1: Description Input */}
                 <Input
                   placeholder="Descrição do item"
                   value={additionalItemName}
@@ -796,7 +800,9 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                     additionalItemError && "border-destructive focus-visible:ring-destructive",
                   )}
                 />
-                <div className="flex flex-wrap items-center gap-2 overflow-hidden">
+
+                {/* Line 2: Quantity + Price + Add Button */}
+                <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
                     <Button
                       type="button"
@@ -846,17 +852,17 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                     value={additionalItemPrice}
                     onChange={setAdditionalItemPrice}
                     placeholder="R$ 0,00"
-                    className="w-28 min-w-0"
+                    className="w-24 min-w-0"
                   />
 
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="default"
                     onClick={handleAddAdditionalItem}
                     className="shrink-0 gap-1.5"
                   >
                     <Plus className="h-4 w-4" />
-                    <span className="hidden sm:inline">Adicionar</span>
+                    Adicionar
                   </Button>
                 </div>
               </div>
