@@ -35,7 +35,7 @@ export function ResponsivePanel({
         side={isMobile ? "bottom" : "right"}
         className={
           isMobile
-            ? "h-[85dvh] flex flex-col p-0"
+            ? "h-[90dvh] flex flex-col p-0"
             : "h-full flex flex-col p-0"
         }
         onInteractOutside={onInteractOutside}
