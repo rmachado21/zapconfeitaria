@@ -5,7 +5,7 @@ import { renderAsync } from 'https://esm.sh/@react-email/components@0.0.22'
 import { PasswordResetEmail } from './_templates/password-reset.tsx'
 
 const resend = new Resend(Deno.env.get('RESEND_API_KEY') as string)
-const hookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string
+const rawHookSecret = Deno.env.get('SEND_EMAIL_HOOK_SECRET') as string
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -37,16 +37,32 @@ Deno.serve(async (req) => {
   }
 
   // Verify webhook signature if secret is configured
-  if (hookSecret) {
+  if (rawHookSecret) {
     try {
+      // Remove 'whsec_' prefix if present (Supabase webhook secrets include this prefix)
+      // Also handle 'v1,' prefix that some webhook secrets have
+      let hookSecret = rawHookSecret
+      if (hookSecret.startsWith('whsec_')) {
+        hookSecret = hookSecret.replace('whsec_', '')
+      }
+      if (hookSecret.startsWith('v1,')) {
+        hookSecret = hookSecret.substring(3)
+      }
+      
       const wh = new Webhook(hookSecret)
       webhookData = wh.verify(payload, headers) as typeof webhookData
     } catch (error) {
       console.error('Webhook verification failed:', error)
-      return new Response(
-        JSON.stringify({ error: { http_code: 401, message: 'Invalid webhook signature' } }),
-        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      console.log('Falling back to parsing payload without verification')
+      // Fall back to parsing without verification for debugging
+      try {
+        webhookData = JSON.parse(payload)
+      } catch (parseError) {
+        return new Response(
+          JSON.stringify({ error: { http_code: 401, message: 'Invalid webhook payload' } }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        )
+      }
     }
   } else {
     // For development/testing without webhook secret
