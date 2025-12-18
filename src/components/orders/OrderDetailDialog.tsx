@@ -40,6 +40,7 @@ import {
   PackagePlus,
   CreditCard,
   Check,
+  PackageCheck,
 } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -789,6 +790,27 @@ export function OrderDetailDialog({
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Marcar como Pago
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Mark as Delivered Button - Show for in_production and ready statuses */}
+            {(currentStatus === "in_production" || currentStatus === "ready") && onStatusChange && (
+              <Card className="bg-primary/5 border-primary/20">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2">
+                      <PackageCheck className="h-5 w-5 text-primary" />
+                      <p className="font-medium">Pronto para entregar?</p>
+                    </div>
+                    <Button 
+                      onClick={() => handleStatusChange("delivered")}
+                      className="bg-success hover:bg-success/90 text-success-foreground"
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      Marcar como Entregue
                     </Button>
                   </div>
                 </CardContent>
