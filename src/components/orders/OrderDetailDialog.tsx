@@ -41,6 +41,7 @@ import {
   CreditCard,
   Check,
   PackageCheck,
+  Undo2,
 } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -99,6 +100,7 @@ export function OrderDetailDialog({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
+  const [revertDeliveredConfirmOpen, setRevertDeliveredConfirmOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
 
   // Local optimistic state for status
@@ -155,8 +157,13 @@ export function OrderDetailDialog({
       // Update display immediately (optimistic update)
       setDisplayStatus(newStatus);
 
+      // If reverting from delivered to any other status (except cancelled which has its own dialog)
+      if (currentStatus === "delivered" && newStatus !== "cancelled") {
+        setPendingStatus(newStatus);
+        setRevertDeliveredConfirmOpen(true);
+      }
       // If changing to delivered, show confirmation dialog only if NOT paid in full
-      if (newStatus === "delivered") {
+      else if (newStatus === "delivered") {
         if (displayFullPayment) {
           // Already paid in full, no confirmation needed
           onStatusChange(order.id, newStatus, order.client?.name, order.total_amount, order.status as OrderStatus, true);
@@ -200,6 +207,21 @@ export function OrderDetailDialog({
     // Revert optimistic update
     setDisplayStatus(order.status as OrderStatus);
     setCancelConfirmOpen(false);
+    setPendingStatus(null);
+  };
+
+  const confirmRevertDelivered = () => {
+    if (pendingStatus && onStatusChange) {
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
+    }
+    setRevertDeliveredConfirmOpen(false);
+    setPendingStatus(null);
+  };
+
+  const cancelRevertDelivered = () => {
+    // Revert optimistic update
+    setDisplayStatus(order.status as OrderStatus);
+    setRevertDeliveredConfirmOpen(false);
     setPendingStatus(null);
   };
 
@@ -917,6 +939,39 @@ export function OrderDetailDialog({
               className="w-full sm:w-auto bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Cancelar Pedido
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Revert Delivered Confirmation Dialog */}
+      <AlertDialog open={revertDeliveredConfirmOpen} onOpenChange={setRevertDeliveredConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center">
+                <Undo2 className="h-5 w-5 text-amber-500" />
+              </div>
+              <AlertDialogTitle>Reverter Entrega</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="pt-2">
+              Ao reverter o status de <strong>Entregue</strong>, a transação de{" "}
+              <strong>Pagamento Final</strong> será{" "}
+              <strong className="text-destructive">removida automaticamente</strong> do financeiro.
+              <br />
+              <br />
+              Isso afetará os cálculos de faturamento. Deseja continuar?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelRevertDelivered}>
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmRevertDelivered}
+              className="w-full sm:w-auto bg-amber-500 text-white hover:bg-amber-600"
+            >
+              Reverter Status
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
