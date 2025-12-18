@@ -26,7 +26,13 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
   const visibleColumns = ALL_KANBAN_COLUMNS.filter(col => !hiddenColumns.includes(col));
 
   const getOrdersByStatus = (status: OrderStatus) => {
-    return orders.filter((order) => order.status === status);
+    return orders
+      .filter((order) => order.status === status)
+      .sort((a, b) => {
+        const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
+        const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
+        return dateA - dateB;
+      });
   };
 
   const getColumnTotal = (status: OrderStatus) => {
