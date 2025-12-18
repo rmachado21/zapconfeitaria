@@ -556,36 +556,66 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex flex-col items-center md:items-start gap-2">
-              <img src={logo} alt="ZAP Confeitaria" className="h-6 w-auto" />
-              <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                <Link to="/privacy" className="hover:text-foreground transition-colors">
+      <footer className="bg-slate-900 text-slate-300">
+        <div className="container mx-auto px-4 py-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            {/* Brand Column */}
+            <div className="flex flex-col items-center md:items-start gap-4">
+              <img src={logo} alt="ZAP Confeitaria" className="h-8 w-auto brightness-0 invert" />
+              <p className="text-sm text-slate-400 text-center md:text-left max-w-xs">
+                Gestão completa para sua confeitaria. Organize pedidos, clientes e finanças em um só lugar.
+              </p>
+            </div>
+
+            {/* Links Column */}
+            <div className="flex flex-col items-center md:items-start gap-4">
+              <h4 className="font-semibold text-white">Links</h4>
+              <div className="flex flex-col items-center md:items-start gap-2">
+                <a href="#features" className="text-sm text-slate-400 hover:text-white transition-colors">
+                  Funcionalidades
+                </a>
+                <a href="#pricing" className="text-sm text-slate-400 hover:text-white transition-colors">
+                  Preços
+                </a>
+                <Link to="/privacy" className="text-sm text-slate-400 hover:text-white transition-colors">
                   Política de Privacidade
                 </Link>
-                <span>•</span>
-                <Link to="/terms" className="hover:text-foreground transition-colors">
+                <Link to="/terms" className="text-sm text-slate-400 hover:text-white transition-colors">
                   Termos de Serviço
                 </Link>
               </div>
-              <p className="text-sm text-muted-foreground">
-                © {new Date().getFullYear()} ZAP Confeitaria. Todos os direitos reservados.
-              </p>
             </div>
-            <div className="flex flex-col items-center md:items-end gap-2">
+
+            {/* Contact Column */}
+            <div className="flex flex-col items-center md:items-start gap-4">
+              <h4 className="font-semibold text-white">Contato</h4>
               <a 
                 href="mailto:suporte@zapconfeitaria.com.br" 
-                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
               >
                 <Mail className="h-4 w-4" />
                 suporte@zapconfeitaria.com.br
               </a>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-800">
+          <div className="container mx-auto px-4 py-6">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+              <p className="text-sm text-slate-500">
+                © {new Date().getFullYear()} ZAP Confeitaria. Todos os direitos reservados.
+              </p>
+              <div className="flex items-center gap-2 text-sm text-slate-500">
                 <span>Feito com ❤️ por</span>
-                <a href="https://digitrail.com.br" target="_blank" rel="noopener noreferrer">
-                  <img src={digitrailLogo} alt="Digitrail" className="h-5 w-auto" />
+                <a 
+                  href="https://digitrail.com.br" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:opacity-80 transition-opacity"
+                >
+                  <img src={digitrailLogo} alt="Digitrail" className="h-6 w-auto brightness-0 invert opacity-70" />
                 </a>
               </div>
             </div>
