@@ -413,7 +413,7 @@ const Finances = () => {
         </section>
 
         {/* Transactions List */}
-        <Card>
+        <Card className="overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Transações</CardTitle>
             <Button
@@ -511,13 +511,13 @@ const Finances = () => {
                     <div
                       key={transaction.id}
                       className={cn(
-                        "flex items-center justify-between p-4 hover:bg-muted/50 transition-colors group",
+                        "flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors group overflow-hidden",
                         "animate-slide-up",
                         `stagger-${Math.min(index + 1, 5)}`
                       )}
                       style={{ opacity: 0, animationFillMode: 'forwards' }}
                     >
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className={cn(
                           "w-10 h-10 rounded-full flex items-center justify-center",
                           transaction.type === 'income' 
@@ -532,7 +532,7 @@ const Finances = () => {
                         </div>
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-medium text-sm truncate">
+                            <p className="font-medium text-sm truncate max-w-[140px] sm:max-w-none">
                               {parseTransaction(transaction.description).cleanDescription}
                             </p>
                             {(() => {
@@ -569,9 +569,9 @@ const Finances = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                         <span className={cn(
-                          "font-semibold",
+                          "font-semibold text-sm sm:text-base whitespace-nowrap",
                           transaction.type === 'income' ? 'text-success' : 'text-destructive'
                         )}>
                           {transaction.type === 'income' ? '+' : '-'}
@@ -580,7 +580,7 @@ const Finances = () => {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          className="sm:opacity-0 sm:group-hover:opacity-100 text-muted-foreground hover:text-foreground hover:bg-muted"
                           onClick={() => handleEdit(transaction)}
                         >
                           <Pencil className="h-4 w-4" />
@@ -588,7 +588,7 @@ const Finances = () => {
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          className="opacity-0 group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
+                          className="sm:opacity-0 sm:group-hover:opacity-100 text-destructive hover:text-destructive hover:bg-destructive/10"
                           onClick={() => handleDelete(transaction)}
                         >
                           <Trash2 className="h-4 w-4" />
