@@ -168,8 +168,7 @@ export function PendingDepositsDialog({
                       <Calendar className="h-3.5 w-3.5" />
                       {deliveryDate ? (
                         <span>
-                          Entrega em{" "}
-                          {format(deliveryDate, "EEEE, dd/MM", { locale: ptBR })}
+                          Entrega: {format(deliveryDate, "dd/MM/yyyy", { locale: ptBR })}
                           {order.delivery_time && ` às ${order.delivery_time}`}
                         </span>
                       ) : (
