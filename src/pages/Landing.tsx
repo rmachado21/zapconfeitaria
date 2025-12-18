@@ -15,10 +15,12 @@ import {
   ArrowRight,
   Sparkles,
   Star,
+  Mail,
 } from "lucide-react";
 import logo from "@/assets/zap-confeitaria-logo.png";
 import appMockup from "@/assets/app-mockup.png";
 import desktopMockup from "@/assets/desktop-mockup.png";
+import digitrailLogo from "@/assets/digitrail-logo.png";
 const features = [
   {
     icon: ClipboardList,
@@ -556,22 +558,37 @@ export default function Landing() {
       {/* Footer */}
       <footer className="py-8 border-t">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="flex flex-col items-center md:items-start gap-2">
               <img src={logo} alt="ZAP Confeitaria" className="h-6 w-auto" />
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <Link to="/privacy" className="hover:text-foreground transition-colors">
+                  Política de Privacidade
+                </Link>
+                <span>•</span>
+                <Link to="/terms" className="hover:text-foreground transition-colors">
+                  Termos de Serviço
+                </Link>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                © {new Date().getFullYear()} ZAP Confeitaria. Todos os direitos reservados.
+              </p>
             </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <Link to="/privacy" className="hover:text-foreground transition-colors">
-                Política de Privacidade
-              </Link>
-              <span>•</span>
-              <Link to="/terms" className="hover:text-foreground transition-colors">
-                Termos de Serviço
-              </Link>
+            <div className="flex flex-col items-center md:items-end gap-2">
+              <a 
+                href="mailto:suporte@zapconfeitaria.com.br" 
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Mail className="h-4 w-4" />
+                suporte@zapconfeitaria.com.br
+              </a>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>Feito com ❤️ por</span>
+                <a href="https://digitrail.com.br" target="_blank" rel="noopener noreferrer">
+                  <img src={digitrailLogo} alt="Digitrail" className="h-5 w-auto" />
+                </a>
+              </div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              © {new Date().getFullYear()} ZAP Confeitaria. Todos os direitos reservados.
-            </p>
           </div>
         </div>
       </footer>
