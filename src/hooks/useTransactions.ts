@@ -4,11 +4,16 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { Database } from '@/integrations/supabase/types';
 import { useMemo } from 'react';
-import { startOfWeek, startOfMonth, startOfYear, isAfter, parseISO } from 'date-fns';
+import { startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter, isBefore, parseISO } from 'date-fns';
 
 type TransactionType = Database['public']['Enums']['transaction_type'];
 
 export type PeriodFilter = 'week' | 'month' | 'year' | 'all';
+
+export interface MonthFilter {
+  month: number; // 0-11
+  year: number;
+}
 
 export interface Transaction {
   id: string;
@@ -29,7 +34,7 @@ export interface TransactionFormData {
   order_id?: string;
 }
 
-export function useTransactions(period: PeriodFilter = 'all') {
+export function useTransactions(period: PeriodFilter = 'all', selectedMonth?: MonthFilter) {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -50,8 +55,21 @@ export function useTransactions(period: PeriodFilter = 'all') {
     enabled: !!user,
   });
 
-  // Filter transactions by period
+  // Filter transactions by period or specific month
   const filteredTransactions = useMemo(() => {
+    // If a specific month is selected, filter by that month
+    if (selectedMonth) {
+      const monthStart = new Date(selectedMonth.year, selectedMonth.month, 1);
+      const monthEnd = endOfMonth(monthStart);
+      
+      return transactions.filter(t => {
+        const transactionDate = parseISO(t.date);
+        return (isAfter(transactionDate, monthStart) || transactionDate.getTime() === monthStart.getTime()) &&
+               (isBefore(transactionDate, monthEnd) || transactionDate.getTime() === monthEnd.getTime());
+      });
+    }
+
+    // Otherwise use relative period filter
     if (period === 'all') return transactions;
     
     const now = new Date();
@@ -75,7 +93,7 @@ export function useTransactions(period: PeriodFilter = 'all') {
       const transactionDate = parseISO(t.date);
       return isAfter(transactionDate, startDate) || transactionDate.getTime() === startDate.getTime();
     });
-  }, [transactions, period]);
+  }, [transactions, period, selectedMonth]);
 
   const createTransaction = useMutation({
     mutationFn: async (formData: TransactionFormData) => {

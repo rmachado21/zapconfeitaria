@@ -17,7 +17,7 @@ import { DeleteTransactionDialog } from '@/components/finances/DeleteTransaction
 import { FinanceChart } from '@/components/finances/FinanceChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
 import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
-import { useTransactions, Transaction, TransactionFormData, PeriodFilter } from '@/hooks/useTransactions';
+import { useTransactions, Transaction, TransactionFormData, PeriodFilter, MonthFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
 import { useFinanceReportPdf } from '@/hooks/useFinanceReportPdf';
@@ -26,7 +26,7 @@ import {
   Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, FileText,
   ChevronLeft, ChevronRight, Filter, X
 } from 'lucide-react';
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter, endOfWeek, endOfMonth, endOfYear } from 'date-fns';
+import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter, endOfWeek, endOfMonth, endOfYear, subMonths, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -79,6 +79,9 @@ const Finances = () => {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
+  
+  // Month navigation state
+  const [selectedMonth, setSelectedMonth] = useState<MonthFilter | null>(null);
 
   const { sharePdf: shareReportPdf, isGenerating: isGeneratingReport } = useFinanceReportPdf();
 
@@ -92,27 +95,73 @@ const Finances = () => {
     totalIncome,
     totalExpenses,
     balance,
-  } = useTransactions(period);
+  } = useTransactions(period, selectedMonth || undefined);
 
   const { orders } = useOrders();
   const { products } = useProducts();
+
+  // Month navigation functions
+  const goToPreviousMonth = () => {
+    if (selectedMonth) {
+      const prevDate = subMonths(new Date(selectedMonth.year, selectedMonth.month, 1), 1);
+      setSelectedMonth({ month: prevDate.getMonth(), year: prevDate.getFullYear() });
+    } else {
+      const now = new Date();
+      const prevDate = subMonths(now, 1);
+      setSelectedMonth({ month: prevDate.getMonth(), year: prevDate.getFullYear() });
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (selectedMonth) {
+      const nextDate = addMonths(new Date(selectedMonth.year, selectedMonth.month, 1), 1);
+      setSelectedMonth({ month: nextDate.getMonth(), year: nextDate.getFullYear() });
+    } else {
+      const now = new Date();
+      const nextDate = addMonths(now, 1);
+      setSelectedMonth({ month: nextDate.getMonth(), year: nextDate.getFullYear() });
+    }
+  };
+
+  const resetToCurrentPeriod = () => {
+    setSelectedMonth(null);
+  };
+
+  // Get current month display label
+  const currentMonthLabel = useMemo(() => {
+    if (selectedMonth) {
+      const date = new Date(selectedMonth.year, selectedMonth.month, 1);
+      return format(date, "MMMM 'de' yyyy", { locale: ptBR });
+    }
+    return format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
+  }, [selectedMonth]);
+
+  // Capitalize first letter
+  const capitalizedMonthLabel = currentMonthLabel.charAt(0).toUpperCase() + currentMonthLabel.slice(1);
 
   // Calculate estimated profit based on delivered orders in the period
   const { estimatedProfit, deliveredOrdersForProfit } = useMemo(() => {
     // Filter orders by period and delivered status
     const now = new Date();
     let startDate: Date | null = null;
+    let endDate: Date | null = null;
     
-    switch (period) {
-      case 'week':
-        startDate = startOfWeek(now, { weekStartsOn: 0 });
-        break;
-      case 'month':
-        startDate = startOfMonth(now);
-        break;
-      case 'year':
-        startDate = startOfYear(now);
-        break;
+    // If a specific month is selected, use that
+    if (selectedMonth) {
+      startDate = new Date(selectedMonth.year, selectedMonth.month, 1);
+      endDate = endOfMonth(startDate);
+    } else {
+      switch (period) {
+        case 'week':
+          startDate = startOfWeek(now, { weekStartsOn: 0 });
+          break;
+        case 'month':
+          startDate = startOfMonth(now);
+          break;
+        case 'year':
+          startDate = startOfYear(now);
+          break;
+      }
     }
 
     const deliveredOrders = orders.filter(order => {
@@ -120,7 +169,14 @@ const Finances = () => {
       if (!startDate) return true;
       
       const orderDate = parseISO(order.updated_at);
-      return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
+      const afterStart = isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
+      
+      if (endDate) {
+        const beforeEnd = orderDate.getTime() <= endDate.getTime();
+        return afterStart && beforeEnd;
+      }
+      
+      return afterStart;
     });
 
     // Calculate revenue (total_amount from delivered orders)
@@ -148,7 +204,7 @@ const Finances = () => {
       estimatedProfit: { profit, margin, revenue, costs },
       deliveredOrdersForProfit: deliveredOrders 
     };
-  }, [orders, products, period]);
+  }, [orders, products, period, selectedMonth]);
 
   // Map transactions to order numbers for display
   const orderNumberMap = useMemo(() => {
@@ -275,31 +331,37 @@ const Finances = () => {
     let start: Date;
     let end: Date = now;
     
-    switch (period) {
-      case 'week':
-        start = startOfWeek(now, { weekStartsOn: 0 });
-        end = endOfWeek(now, { weekStartsOn: 0 });
-        break;
-      case 'month':
-        start = startOfMonth(now);
-        end = endOfMonth(now);
-        break;
-      case 'year':
-        start = startOfYear(now);
-        end = endOfYear(now);
-        break;
-      default:
-        // For "all", use the oldest transaction date or current date
-        const dates = filteredTransactions.map(t => parseISO(t.date));
-        start = dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : now;
-        end = now;
+    // If a specific month is selected, use that
+    if (selectedMonth) {
+      start = new Date(selectedMonth.year, selectedMonth.month, 1);
+      end = endOfMonth(start);
+    } else {
+      switch (period) {
+        case 'week':
+          start = startOfWeek(now, { weekStartsOn: 0 });
+          end = endOfWeek(now, { weekStartsOn: 0 });
+          break;
+        case 'month':
+          start = startOfMonth(now);
+          end = endOfMonth(now);
+          break;
+        case 'year':
+          start = startOfYear(now);
+          end = endOfYear(now);
+          break;
+        default:
+          // For "all", use the oldest transaction date or current date
+          const dates = filteredTransactions.map(t => parseISO(t.date));
+          start = dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : now;
+          end = now;
+      }
     }
     
     return {
       start: format(start, 'dd/MM/yyyy', { locale: ptBR }),
       end: format(end, 'dd/MM/yyyy', { locale: ptBR }),
     };
-  }, [period, filteredTransactions]);
+  }, [period, selectedMonth, filteredTransactions]);
 
   // Calculate expenses by category for PDF
   const expensesByCategory = useMemo(() => {
@@ -327,7 +389,7 @@ const Finances = () => {
   const handleExportPDF = useCallback(() => {
     shareReportPdf({
       period,
-      periodLabel: periodLabels[period],
+      periodLabel: selectedMonth ? capitalizedMonthLabel : periodLabels[period],
       periodDates,
       summary: {
         balance,
@@ -338,7 +400,10 @@ const Finances = () => {
       transactions: listFilteredTransactions,
       expensesByCategory,
     });
-  }, [period, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, shareReportPdf]);
+  }, [period, selectedMonth, capitalizedMonthLabel, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, shareReportPdf]);
+
+  // Get the period label to display in stats cards
+  const displayPeriodLabel = selectedMonth ? capitalizedMonthLabel : periodLabels[period];
 
   return (
     <AppLayout>
@@ -354,19 +419,21 @@ const Finances = () => {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={period} onValueChange={(value) => setPeriod(value as PeriodFilter)}>
-              <SelectTrigger className="w-[160px]">
-                <Calendar className="h-4 w-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(periodLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {!selectedMonth && (
+              <Select value={period} onValueChange={(value) => setPeriod(value as PeriodFilter)}>
+                <SelectTrigger className="w-[160px]">
+                  <Calendar className="h-4 w-4 mr-2" />
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(periodLabels).map(([value, label]) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Button variant="warm" onClick={handleCreate} className="hidden md:flex">
               <Plus className="h-5 w-5" />
               Nova Transação
@@ -374,10 +441,45 @@ const Finances = () => {
           </div>
         </header>
 
+        {/* Month Navigation */}
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToPreviousMonth}
+            className="h-9 w-9"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg min-w-[200px] justify-center">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium text-foreground">{capitalizedMonthLabel}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToNextMonth}
+            className="h-9 w-9"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {selectedMonth && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetToCurrentPeriod}
+              className="ml-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Voltar
+            </Button>
+          )}
+        </div>
+
         {/* Stats */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatsCard
-            title={`Saldo (${periodLabels[period]})`}
+            title={`Saldo (${displayPeriodLabel})`}
             value={formatCurrency(balance)}
             icon={Wallet}
             variant={balance >= 0 ? 'primary' : 'warning'}
