@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom';
-import { Truck, X, ChevronRight, Check, Banknote } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Truck, X, Check, Banknote } from 'lucide-react';
 import { useState } from 'react';
 import { useOrders } from '@/hooks/useOrders';
 import { format } from 'date-fns';
@@ -24,6 +24,7 @@ export function TodayDeliveriesBanner() {
   const [dismissed, setDismissed] = useState(false);
   const [confirmOrder, setConfirmOrder] = useState<{ id: string; clientName: string; totalAmount: number } | null>(null);
   const { orders, updateOrderStatus } = useOrders();
+  const navigate = useNavigate();
   
   const today = format(new Date(), 'yyyy-MM-dd');
   
@@ -103,7 +104,10 @@ export function TodayDeliveriesBanner() {
                     key={order.id}
                     className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
                   >
-                    <Link to="/orders" className="flex-1 min-w-0">
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => navigate('/orders', { state: { openOrderId: order.id } })}
+                    >
                       <p className="text-sm font-medium truncate">
                         {order.client?.name || 'Cliente não informado'}
                       </p>
@@ -111,7 +115,7 @@ export function TodayDeliveriesBanner() {
                         {order.delivery_time ? `${formatTime(order.delivery_time)} - ` : ''}
                         {formatCurrency(order.total_amount || 0)}
                       </p>
-                    </Link>
+                    </div>
                     <Button
                       size="icon-sm"
                       variant="ghost"
@@ -125,12 +129,12 @@ export function TodayDeliveriesBanner() {
                 ))}
               </div>
               <div className="p-2 border-t border-border">
-                <Link
-                  to="/orders"
-                  className="block text-center text-xs text-primary hover:underline"
+                <button
+                  onClick={() => navigate('/orders')}
+                  className="w-full text-center text-xs text-primary hover:underline"
                 >
                   Ver todos os pedidos
-                </Link>
+                </button>
               </div>
             </PopoverContent>
           </Popover>
