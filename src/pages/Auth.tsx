@@ -19,6 +19,9 @@ export default function Auth() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const { signIn, signUp, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -26,14 +29,25 @@ export default function Auth() {
   
   const defaultTab = searchParams.get('tab') === 'signup' ? 'signup' : 'login';
 
-  // Redirect if already logged in
+  // Detect PASSWORD_RECOVERY event from Supabase
   useEffect(() => {
-    if (user) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+      }
+    });
+    
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Redirect if already logged in (but not in recovery mode)
+  useEffect(() => {
+    if (user && !isRecoveryMode) {
       navigate("/pricing", {
         replace: true,
       });
     }
-  }, [user, navigate]);
+  }, [user, navigate, isRecoveryMode]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,6 +107,58 @@ export default function Auth() {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: "Campos obrigatórios",
+        description: "Por favor, preencha todos os campos.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Senhas não coincidem",
+        description: "A nova senha e a confirmação devem ser iguais.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: "Senha muito curta",
+        description: "A senha deve ter pelo menos 6 caracteres.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    setLoading(false);
+    
+    if (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar a senha. Tente novamente.",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Senha atualizada!",
+        description: "Sua senha foi alterada com sucesso.",
+      });
+      setIsRecoveryMode(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      navigate("/pricing");
+    }
+  };
+
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password || !companyName) {
@@ -139,6 +205,96 @@ export default function Auth() {
       });
     }
   };
+
+  // Recovery mode form
+  if (isRecoveryMode) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-background to-blush/20 p-4">
+        <div className="w-full max-w-md">
+          <div className="text-center mb-8">
+            <img
+              src={zapLogo}
+              alt="Zap Confeitaria - Gestão para Confeitarias"
+              className="h-12 sm:h-12 md:h-16 w-auto mx-auto object-contain"
+            />
+          </div>
+
+          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur-sm">
+            <CardHeader className="pb-4 text-center">
+              <h2 className="text-xl font-semibold">Criar nova senha</h2>
+              <p className="text-sm text-muted-foreground">
+                Digite sua nova senha abaixo
+              </p>
+            </CardHeader>
+
+            <CardContent className="pt-0">
+              <form onSubmit={handleUpdatePassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">Nova senha</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="new-password"
+                      type="password"
+                      placeholder="Mínimo 6 caracteres"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      className="pl-10"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirm-password">Confirmar senha</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      placeholder="Repita a nova senha"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10"
+                      disabled={loading}
+                    />
+                  </div>
+                </div>
+
+                <Button type="submit" className="w-full" variant="warm" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Atualizando...
+                    </>
+                  ) : (
+                    "Atualizar senha"
+                  )}
+                </Button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRecoveryMode(false);
+                    setNewPassword("");
+                    setConfirmPassword("");
+                  }}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Cancelar
+                </button>
+              </form>
+            </CardContent>
+          </Card>
+
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            © {new Date().getFullYear()} ZAP Confeitaria
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-cream via-background to-blush/20 p-4">
       <div className="w-full max-w-md">
