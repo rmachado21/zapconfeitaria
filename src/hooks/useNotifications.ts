@@ -157,6 +157,7 @@ export function useNotifications() {
     // Check overdue deposits (pending for more than 7 days)
     orders.forEach(order => {
       if (order.deposit_paid) return; // Skip if deposit already paid
+      if (order.full_payment_received) return; // Skip if full payment already received
       if (order.status === 'delivered' || order.status === 'cancelled') return; // Skip finished orders
       if (order.status !== 'quote' && order.status !== 'awaiting_deposit') return; // Only check early status orders
 
