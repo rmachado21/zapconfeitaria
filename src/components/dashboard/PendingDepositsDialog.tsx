@@ -2,12 +2,12 @@ import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock, AlertTriangle, Check } from "lucide-react";
+import { Calendar, AlertTriangle, Check } from "lucide-react";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { formatOrderNumber } from "@/hooks/useOrders";
 import { openWhatsAppWithTemplate } from "@/lib/whatsapp";
 import { useProfile } from "@/hooks/useProfile";
-import { differenceInDays, parseISO, format } from "date-fns";
+import { differenceInDays, parseISO, format, isToday, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { OrderStatus } from "@/types";
 
@@ -56,10 +56,13 @@ export function PendingDepositsDialog({
 
   const totalPending = orders.reduce((sum, o) => sum + o.total_amount / 2, 0);
 
-  // Sort by oldest first
-  const sortedOrders = [...orders].sort(
-    (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-  );
+  // Sort by delivery date (closest first), orders without delivery date go to end
+  const sortedOrders = [...orders].sort((a, b) => {
+    if (!a.delivery_date && !b.delivery_date) return 0;
+    if (!a.delivery_date) return 1;
+    if (!b.delivery_date) return -1;
+    return new Date(a.delivery_date).getTime() - new Date(b.delivery_date).getTime();
+  });
 
   const handleMarkAsPaid = (order: Order) => {
     onDepositPaid(
@@ -114,17 +117,17 @@ export function PendingDepositsDialog({
         ) : (
           <div className="space-y-3">
             {sortedOrders.map((order) => {
-              const daysPending = differenceInDays(
-                new Date(),
-                parseISO(order.created_at)
-              );
-              const isOverdue = daysPending > 7;
               const depositValue = order.total_amount / 2;
+              const deliveryDate = order.delivery_date ? parseISO(order.delivery_date) : null;
+              const daysUntilDelivery = deliveryDate ? differenceInDays(deliveryDate, new Date()) : null;
+              const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
+              const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
+              const isUrgent = daysUntilDelivery !== null && daysUntilDelivery <= 3 && daysUntilDelivery >= 0;
 
               return (
                 <Card
                   key={order.id}
-                  className={`p-3 ${isOverdue ? "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20" : ""}`}
+                  className={`p-3 ${isOverdue || isDeliveryToday ? "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20" : ""}`}
                 >
                   <div className="flex flex-col gap-2">
                     {/* Header */}
@@ -137,7 +140,17 @@ export function PendingDepositsDialog({
                           {isOverdue && (
                             <Badge variant="destructive" className="text-xs px-1.5 py-0">
                               <AlertTriangle className="h-3 w-3 mr-1" />
-                              {daysPending}d
+                              ATRASADO
+                            </Badge>
+                          )}
+                          {isDeliveryToday && !isOverdue && (
+                            <Badge variant="destructive" className="text-xs px-1.5 py-0">
+                              HOJE!
+                            </Badge>
+                          )}
+                          {isUrgent && !isDeliveryToday && !isOverdue && (
+                            <Badge variant="destructive" className="text-xs px-1.5 py-0">
+                              Em {daysUntilDelivery}d!
                             </Badge>
                           )}
                         </div>
@@ -150,14 +163,19 @@ export function PendingDepositsDialog({
                       </span>
                     </div>
 
-                    {/* Date info */}
-                    <p className="text-xs text-muted-foreground">
-                      Criado em{" "}
-                      {format(parseISO(order.created_at), "dd/MM/yyyy", {
-                        locale: ptBR,
-                      })}{" "}
-                      · há {daysPending} {daysPending === 1 ? "dia" : "dias"}
-                    </p>
+                    {/* Delivery date info */}
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Calendar className="h-3.5 w-3.5" />
+                      {deliveryDate ? (
+                        <span>
+                          Entrega em{" "}
+                          {format(deliveryDate, "EEEE, dd/MM", { locale: ptBR })}
+                          {order.delivery_time && ` às ${order.delivery_time}`}
+                        </span>
+                      ) : (
+                        <span className="italic">Data de entrega não definida</span>
+                      )}
+                    </div>
 
                     {/* Actions */}
                     <div className="flex gap-2 mt-1">
