@@ -956,8 +956,17 @@ export function OrderDetailDialog({
             </div>
             <AlertDialogDescription className="pt-2">
               Ao reverter o status de <strong>Entregue</strong>, a transação de{" "}
-              <strong>Pagamento Final</strong> será{" "}
-              <strong className="text-destructive">removida automaticamente</strong> do financeiro.
+              <strong>Pagamento Final</strong> no valor de{" "}
+              <strong className="text-destructive">
+                {formatCurrency(
+                  order.full_payment_received 
+                    ? (order.total_amount || 0) - (order.payment_fee || 0)
+                    : order.deposit_paid 
+                      ? (order.total_amount || 0) / 2 
+                      : (order.total_amount || 0)
+                )}
+              </strong>{" "}
+              será <strong className="text-destructive">removida</strong> do financeiro.
               <br />
               <br />
               Isso afetará os cálculos de faturamento. Deseja continuar?
