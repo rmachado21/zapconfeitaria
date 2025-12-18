@@ -16,6 +16,7 @@ import { TransactionFormDialog } from '@/components/finances/TransactionFormDial
 import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
 import { FinanceChart } from '@/components/finances/FinanceChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
+import { MonthComparisonChart } from '@/components/finances/MonthComparisonChart';
 import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter, MonthFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
@@ -513,6 +514,12 @@ const Finances = () => {
           <FinanceChart transactions={filteredTransactions} />
           <ExpenseCategoryChart transactions={filteredTransactions} />
         </section>
+
+        {/* Month Comparison */}
+        <MonthComparisonChart 
+          allTransactions={transactions} 
+          selectedMonth={selectedMonth || undefined} 
+        />
 
         {/* Transactions List */}
         <Card className="overflow-hidden">
