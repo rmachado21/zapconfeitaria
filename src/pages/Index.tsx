@@ -72,6 +72,21 @@ const Index = () => {
     return orders.filter((o) => isAfter(parseISO(o.created_at), cutoff));
   }, [orders, period]);
 
+  // Sort orders: active by nearest delivery date, then delivered, then cancelled
+  const sortedOrders = useMemo(() => {
+    const sortByDeliveryDate = (a: typeof orders[0], b: typeof orders[0]) => {
+      const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
+      const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
+      return dateA - dateB;
+    };
+
+    const activeOrders = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled").sort(sortByDeliveryDate);
+    const deliveredOrders = orders.filter((o) => o.status === "delivered").sort(sortByDeliveryDate);
+    const cancelledOrders = orders.filter((o) => o.status === "cancelled").sort(sortByDeliveryDate);
+
+    return [...activeOrders, ...deliveredOrders, ...cancelledOrders];
+  }, [orders]);
+
   // Calculate stats from filtered data
   const activeOrders = filteredOrders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
   const pendingDepositOrders = filteredOrders.filter(
@@ -279,7 +294,7 @@ const Index = () => {
             <>
               {/* Kanban for Desktop */}
               <KanbanBoard
-                orders={orders}
+                orders={sortedOrders}
                 onOrderClick={(order) => navigate("/orders", { state: { openOrderId: order.id } })}
                 onStatusChange={handleStatusChange}
                 onDepositChange={handleDepositChange}
@@ -288,7 +303,7 @@ const Index = () => {
 
               {/* List for Mobile */}
               <OrdersList
-                orders={orders}
+                orders={sortedOrders}
                 onOrderClick={(order) => navigate("/orders", { state: { openOrderId: order.id } })}
                 onDepositChange={handleDepositChange}
               />

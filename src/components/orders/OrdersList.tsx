@@ -22,8 +22,27 @@ const STATUS_TABS: { value: 'all' | OrderStatus; label: string }[] = [
 
 export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersListProps) {
   const getFilteredOrders = (status: 'all' | OrderStatus) => {
-    if (status === 'all') return orders;
-    return orders.filter((order) => order.status === status);
+    const filtered = status === 'all' ? orders : orders.filter((order) => order.status === status);
+    
+    // Sort by delivery date (nearest first), delivered and cancelled at the end
+    return [...filtered].sort((a, b) => {
+      // Priority: active orders first, then delivered, then cancelled
+      const getPriority = (s: string) => {
+        if (s === 'cancelled') return 2;
+        if (s === 'delivered') return 1;
+        return 0;
+      };
+      
+      const priorityA = getPriority(a.status);
+      const priorityB = getPriority(b.status);
+      
+      if (priorityA !== priorityB) return priorityA - priorityB;
+      
+      // Within same priority, sort by delivery date (nearest first)
+      const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
+      const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
+      return dateA - dateB;
+    });
   };
 
   const convertToOrderType = (dbOrder: DBOrder): Order => ({

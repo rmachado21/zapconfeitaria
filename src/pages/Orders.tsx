@@ -91,24 +91,29 @@ const Orders = () => {
       });
     }
 
-    // Sort by delivery date
-    if (sortOrder !== "none") {
-      result = [...result].sort((a, b) => {
-        const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : 0;
-        const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : 0;
-        return sortOrder === "asc" ? dateA - dateB : dateB - dateA;
-      });
-    }
+    // Separate by priority groups
+    const activeOrders = result.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
+    const deliveredOrders = result.filter((o) => o.status === "delivered");
+    const cancelledOrders = result.filter((o) => o.status === "cancelled");
 
-    // Hide or move cancelled orders to the end
+    // Sort function by delivery date
+    const sortByDeliveryDate = (a: typeof result[0], b: typeof result[0]) => {
+      const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
+      const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
+      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+    };
+
+    // Sort each group by delivery date
+    activeOrders.sort(sortByDeliveryDate);
+    deliveredOrders.sort(sortByDeliveryDate);
+    cancelledOrders.sort(sortByDeliveryDate);
+
+    // Hide cancelled if setting is enabled
     if (hideCancelled) {
-      return result.filter((order) => order.status !== "cancelled");
+      return [...activeOrders, ...deliveredOrders];
     }
 
-    const activeOrders = result.filter((order) => order.status !== "cancelled");
-    const cancelledOrders = result.filter((order) => order.status === "cancelled");
-
-    return [...activeOrders, ...cancelledOrders];
+    return [...activeOrders, ...deliveredOrders, ...cancelledOrders];
   }, [orders, searchQuery, sortOrder, hideCancelled]);
 
   const handleCreate = () => {
