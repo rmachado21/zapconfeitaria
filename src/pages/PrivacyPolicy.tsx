@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Mail } from "lucide-react";
 import logo from "@/assets/zap-confeitaria-logo.png";
+import logoWhite from "@/assets/zap-confeitaria-logo-white.png";
 import digitrailLogo from "@/assets/digitrail-logo.png";
 
 export default function PrivacyPolicy() {
@@ -218,7 +219,7 @@ export default function PrivacyPolicy() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
             {/* Brand Column */}
             <div className="flex flex-col items-center md:items-start gap-4">
-              <img src={logo} alt="ZAP Confeitaria" className="h-8 w-auto brightness-0 invert" />
+              <img src={logoWhite} alt="ZAP Confeitaria" className="h-8 w-auto" />
               <p className="text-sm text-slate-400 text-center md:text-left max-w-xs">
                 Gestão completa para sua confeitaria. Organize pedidos, clientes e finanças em um só lugar.
               </p>
