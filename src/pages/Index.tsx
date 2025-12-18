@@ -8,25 +8,16 @@ import { GrossProfitDetailDialog } from "@/components/finances/GrossProfitDetail
 import { KanbanBoard } from "@/components/orders/KanbanBoard";
 import { OrdersList } from "@/components/orders/OrdersList";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOrders } from "@/hooks/useOrders";
 import { useClients } from "@/hooks/useClients";
 import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { ShoppingBag, TrendingUp, Clock, Plus, Loader2, CalendarDays } from "lucide-react";
+import { ShoppingBag, TrendingUp, Clock, Plus, Loader2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { subDays, subMonths, subYears, isAfter, parseISO, startOfWeek, startOfMonth, startOfYear } from "date-fns";
-type PeriodFilter = "week" | "month" | "year" | "all";
-const periodLabels: Record<PeriodFilter, string> = {
-  week: "Esta Semana",
-  month: "Este Mês",
-  year: "Este Ano",
-  all: "Todo Período",
-};
+import { isAfter, parseISO, startOfMonth } from "date-fns";
 const Index = () => {
   const navigate = useNavigate();
-  const [period, setPeriod] = useState<PeriodFilter>("month");
   const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
   const [activeOrdersOpen, setActiveOrdersOpen] = useState(false);
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
@@ -50,27 +41,11 @@ const Index = () => {
   // Hidden Kanban columns from profile
   const hiddenColumns = (profile?.hidden_kanban_columns || []) as OrderStatus[];
 
-  // Get cutoff date based on period filter
-  const getCutoffDate = (p: PeriodFilter): Date | null => {
-    const now = new Date();
-    switch (p) {
-      case "week":
-        return subDays(now, 7);
-      case "month":
-        return subMonths(now, 1);
-      case "year":
-        return subYears(now, 1);
-      case "all":
-        return null;
-    }
-  };
-
-  // Filter orders by period
+  // Filter orders by current month
+  const monthStart = startOfMonth(new Date());
   const filteredOrders = useMemo(() => {
-    const cutoff = getCutoffDate(period);
-    if (!cutoff) return orders;
-    return orders.filter((o) => isAfter(parseISO(o.created_at), cutoff));
-  }, [orders, period]);
+    return orders.filter((o) => isAfter(parseISO(o.created_at), monthStart) || parseISO(o.created_at).getTime() === monthStart.getTime());
+  }, [orders, monthStart]);
 
   // Sort orders: active by nearest delivery date, then delivered, then cancelled
   const sortedOrders = useMemo(() => {
@@ -97,27 +72,12 @@ const Index = () => {
     .filter((o) => o.status === "delivered")
     .reduce((sum, o) => sum + o.total_amount, 0);
 
-  // Calculate gross profit data for delivered orders
+  // Calculate gross profit data for delivered orders (current month)
   const { grossProfitTotals, deliveredOrdersForProfit } = useMemo(() => {
-    const now = new Date();
-    let startDate: Date | null = null;
-
-    switch (period) {
-      case "week":
-        startDate = startOfWeek(now, { weekStartsOn: 0 });
-        break;
-      case "month":
-        startDate = startOfMonth(now);
-        break;
-      case "year":
-        startDate = startOfYear(now);
-        break;
-    }
+    const startDate = startOfMonth(new Date());
 
     const deliveredOrders = orders.filter((order) => {
       if (order.status !== "delivered") return false;
-      if (!startDate) return true;
-
       const orderDate = parseISO(order.updated_at);
       return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
     });
@@ -141,7 +101,7 @@ const Index = () => {
       grossProfitTotals: { profit, margin, revenue, costs },
       deliveredOrdersForProfit: deliveredOrders,
     };
-  }, [orders, products, period]);
+  }, [orders, products]);
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -200,24 +160,8 @@ const Index = () => {
           </Button>
         </header>
 
-        {/* Period Filter + Stats Grid */}
+        {/* Stats Grid */}
         <section className="space-y-4">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-muted-foreground" />
-            <Select value={period} onValueChange={(v) => setPeriod(v as PeriodFilter)}>
-              <SelectTrigger className="w-[160px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {Object.entries(periodLabels).map(([value, label]) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {isLoading ? (
               <>
@@ -230,7 +174,7 @@ const Index = () => {
               <>
                 <div className="animate-fade-in stagger-1">
                   <StatsCard
-                    title={`${periodLabels[period]}`}
+                    title="Este Mês"
                     value={formatCurrency(periodIncome)}
                     subtitle={`${filteredOrders.filter((o) => o.status === "delivered").length} pedidos entregues`}
                     icon={TrendingUp}
