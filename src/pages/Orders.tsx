@@ -244,23 +244,26 @@ const Orders = () => {
             />
           </div>
 
-          {/* Quick Access - Pending Deposits */}
-          <button
-            onClick={() => setPendingDepositsOpen(true)}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors sm:ml-auto"
-          >
-            <CircleDollarSign className="h-4 w-4" />
-            <span>Sinais ({pendingDepositOrders.length})</span>
-          </button>
+          {/* Filters - sempre na mesma linha */}
+          <div className="flex items-center gap-3 sm:ml-auto">
+            {/* Hide Cancelled Toggle */}
+            <button
+              onClick={() => handleHideCancelledChange(!hideCancelled)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              {hideCancelled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              <span>Cancelados</span>
+            </button>
 
-          {/* Hide Cancelled Toggle */}
-          <button
-            onClick={() => handleHideCancelledChange(!hideCancelled)}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            {hideCancelled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            <span>Cancelados</span>
-          </button>
+            {/* Quick Access - Pending Deposits */}
+            <button
+              onClick={() => setPendingDepositsOpen(true)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <CircleDollarSign className="h-4 w-4" />
+              <span>Sinais ({pendingDepositOrders.length})</span>
+            </button>
+          </div>
 
           {/* Kanban Column Settings - Desktop only */}
           <div className="hidden md:block">
