@@ -115,22 +115,26 @@ export function OrderDetailDialog({
   // Local optimistic state for full payment
   const [displayFullPayment, setDisplayFullPayment] = useState<boolean>(false);
 
+  // Local optimistic state for deposit amount
+  const [displayDepositAmount, setDisplayDepositAmount] = useState<number | null>(null);
+
   // Full payment form state
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<'pix' | 'credit_card' | 'link' | ''>('');
   const [paymentFee, setPaymentFee] = useState<number>(0);
   const [feeType, setFeeType] = useState<'value' | 'percentage'>('percentage');
 
-  // Sync displayStatus, displayDepositPaid and displayFullPayment with order when order changes
+  // Sync displayStatus, displayDepositPaid, displayFullPayment and displayDepositAmount with order when order changes
   useEffect(() => {
     if (order) {
       setDisplayStatus(order.status as OrderStatus);
       setDisplayDepositPaid(order.deposit_paid ?? false);
       setDisplayFullPayment(order.full_payment_received ?? false);
+      setDisplayDepositAmount(order.deposit_amount ?? null);
       setSelectedPaymentMethod('');
       setPaymentFee(0);
       setFeeType('percentage');
     }
-  }, [order?.status, order?.id, order?.deposit_paid, order?.full_payment_received]);
+  }, [order?.status, order?.id, order?.deposit_paid, order?.full_payment_received, order?.deposit_amount]);
 
   // Calculate net amount for full payment - must be before early return
   const feeInReais = useMemo(() => {
@@ -281,8 +285,8 @@ export function OrderDetailDialog({
     }
   };
 
-  // Use stored deposit amount or default to 50%
-  const depositAmount = order.deposit_amount ?? order.total_amount / 2;
+  // Use optimistic deposit amount, stored amount, or default to 50%
+  const depositAmount = displayDepositAmount ?? order.deposit_amount ?? order.total_amount / 2;
   const depositPercentage = order.total_amount > 0 ? Math.round((depositAmount / order.total_amount) * 100) : 50;
   const remainingAfterDeposit = order.total_amount - depositAmount;
 
@@ -665,6 +669,7 @@ export function OrderDetailDialog({
                             className="h-7 text-xs text-muted-foreground hover:text-destructive"
                             onClick={() => {
                               setDisplayDepositPaid(false);
+                              setDisplayDepositAmount(null);
                               onDepositChange(
                                 order.id,
                                 false,
@@ -989,8 +994,9 @@ export function OrderDetailDialog({
           open={depositAmountDialogOpen}
           onOpenChange={setDepositAmountDialogOpen}
           totalAmount={order.total_amount}
-          onConfirm={(depositAmount) => {
+          onConfirm={(depositAmountValue) => {
             setDisplayDepositPaid(true);
+            setDisplayDepositAmount(depositAmountValue);
             // Also update status optimistically if it will change
             if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
               setDisplayStatus("in_production");
@@ -1001,7 +1007,7 @@ export function OrderDetailDialog({
               order.client?.name,
               order.total_amount,
               order.status as OrderStatus,
-              depositAmount,
+              depositAmountValue,
             );
           }}
         />
