@@ -200,18 +200,27 @@ const Orders = () => {
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
+    depositAmount?: number,
   ) => {
-    updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount, currentStatus });
+    updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount, currentStatus, depositAmount });
   };
 
-  const handleDepositPaid = (orderId: string, paid: boolean) => {
+  const handleDepositPaid = (
+    orderId: string, 
+    paid: boolean,
+    clientName?: string,
+    totalAmount?: number,
+    currentStatus?: OrderStatus,
+    depositAmount?: number
+  ) => {
     const order = orders.find(o => o.id === orderId);
     updateDepositPaid.mutate({ 
       id: orderId, 
       depositPaid: paid, 
-      clientName: order?.client?.name,
-      totalAmount: order?.total_amount || 0,
-      currentStatus: order?.status
+      clientName: clientName || order?.client?.name,
+      totalAmount: totalAmount || order?.total_amount || 0,
+      currentStatus: currentStatus || order?.status,
+      depositAmount
     });
   };
 

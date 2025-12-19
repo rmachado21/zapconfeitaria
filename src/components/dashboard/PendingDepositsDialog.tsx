@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { differenceInDays, parseISO, format, isToday, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { OrderStatus } from "@/types";
+import { DepositAmountDialog } from "@/components/orders/DepositAmountDialog";
 
 interface Order {
   id: string;
@@ -35,7 +37,8 @@ interface PendingDepositsDialogProps {
     depositPaid: boolean,
     clientName?: string,
     totalAmount?: number,
-    currentStatus?: OrderStatus
+    currentStatus?: OrderStatus,
+    depositAmount?: number
   ) => void;
   onOrderClick?: (order: Order) => void;
 }
@@ -48,6 +51,8 @@ export function PendingDepositsDialog({
   onOrderClick,
 }: PendingDepositsDialogProps) {
   const { profile } = useProfile();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [depositDialogOpen, setDepositDialogOpen] = useState(false);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -67,13 +72,21 @@ export function PendingDepositsDialog({
   });
 
   const handleMarkAsPaid = (order: Order) => {
+    setSelectedOrder(order);
+    setDepositDialogOpen(true);
+  };
+
+  const handleConfirmDeposit = (depositAmount: number) => {
+    if (!selectedOrder) return;
     onDepositPaid(
-      order.id,
+      selectedOrder.id,
       true,
-      order.client?.name,
-      order.total_amount,
-      order.status
+      selectedOrder.client?.name,
+      selectedOrder.total_amount,
+      selectedOrder.status,
+      depositAmount
     );
+    setSelectedOrder(null);
   };
 
   const handleWhatsApp = (order: Order) => {
@@ -209,6 +222,16 @@ export function PendingDepositsDialog({
           </div>
         )}
       </div>
+
+      {/* Deposit Amount Dialog */}
+      {selectedOrder && (
+        <DepositAmountDialog
+          open={depositDialogOpen}
+          onOpenChange={setDepositDialogOpen}
+          totalAmount={selectedOrder.total_amount}
+          onConfirm={handleConfirmDeposit}
+        />
+      )}
     </ResponsivePanel>
   );
 }

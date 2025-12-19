@@ -22,6 +22,7 @@ import { useQuotePdf } from "@/hooks/useQuotePdf";
 import { useProfile } from "@/hooks/useProfile";
 import { getAvailableTemplates } from "@/lib/whatsappTemplates";
 import { WhatsAppTemplatePreview } from "./WhatsAppTemplatePreview";
+import { DepositAmountDialog } from "./DepositAmountDialog";
 import { ORDER_STATUS_CONFIG, OrderStatus } from "@/types";
 import {
   Calendar,
@@ -67,6 +68,7 @@ interface OrderDetailDialogProps {
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
+    depositAmount?: number,
   ) => void;
   onFullPayment?: (
     orderId: string,
@@ -101,6 +103,7 @@ export function OrderDetailDialog({
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
   const [revertDeliveredConfirmOpen, setRevertDeliveredConfirmOpen] = useState(false);
+  const [depositAmountDialogOpen, setDepositAmountDialogOpen] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<OrderStatus | null>(null);
 
   // Local optimistic state for status
@@ -676,20 +679,7 @@ export function OrderDetailDialog({
                         size="sm"
                         variant="outline"
                         className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
-                        onClick={() => {
-                          setDisplayDepositPaid(true);
-                          // Also update status optimistically if it will change
-                          if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
-                            setDisplayStatus("in_production");
-                          }
-                          onDepositChange(
-                            order.id,
-                            true,
-                            order.client?.name,
-                            order.total_amount,
-                            order.status as OrderStatus,
-                          );
-                        }}
+                        onClick={() => setDepositAmountDialogOpen(true)}
                       >
                         Marcar como Pago
                       </Button>
@@ -988,6 +978,30 @@ export function OrderDetailDialog({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Deposit Amount Dialog */}
+      {order && (
+        <DepositAmountDialog
+          open={depositAmountDialogOpen}
+          onOpenChange={setDepositAmountDialogOpen}
+          totalAmount={order.total_amount}
+          onConfirm={(depositAmount) => {
+            setDisplayDepositPaid(true);
+            // Also update status optimistically if it will change
+            if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
+              setDisplayStatus("in_production");
+            }
+            onDepositChange?.(
+              order.id,
+              true,
+              order.client?.name,
+              order.total_amount,
+              order.status as OrderStatus,
+              depositAmount,
+            );
+          }}
+        />
+      )}
     </>
   );
 }

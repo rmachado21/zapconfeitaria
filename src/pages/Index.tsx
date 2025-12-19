@@ -122,6 +122,7 @@ const Index = () => {
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
+    depositAmount?: number,
   ) => {
     updateDepositPaid.mutate({
       id: orderId,
@@ -129,6 +130,7 @@ const Index = () => {
       clientName,
       totalAmount,
       currentStatus,
+      depositAmount,
     });
   };
   return (
