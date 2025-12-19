@@ -81,7 +81,7 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
     deliveryFee: dbOrder.delivery_fee,
     totalAmount: dbOrder.total_amount,
     depositPaid: dbOrder.deposit_paid,
-    depositAmount: dbOrder.total_amount / 2,
+    depositAmount: dbOrder.deposit_amount ?? dbOrder.total_amount / 2,
     fullPaymentReceived: dbOrder.full_payment_received ?? false,
     paymentMethod: dbOrder.payment_method,
     paymentFee: dbOrder.payment_fee ?? 0,
