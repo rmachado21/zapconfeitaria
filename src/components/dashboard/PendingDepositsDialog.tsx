@@ -37,6 +37,7 @@ interface PendingDepositsDialogProps {
     totalAmount?: number,
     currentStatus?: OrderStatus
   ) => void;
+  onOrderClick?: (order: Order) => void;
 }
 
 export function PendingDepositsDialog({
@@ -44,6 +45,7 @@ export function PendingDepositsDialog({
   onOpenChange,
   orders,
   onDepositPaid,
+  onOrderClick,
 }: PendingDepositsDialogProps) {
   const { profile } = useProfile();
 
@@ -127,7 +129,8 @@ export function PendingDepositsDialog({
               return (
                 <Card
                   key={order.id}
-                  className={`p-3 ${isOverdue || isDeliveryToday ? "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20" : ""}`}
+                  className={`p-3 cursor-pointer hover:bg-accent/50 transition-colors ${isOverdue || isDeliveryToday ? "border-red-300 dark:border-red-800 bg-red-50/50 dark:bg-red-950/20" : ""}`}
+                  onClick={() => onOrderClick?.(order)}
                 >
                   <div className="flex flex-col gap-2">
                     {/* Header */}
@@ -177,7 +180,7 @@ export function PendingDepositsDialog({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex gap-2 mt-1">
+                    <div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
                       {order.client?.phone && (
                         <Button
                           variant="outline"

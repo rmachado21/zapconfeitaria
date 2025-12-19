@@ -277,6 +277,10 @@ const Index = () => {
           onOpenChange={setPendingDepositsOpen}
           orders={pendingDepositOrders}
           onDepositPaid={handleDepositChange}
+          onOrderClick={(order) => {
+            setPendingDepositsOpen(false);
+            navigate("/orders", { state: { openOrderId: order.id } });
+          }}
         />
 
         {/* Active Orders Dialog */}
