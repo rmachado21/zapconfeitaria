@@ -91,7 +91,7 @@ export function GrossProfitDetailDialog({
           <Card className="bg-primary/10 border-primary/20">
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">Faturamento</p>
-              <p className="text-lg font-bold text-success">{formatCurrency(totals.revenue)}</p>
+              <p className="text-lg font-bold text-primary">{formatCurrency(totals.revenue)}</p>
             </CardContent>
           </Card>
           <Card className="bg-warning/10 border-warning/20">
@@ -103,7 +103,7 @@ export function GrossProfitDetailDialog({
           <Card className="bg-success/10 border-success/20">
             <CardContent className="p-3">
               <p className="text-xs text-muted-foreground">Lucro Bruto</p>
-              <p className="text-lg font-bold text-primary">{formatCurrency(totals.profit)}</p>
+              <p className="text-lg font-bold text-success">{formatCurrency(totals.profit)}</p>
             </CardContent>
           </Card>
           <Card className="bg-muted border-border">
