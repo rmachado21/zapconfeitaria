@@ -279,12 +279,13 @@ export function useOrders() {
   });
 
   const updateDepositPaid = useMutation({
-    mutationFn: async ({ id, depositPaid, clientName, totalAmount, currentStatus }: { 
+    mutationFn: async ({ id, depositPaid, clientName, totalAmount, currentStatus, depositAmount }: { 
       id: string; 
       depositPaid: boolean;
       clientName?: string;
       totalAmount?: number;
       currentStatus?: OrderStatus;
+      depositAmount?: number;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -311,15 +312,17 @@ export function useOrders() {
 
       // Create/delete transaction for deposit
       if (depositPaid && totalAmount) {
-        const depositAmount = totalAmount / 2;
+        // Use provided depositAmount or default to 50%
+        const actualDepositAmount = depositAmount ?? (totalAmount / 2);
+        const percentage = totalAmount > 0 ? Math.round((actualDepositAmount / totalAmount) * 100) : 50;
         await supabase
           .from('transactions')
           .insert({
             user_id: user.id,
             order_id: id,
             type: 'income',
-            description: `Sinal 50% - ${clientName || 'Cliente'}`,
-            amount: depositAmount,
+            description: `Sinal ${percentage}% - ${clientName || 'Cliente'}`,
+            amount: actualDepositAmount,
             date: new Date().toISOString().split('T')[0],
           });
       } else if (!depositPaid) {
@@ -328,10 +331,10 @@ export function useOrders() {
           .from('transactions')
           .delete()
           .eq('order_id', id)
-          .ilike('description', '%Sinal 50%');
+          .ilike('description', '%Sinal %');
       }
 
-      return { data, statusUpdated: shouldUpdateStatus };
+      return { data, statusUpdated: shouldUpdateStatus, depositAmount };
     },
     onSuccess: (result, variables) => {
       queryClient.invalidateQueries({ queryKey: ['orders'] });
