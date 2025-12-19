@@ -261,7 +261,8 @@ const Orders = () => {
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <CircleDollarSign className="h-4 w-4" />
-              <span>Sinais ({pendingDepositOrders.length})</span>
+              <span className="sm:hidden">Sinais pendentes ({pendingDepositOrders.length})</span>
+              <span className="hidden sm:inline">Sinais ({pendingDepositOrders.length})</span>
             </button>
           </div>
 
