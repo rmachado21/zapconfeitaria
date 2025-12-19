@@ -281,13 +281,18 @@ export function OrderDetailDialog({
     }
   };
 
+  // Use stored deposit amount or default to 50%
+  const depositAmount = order.deposit_amount ?? order.total_amount / 2;
+  const depositPercentage = order.total_amount > 0 ? Math.round((depositAmount / order.total_amount) * 100) : 50;
+  const remainingAfterDeposit = order.total_amount - depositAmount;
+
   const whatsAppContext = {
     clientName: order.client?.name,
     companyName: profile?.company_name || undefined,
     orderNumber: order.order_number,
     totalAmount: order.total_amount,
-    depositAmount: order.total_amount / 2,
-    remainingAmount: displayDepositPaid ? order.total_amount / 2 : order.total_amount,
+    depositAmount: depositAmount,
+    remainingAmount: displayDepositPaid ? remainingAfterDeposit : order.total_amount,
     deliveryDate: order.delivery_date,
     deliveryTime: order.delivery_time,
     deliveryAddress: order.delivery_address,
@@ -301,7 +306,6 @@ export function OrderDetailDialog({
     fullPaymentReceived: displayFullPayment,
   });
 
-  const depositAmount = order.total_amount / 2;
   const netAmount = order.total_amount - feeInReais;
 
   const handleFullPayment = () => {
@@ -647,7 +651,7 @@ export function OrderDetailDialog({
                     <div className="flex items-center gap-2">
                       <Banknote className="h-5 w-5" />
                       <div>
-                        <p className="font-medium">Sinal 50%</p>
+                        <p className="font-medium">Sinal {depositPercentage}%</p>
                         <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
                       </div>
                     </div>
