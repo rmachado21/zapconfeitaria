@@ -278,7 +278,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
                   className="data-[state=checked]:bg-success data-[state=checked]:border-success"
                 />
                 <span className="text-sm text-muted-foreground">
-                  Sinal 50%: <span className="font-medium text-foreground">{formatCurrency(order.depositAmount)}</span>
+                  Sinal {order.totalAmount > 0 ? Math.round((order.depositAmount / order.totalAmount) * 100) : 50}%: <span className="font-medium text-foreground">{formatCurrency(order.depositAmount)}</span>
                 </span>
               </div>
               {order.depositPaid ? (
