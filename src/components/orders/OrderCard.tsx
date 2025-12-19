@@ -291,6 +291,11 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
                 </Badge>
               )}
             </div>
+            {order.depositPaid && (
+              <div className="text-xs text-muted-foreground mt-1 pl-6">
+                Restante na entrega: <span className="font-medium text-foreground">{formatCurrency(order.totalAmount - order.depositAmount)}</span>
+              </div>
+            )}
           </div>
         )}
       </CardContent>
