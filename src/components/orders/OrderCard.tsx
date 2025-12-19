@@ -247,7 +247,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
             </div>
             <div className="pl-7 space-y-1">
               <div className="flex justify-between text-xs">
-                <span className="text-muted-foreground">Sinal (50%)</span>
+                <span className="text-muted-foreground">Sinal ({order.totalAmount > 0 ? Math.round((order.depositAmount / order.totalAmount) * 100) : 50}%)</span>
                 <span className="text-foreground">{formatCurrency(order.depositAmount)}</span>
               </div>
               <div className="flex justify-between text-xs">
