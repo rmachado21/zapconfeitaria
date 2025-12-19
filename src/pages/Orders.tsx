@@ -8,11 +8,11 @@ import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderDetailDialog } from "@/components/orders/OrderDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { Plus, Loader2, Search, ArrowUpDown, EyeOff, Eye } from "lucide-react";
+import { Plus, Loader2, Search, EyeOff, Eye } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 
@@ -23,7 +23,7 @@ const Orders = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | "none">("asc");
+  
   const [hideCancelled, setHideCancelled] = useState(() => {
     const saved = localStorage.getItem("hideCancelledOrders");
     return saved === "true";
@@ -100,7 +100,7 @@ const Orders = () => {
     const sortByDeliveryDate = (a: typeof result[0], b: typeof result[0]) => {
       const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
       const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
-      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
+      return dateA - dateB;
     };
 
     // Sort each group by delivery date
@@ -114,7 +114,7 @@ const Orders = () => {
     }
 
     return [...activeOrders, ...deliveredOrders, ...cancelledOrders];
-  }, [orders, searchQuery, sortOrder, hideCancelled]);
+  }, [orders, searchQuery, hideCancelled]);
 
   const handleCreate = () => {
     setSelectedOrder(null);
@@ -225,17 +225,6 @@ const Orders = () => {
               className="pl-9"
             />
           </div>
-          <Select value={sortOrder} onValueChange={(v) => setSortOrder(v as "asc" | "desc" | "none")}>
-            <SelectTrigger className="w-full sm:w-[200px]">
-              <ArrowUpDown className="h-4 w-4 mr-2" />
-              <SelectValue placeholder="Ordenar por" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="asc">Data: mais próxima</SelectItem>
-              <SelectItem value="desc">Data: mais distante</SelectItem>
-              <SelectItem value="none">Sem ordenação</SelectItem>
-            </SelectContent>
-          </Select>
 
           {/* Hide Cancelled Toggle */}
           <button
