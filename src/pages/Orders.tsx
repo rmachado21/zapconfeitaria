@@ -6,15 +6,14 @@ import { KanbanColumnSettings } from "@/components/orders/KanbanColumnSettings";
 import { OrdersList } from "@/components/orders/OrdersList";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderDetailDialog } from "@/components/orders/OrderDetailDialog";
+import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { Plus, Loader2, Search, EyeOff, Eye } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Plus, Loader2, Search, EyeOff, Eye, CircleDollarSign } from "lucide-react";
 
 const Orders = () => {
   const location = useLocation();
@@ -23,6 +22,7 @@ const Orders = () => {
   const [detailOpen, setDetailOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
   
   const [hideCancelled, setHideCancelled] = useState(() => {
     const saved = localStorage.getItem("hideCancelledOrders");
@@ -116,6 +116,13 @@ const Orders = () => {
     return [...activeOrders, ...deliveredOrders, ...cancelledOrders];
   }, [orders, searchQuery, hideCancelled]);
 
+  // Calculate pending deposit orders
+  const pendingDepositOrders = useMemo(() =>
+    orders.filter(
+      (o) => !o.deposit_paid && !o.full_payment_received &&
+             o.status !== "delivered" && o.status !== "cancelled"
+    ), [orders]);
+
   const handleCreate = () => {
     setSelectedOrder(null);
     setEditOrder(null);
@@ -197,6 +204,17 @@ const Orders = () => {
     updateDepositPaid.mutate({ id: orderId, depositPaid, clientName, totalAmount, currentStatus });
   };
 
+  const handleDepositPaid = (orderId: string, paid: boolean) => {
+    const order = orders.find(o => o.id === orderId);
+    updateDepositPaid.mutate({ 
+      id: orderId, 
+      depositPaid: paid, 
+      clientName: order?.client?.name,
+      totalAmount: order?.total_amount || 0,
+      currentStatus: order?.status
+    });
+  };
+
   return (
     <AppLayout>
       <div className="px-5 py-4 md:px-8 md:py-6 space-y-6">
@@ -226,10 +244,19 @@ const Orders = () => {
             />
           </div>
 
+          {/* Quick Access - Pending Deposits */}
+          <button
+            onClick={() => setPendingDepositsOpen(true)}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors sm:ml-auto"
+          >
+            <CircleDollarSign className="h-4 w-4" />
+            <span>Sinais ({pendingDepositOrders.length})</span>
+          </button>
+
           {/* Hide Cancelled Toggle */}
           <button
             onClick={() => handleHideCancelledChange(!hideCancelled)}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors sm:ml-auto"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             {hideCancelled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             <span>Cancelados</span>
@@ -308,6 +335,18 @@ const Orders = () => {
         onUndoFullPayment={handleUndoFullPayment}
         onEdit={handleEdit}
         onDelete={handleDelete}
+      />
+
+      {/* Pending Deposits Dialog */}
+      <PendingDepositsDialog
+        open={pendingDepositsOpen}
+        onOpenChange={setPendingDepositsOpen}
+        orders={pendingDepositOrders}
+        onDepositPaid={handleDepositPaid}
+        onOrderClick={(order) => {
+          setPendingDepositsOpen(false);
+          handleOrderClick(order as Order);
+        }}
       />
     </AppLayout>
   );
