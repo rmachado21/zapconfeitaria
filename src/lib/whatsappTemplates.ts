@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'order_ready';
+export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'order_ready' | 'pickup_ready' | 'out_for_delivery';
 
 export interface TemplateConfig {
   id: TemplateType;
@@ -53,10 +53,37 @@ Obrigada! 💕`,
 Seu pedido [Pedido] está pronto e aguardando entrega/retirada!
 
 Data combinada: [DataEntrega]
-Valor restante: [ValorRestante]
+[InfoPagamento]
 
 Até logo! 🍰`,
     description: 'Avisar que o pedido está pronto',
+  },
+  pickup_ready: {
+    id: 'pickup_ready',
+    name: 'Pronto para Retirada',
+    template: `Olá [Nome]! ✨
+
+Seu pedido [Pedido] está pronto para retirada!
+
+📍 Retirada: [DataEntrega]
+[InfoPagamento]
+
+Aguardamos você! 🎂`,
+    description: 'Avisar que o pedido está pronto para retirada',
+  },
+  out_for_delivery: {
+    id: 'out_for_delivery',
+    name: 'Saiu para Entrega',
+    template: `Olá [Nome]! 🚗
+
+Seu pedido [Pedido] saiu para entrega!
+
+📍 Endereço: [EnderecoEntrega]
+🕐 Previsão: [DataEntrega]
+[InfoPagamento]
+
+Em breve estaremos aí! 🎂`,
+    description: 'Avisar que o pedido saiu para entrega',
   },
 };
 
@@ -69,7 +96,9 @@ export interface TemplateContext {
   remainingAmount?: number;
   deliveryDate?: string | null;
   deliveryTime?: string | null;
+  deliveryAddress?: string | null;
   depositPaid?: boolean;
+  fullPaymentReceived?: boolean;
 }
 
 function formatCurrency(value: number): string {
@@ -115,6 +144,15 @@ export function processTemplate(
   message = message.replace(/\[ValorSinal\]/g, formatCurrency(context.depositAmount || (context.totalAmount || 0) / 2));
   message = message.replace(/\[ValorRestante\]/g, formatCurrency(context.remainingAmount || (context.totalAmount || 0) / 2));
   message = message.replace(/\[DataEntrega\]/g, formatDeliveryDate(context.deliveryDate, context.deliveryTime));
+  message = message.replace(/\[EnderecoEntrega\]/g, context.deliveryAddress || 'endereço combinado');
+
+  // Smart payment info replacement
+  if (context.fullPaymentReceived) {
+    message = message.replace(/\[InfoPagamento\]/g, '✅ Pagamento confirmado!');
+  } else {
+    const remaining = context.remainingAmount || (context.totalAmount || 0) / 2;
+    message = message.replace(/\[InfoPagamento\]/g, `💰 Valor restante: ${formatCurrency(remaining)}`);
+  }
 
   return message;
 }
@@ -125,6 +163,7 @@ export function processTemplate(
 export function getAvailableTemplates(context: {
   depositPaid?: boolean;
   status?: string;
+  fullPaymentReceived?: boolean;
 }): TemplateType[] {
   const templates: TemplateType[] = ['quote'];
 
@@ -133,9 +172,11 @@ export function getAvailableTemplates(context: {
     templates.push('deposit_collection');
   }
 
-  // Add order ready if in ready status
-  if (context.status === 'ready') {
+  // Add pickup/delivery options for in_production and ready status
+  if (context.status === 'in_production' || context.status === 'ready') {
     templates.push('order_ready');
+    templates.push('pickup_ready');
+    templates.push('out_for_delivery');
   }
 
   return templates;
