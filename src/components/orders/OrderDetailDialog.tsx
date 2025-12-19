@@ -287,12 +287,15 @@ export function OrderDetailDialog({
     remainingAmount: displayDepositPaid ? order.total_amount / 2 : order.total_amount,
     deliveryDate: order.delivery_date,
     deliveryTime: order.delivery_time,
+    deliveryAddress: order.delivery_address,
     depositPaid: displayDepositPaid,
+    fullPaymentReceived: displayFullPayment,
   };
 
   const availableTemplates = getAvailableTemplates({
     depositPaid: displayDepositPaid,
     status: currentStatus,
+    fullPaymentReceived: displayFullPayment,
   });
 
   const depositAmount = order.total_amount / 2;
