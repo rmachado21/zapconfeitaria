@@ -30,6 +30,7 @@ export interface Order {
   delivery_fee: number;
   total_amount: number;
   deposit_paid: boolean;
+  deposit_amount: number | null;
   full_payment_received: boolean;
   payment_method: string | null;
   payment_fee: number;
@@ -293,8 +294,14 @@ export function useOrders() {
       const shouldUpdateStatus = depositPaid && 
         (currentStatus === 'quote' || currentStatus === 'awaiting_deposit');
 
-      const updateData: { deposit_paid: boolean; status?: OrderStatus } = { 
-        deposit_paid: depositPaid 
+      // Use provided depositAmount or default to 50%
+      const actualDepositAmount = depositPaid && totalAmount 
+        ? (depositAmount ?? (totalAmount / 2)) 
+        : null;
+
+      const updateData: { deposit_paid: boolean; status?: OrderStatus; deposit_amount?: number | null } = { 
+        deposit_paid: depositPaid,
+        deposit_amount: depositPaid ? actualDepositAmount : null,
       };
       
       if (shouldUpdateStatus) {
@@ -311,9 +318,7 @@ export function useOrders() {
       if (error) throw error;
 
       // Create/delete transaction for deposit
-      if (depositPaid && totalAmount) {
-        // Use provided depositAmount or default to 50%
-        const actualDepositAmount = depositAmount ?? (totalAmount / 2);
+      if (depositPaid && totalAmount && actualDepositAmount) {
         const percentage = totalAmount > 0 ? Math.round((actualDepositAmount / totalAmount) * 100) : 50;
         await supabase
           .from('transactions')
