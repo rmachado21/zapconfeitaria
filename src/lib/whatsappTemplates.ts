@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'order_ready' | 'pickup_ready' | 'out_for_delivery';
+export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'pickup_ready' | 'out_for_delivery';
 
 export interface TemplateConfig {
   id: TemplateType;
@@ -44,19 +44,6 @@ Assim que confirmado, inicio a produção para entrega em [DataEntrega].
 
 Obrigada! 💕`,
     description: 'Cobrar sinal de 50% pendente',
-  },
-  order_ready: {
-    id: 'order_ready',
-    name: 'Pedido Pronto',
-    template: `Olá [Nome]! ✨
-
-Seu pedido [Pedido] está pronto e aguardando entrega/retirada!
-
-Data combinada: [DataEntrega]
-[InfoPagamento]
-
-Até logo! 🍰`,
-    description: 'Avisar que o pedido está pronto',
   },
   pickup_ready: {
     id: 'pickup_ready',
@@ -174,7 +161,6 @@ export function getAvailableTemplates(context: {
 
   // Add pickup/delivery options for in_production and ready status
   if (context.status === 'in_production' || context.status === 'ready') {
-    templates.push('order_ready');
     templates.push('pickup_ready');
     templates.push('out_for_delivery');
   }
