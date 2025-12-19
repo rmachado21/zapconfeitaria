@@ -28,7 +28,7 @@ export function WhatsAppTemplatePreview({
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(null);
   const [open, setOpen] = useState(false);
 
-  const previewMessage = selectedTemplate
+  const previewMessage = selectedTemplate && WHATSAPP_TEMPLATES[selectedTemplate]
     ? processTemplate(selectedTemplate, context)
     : null;
 
@@ -85,6 +85,7 @@ export function WhatsAppTemplatePreview({
             <div className="flex flex-wrap gap-1.5">
               {availableTemplates.map((templateType) => {
                 const template = WHATSAPP_TEMPLATES[templateType];
+                if (!template) return null;
                 const isSelected = selectedTemplate === templateType;
                 return (
                   <Button
