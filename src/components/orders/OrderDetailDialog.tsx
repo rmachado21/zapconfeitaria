@@ -23,6 +23,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { getAvailableTemplates } from "@/lib/whatsappTemplates";
 import { WhatsAppTemplatePreview } from "./WhatsAppTemplatePreview";
 import { DepositAmountDialog } from "./DepositAmountDialog";
+import { DeliveryConfirmDialog } from "./DeliveryConfirmDialog";
 import { ORDER_STATUS_CONFIG, OrderStatus } from "@/types";
 import {
   Calendar,
@@ -61,6 +62,9 @@ interface OrderDetailDialogProps {
     totalAmount?: number,
     previousStatus?: OrderStatus,
     fullPaymentReceived?: boolean,
+    deliveryPaymentMethod?: string,
+    deliveryPaymentFee?: number,
+    depositAmount?: number | null,
   ) => void;
   onDepositChange?: (
     orderId: string,
@@ -189,9 +193,10 @@ export function OrderDetailDialog({
     }
   };
 
-  const confirmDelivered = () => {
+  const confirmDelivered = (paymentMethod?: string, paymentFee?: number) => {
     if (pendingStatus && onStatusChange) {
-      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment);
+      const depositAmount = displayDepositAmount ?? order.deposit_amount;
+      onStatusChange(order.id, pendingStatus, order.client?.name, order.total_amount, order.status as OrderStatus, displayFullPayment, paymentMethod, paymentFee, depositAmount);
     }
     setDeliveredConfirmOpen(false);
     setPendingStatus(null);
@@ -889,37 +894,15 @@ export function OrderDetailDialog({
       </AlertDialog>
 
       {/* Delivered Confirmation Dialog */}
-      <AlertDialog open={deliveredConfirmOpen} onOpenChange={setDeliveredConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                <Banknote className="h-5 w-5 text-success" />
-              </div>
-              <AlertDialogTitle>Confirmar Entrega</AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="pt-2">
-              Ao marcar como <strong>Entregue</strong>, o sistema registrará automaticamente o pagamento restante de{" "}
-              <strong>{formatCurrency((order.total_amount || 0) - (order.total_amount || 0) / 2)}</strong> no
-              financeiro.
-              <br />
-              <br />
-              Deseja confirmar a entrega e registro do pagamento?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="w-full sm:w-auto" onClick={cancelDelivered}>
-              Cancelar
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelivered}
-              className="w-full sm:w-auto bg-success text-success-foreground hover:bg-success/90"
-            >
-              Confirmar Entrega
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {order && (
+        <DeliveryConfirmDialog
+          open={deliveredConfirmOpen}
+          onOpenChange={setDeliveredConfirmOpen}
+          remainingAmount={remainingAfterDeposit}
+          onConfirm={(paymentMethod, paymentFee) => confirmDelivered(paymentMethod, paymentFee)}
+          onCancel={cancelDelivered}
+        />
+      )}
 
       {/* Cancel Confirmation Dialog */}
       <AlertDialog open={cancelConfirmOpen} onOpenChange={setCancelConfirmOpen}>
