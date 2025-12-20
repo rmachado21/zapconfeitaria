@@ -159,6 +159,9 @@ const Orders = () => {
     totalAmount?: number,
     previousStatus?: OrderStatus,
     fullPaymentReceived?: boolean,
+    deliveryPaymentMethod?: string,
+    deliveryPaymentFee?: number,
+    depositAmount?: number | null,
   ) => {
     updateOrderStatus.mutate({
       id: orderId,
@@ -167,6 +170,9 @@ const Orders = () => {
       totalAmount,
       previousStatus,
       fullPaymentReceived,
+      deliveryPaymentMethod,
+      deliveryPaymentFee,
+      depositAmount,
     });
   };
 

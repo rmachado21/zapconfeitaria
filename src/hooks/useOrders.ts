@@ -186,13 +186,16 @@ export function useOrders() {
   });
 
   const updateOrderStatus = useMutation({
-    mutationFn: async ({ id, status, clientName, totalAmount, previousStatus, fullPaymentReceived }: { 
+    mutationFn: async ({ id, status, clientName, totalAmount, previousStatus, fullPaymentReceived, deliveryPaymentMethod, deliveryPaymentFee, depositAmount }: { 
       id: string; 
       status: OrderStatus;
       clientName?: string;
       totalAmount?: number;
       previousStatus?: OrderStatus;
       fullPaymentReceived?: boolean;
+      deliveryPaymentMethod?: string;
+      deliveryPaymentFee?: number;
+      depositAmount?: number | null;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -234,15 +237,20 @@ export function useOrders() {
 
       // Create transaction for delivered status (final payment) - ONLY if not already paid in full
       if (status === 'delivered' && previousStatus !== 'delivered' && totalAmount && !fullPaymentReceived) {
-        const finalPayment = totalAmount / 2; // Remaining 50%
+        // Calculate remaining amount based on deposit
+        const actualDeposit = depositAmount ?? (totalAmount / 2);
+        const remainingAmount = totalAmount - actualDeposit;
+        const netAmount = remainingAmount - (deliveryPaymentFee || 0);
+        const paymentMethodLabel = deliveryPaymentMethod === 'pix' ? 'Pix' : deliveryPaymentMethod === 'credit_card' ? 'Cartão' : deliveryPaymentMethod === 'link' ? 'Link' : '';
+        const methodSuffix = paymentMethodLabel ? ` (${paymentMethodLabel})` : '';
         await supabase
           .from('transactions')
           .insert({
             user_id: user.id,
             order_id: id,
             type: 'income',
-            description: `Pagamento Final - ${clientName || 'Cliente'}`,
-            amount: finalPayment,
+            description: `Pagamento Final${methodSuffix} - ${clientName || 'Cliente'}`,
+            amount: netAmount,
             date: new Date().toISOString().split('T')[0],
           });
       }
