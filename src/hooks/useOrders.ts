@@ -280,13 +280,15 @@ export function useOrders() {
   });
 
   const updateDepositPaid = useMutation({
-    mutationFn: async ({ id, depositPaid, clientName, totalAmount, currentStatus, depositAmount }: { 
+    mutationFn: async ({ id, depositPaid, clientName, totalAmount, currentStatus, depositAmount, paymentMethod, paymentFee }: { 
       id: string; 
       depositPaid: boolean;
       clientName?: string;
       totalAmount?: number;
       currentStatus?: OrderStatus;
       depositAmount?: number;
+      paymentMethod?: string;
+      paymentFee?: number;
     }) => {
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -320,14 +322,17 @@ export function useOrders() {
       // Create/delete transaction for deposit
       if (depositPaid && totalAmount && actualDepositAmount) {
         const percentage = totalAmount > 0 ? Math.round((actualDepositAmount / totalAmount) * 100) : 50;
+        const netAmount = actualDepositAmount - (paymentFee || 0);
+        const paymentMethodLabel = paymentMethod === 'pix' ? 'Pix' : paymentMethod === 'credit_card' ? 'Cartão' : paymentMethod === 'link' ? 'Link' : '';
+        const methodSuffix = paymentMethodLabel ? ` (${paymentMethodLabel})` : '';
         await supabase
           .from('transactions')
           .insert({
             user_id: user.id,
             order_id: id,
             type: 'income',
-            description: `Sinal ${percentage}% - ${clientName || 'Cliente'}`,
-            amount: actualDepositAmount,
+            description: `Sinal ${percentage}%${methodSuffix} - ${clientName || 'Cliente'}`,
+            amount: netAmount,
             date: new Date().toISOString().split('T')[0],
           });
       } else if (!depositPaid) {

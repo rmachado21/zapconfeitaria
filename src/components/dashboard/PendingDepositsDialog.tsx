@@ -38,7 +38,9 @@ interface PendingDepositsDialogProps {
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
-    depositAmount?: number
+    depositAmount?: number,
+    paymentMethod?: string,
+    paymentFee?: number,
   ) => void;
   onOrderClick?: (order: Order) => void;
 }
@@ -76,7 +78,7 @@ export function PendingDepositsDialog({
     setDepositDialogOpen(true);
   };
 
-  const handleConfirmDeposit = (depositAmount: number) => {
+  const handleConfirmDeposit = (depositAmount: number, paymentMethod: string, paymentFee: number) => {
     if (!selectedOrder) return;
     onDepositPaid(
       selectedOrder.id,
@@ -84,7 +86,9 @@ export function PendingDepositsDialog({
       selectedOrder.client?.name,
       selectedOrder.total_amount,
       selectedOrder.status,
-      depositAmount
+      depositAmount,
+      paymentMethod,
+      paymentFee
     );
     setSelectedOrder(null);
   };
