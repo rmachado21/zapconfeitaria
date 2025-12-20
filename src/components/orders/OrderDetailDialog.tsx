@@ -69,6 +69,8 @@ interface OrderDetailDialogProps {
     totalAmount?: number,
     currentStatus?: OrderStatus,
     depositAmount?: number,
+    paymentMethod?: string,
+    paymentFee?: number,
   ) => void;
   onFullPayment?: (
     orderId: string,
@@ -999,7 +1001,7 @@ export function OrderDetailDialog({
           open={depositAmountDialogOpen}
           onOpenChange={setDepositAmountDialogOpen}
           totalAmount={order.total_amount}
-          onConfirm={(depositAmountValue) => {
+          onConfirm={(depositAmountValue, paymentMethod, paymentFee) => {
             setDisplayDepositPaid(true);
             setDisplayDepositAmount(depositAmountValue);
             // Also update status optimistically if it will change
@@ -1013,6 +1015,8 @@ export function OrderDetailDialog({
               order.total_amount,
               order.status as OrderStatus,
               depositAmountValue,
+              paymentMethod,
+              paymentFee,
             );
           }}
         />
