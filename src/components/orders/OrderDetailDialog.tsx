@@ -657,6 +657,11 @@ export function OrderDetailDialog({
                       <div>
                         <p className="font-medium">Sinal {depositPercentage}%</p>
                         <p className="text-sm text-muted-foreground">{formatCurrency(depositAmount)}</p>
+                        {displayDepositPaid && remainingAfterDeposit > 0 && (
+                          <p className="text-sm text-warning font-medium">
+                            Restante: {formatCurrency(remainingAfterDeposit)}
+                          </p>
+                        )}
                       </div>
                     </div>
                     {displayDepositPaid ? (
