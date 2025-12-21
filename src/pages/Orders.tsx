@@ -89,7 +89,7 @@ const Orders = () => {
     const cancelledOrders = result.filter((o) => o.status === "cancelled");
 
     // Sort function by delivery date
-    const sortByDeliveryDate = (a: typeof result[0], b: typeof result[0]) => {
+    const sortByDeliveryDate = (a: (typeof result)[0], b: (typeof result)[0]) => {
       const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
       const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
       return dateA - dateB;
@@ -104,18 +104,19 @@ const Orders = () => {
   }, [orders, searchQuery]);
 
   // Calculate pending deposit orders
-  const pendingDepositOrders = useMemo(() =>
-    orders.filter(
-      (o) => !o.deposit_paid && !o.full_payment_received &&
-             o.status !== "delivered" && o.status !== "cancelled"
-    ), [orders]);
+  const pendingDepositOrders = useMemo(
+    () =>
+      orders.filter(
+        (o) => !o.deposit_paid && !o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled",
+      ),
+    [orders],
+  );
 
   // Calculate fully paid orders (active only)
-  const fullyPaidOrders = useMemo(() =>
-    orders.filter(
-      (o) => o.full_payment_received &&
-             o.status !== "delivered" && o.status !== "cancelled"
-    ), [orders]);
+  const fullyPaidOrders = useMemo(
+    () => orders.filter((o) => o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled"),
+    [orders],
+  );
 
   const handleCreate = () => {
     setSelectedOrder(null);
@@ -206,21 +207,21 @@ const Orders = () => {
   };
 
   const handleDepositPaid = (
-    orderId: string, 
+    orderId: string,
     paid: boolean,
     clientName?: string,
     totalAmount?: number,
     currentStatus?: OrderStatus,
-    depositAmount?: number
+    depositAmount?: number,
   ) => {
-    const order = orders.find(o => o.id === orderId);
-    updateDepositPaid.mutate({ 
-      id: orderId, 
-      depositPaid: paid, 
+    const order = orders.find((o) => o.id === orderId);
+    updateDepositPaid.mutate({
+      id: orderId,
+      depositPaid: paid,
       clientName: clientName || order?.client?.name,
       totalAmount: totalAmount || order?.total_amount || 0,
       currentStatus: currentStatus || order?.status,
-      depositAmount
+      depositAmount,
     });
   };
 
@@ -261,8 +262,8 @@ const Orders = () => {
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <CircleDollarSign className="h-4 w-4" />
-              <span className="sm:hidden">Sinais ({pendingDepositOrders.length})</span>
-              <span className="hidden sm:inline">Sinais ({pendingDepositOrders.length})</span>
+              <span className="sm:hidden">Sinais Pendentes ({pendingDepositOrders.length})</span>
+              <span className="hidden sm:inline">Sinais Pendentes ({pendingDepositOrders.length})</span>
             </button>
 
             {/* Quick Access - Fully Paid Orders */}
@@ -271,8 +272,8 @@ const Orders = () => {
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <CheckCircle className="h-4 w-4" />
-              <span className="sm:hidden">Pagos ({fullyPaidOrders.length})</span>
-              <span className="hidden sm:inline">Pagos ({fullyPaidOrders.length})</span>
+              <span className="sm:hidden">Pedidos Pagos ({fullyPaidOrders.length})</span>
+              <span className="hidden sm:inline">Pedidos Pagos ({fullyPaidOrders.length})</span>
             </button>
           </div>
 
