@@ -7,13 +7,14 @@ import { OrdersList } from "@/components/orders/OrdersList";
 import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderDetailDialog } from "@/components/orders/OrderDetailDialog";
 import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
+import { FullyPaidOrdersDialog } from "@/components/dashboard/FullyPaidOrdersDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { Plus, Loader2, Search, EyeOff, Eye, CircleDollarSign } from "lucide-react";
+import { Plus, Loader2, Search, CircleDollarSign, CheckCircle } from "lucide-react";
 
 const Orders = () => {
   const location = useLocation();
@@ -23,16 +24,7 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
-  
-  const [hideCancelled, setHideCancelled] = useState(() => {
-    const saved = localStorage.getItem("hideCancelledOrders");
-    return saved === "true";
-  });
-
-  const handleHideCancelledChange = (checked: boolean) => {
-    setHideCancelled(checked);
-    localStorage.setItem("hideCancelledOrders", String(checked));
-  };
+  const [fullyPaidOpen, setFullyPaidOpen] = useState(false);
 
   const {
     orders,
@@ -108,18 +100,20 @@ const Orders = () => {
     deliveredOrders.sort(sortByDeliveryDate);
     cancelledOrders.sort(sortByDeliveryDate);
 
-    // Hide cancelled if setting is enabled
-    if (hideCancelled) {
-      return [...activeOrders, ...deliveredOrders];
-    }
-
     return [...activeOrders, ...deliveredOrders, ...cancelledOrders];
-  }, [orders, searchQuery, hideCancelled]);
+  }, [orders, searchQuery]);
 
   // Calculate pending deposit orders
   const pendingDepositOrders = useMemo(() =>
     orders.filter(
       (o) => !o.deposit_paid && !o.full_payment_received &&
+             o.status !== "delivered" && o.status !== "cancelled"
+    ), [orders]);
+
+  // Calculate fully paid orders (active only)
+  const fullyPaidOrders = useMemo(() =>
+    orders.filter(
+      (o) => o.full_payment_received &&
              o.status !== "delivered" && o.status !== "cancelled"
     ), [orders]);
 
@@ -261,23 +255,24 @@ const Orders = () => {
 
           {/* Filters - sempre na mesma linha */}
           <div className="flex items-center gap-3 sm:ml-auto">
-            {/* Hide Cancelled Toggle */}
-            <button
-              onClick={() => handleHideCancelledChange(!hideCancelled)}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {hideCancelled ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              <span>Cancelados</span>
-            </button>
-
             {/* Quick Access - Pending Deposits */}
             <button
               onClick={() => setPendingDepositsOpen(true)}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <CircleDollarSign className="h-4 w-4" />
-              <span className="sm:hidden">Sinais pendentes ({pendingDepositOrders.length})</span>
+              <span className="sm:hidden">Sinais ({pendingDepositOrders.length})</span>
               <span className="hidden sm:inline">Sinais ({pendingDepositOrders.length})</span>
+            </button>
+
+            {/* Quick Access - Fully Paid Orders */}
+            <button
+              onClick={() => setFullyPaidOpen(true)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <CheckCircle className="h-4 w-4" />
+              <span className="sm:hidden">Pagos ({fullyPaidOrders.length})</span>
+              <span className="hidden sm:inline">Pagos ({fullyPaidOrders.length})</span>
             </button>
           </div>
 
@@ -364,6 +359,17 @@ const Orders = () => {
         onDepositPaid={handleDepositPaid}
         onOrderClick={(order) => {
           setPendingDepositsOpen(false);
+          handleOrderClick(order as Order);
+        }}
+      />
+
+      {/* Fully Paid Orders Dialog */}
+      <FullyPaidOrdersDialog
+        open={fullyPaidOpen}
+        onOpenChange={setFullyPaidOpen}
+        orders={fullyPaidOrders}
+        onOrderClick={(order) => {
+          setFullyPaidOpen(false);
           handleOrderClick(order as Order);
         }}
       />
