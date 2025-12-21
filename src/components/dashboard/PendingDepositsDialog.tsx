@@ -168,11 +168,6 @@ export function PendingDepositsDialog({
                               HOJE!
                             </Badge>
                           )}
-                          {isUrgent && !isDeliveryToday && !isOverdue && (
-                            <Badge variant="destructive" className="text-xs px-1.5 py-0">
-                              Em {daysUntilDelivery}d!
-                            </Badge>
-                          )}
                         </div>
                         <p className="text-sm text-foreground">
                           {order.client?.name || "Cliente não informado"}
