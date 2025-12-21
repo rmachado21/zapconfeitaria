@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Order, formatOrderNumber } from "@/hooks/useOrders";
 import { useQuotePdf } from "@/hooks/useQuotePdf";
 import { useProfile } from "@/hooks/useProfile";
+import { useOrderTransactions } from "@/hooks/useOrderTransactions";
 import { getAvailableTemplates } from "@/lib/whatsappTemplates";
 import { WhatsAppTemplatePreview } from "./WhatsAppTemplatePreview";
 import { DepositAmountDialog } from "./DepositAmountDialog";
@@ -44,6 +45,7 @@ import {
   Check,
   PackageCheck,
   Undo2,
+  History,
 } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -105,6 +107,7 @@ export function OrderDetailDialog({
 }: OrderDetailDialogProps) {
   const { sharePdf, downloadPdf, isGenerating } = useQuotePdf();
   const { profile } = useProfile();
+  const { data: orderTransactions = [] } = useOrderTransactions(order?.id ?? null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deliveredConfirmOpen, setDeliveredConfirmOpen] = useState(false);
   const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
@@ -707,6 +710,39 @@ export function OrderDetailDialog({
                     ) : (
                       <Badge variant="warning">Pendente</Badge>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Payment History */}
+            {orderTransactions.length > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <History className="h-4 w-4 text-muted-foreground" />
+                    <p className="font-semibold text-sm">Histórico de Pagamentos</p>
+                  </div>
+                  <div className="space-y-2">
+                    {orderTransactions.map((transaction) => (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between text-sm py-2 border-b last:border-b-0"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{transaction.description || "Pagamento"}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {format(parseISO(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
+                          </span>
+                        </div>
+                        <span className={cn(
+                          "font-semibold",
+                          transaction.type === "income" ? "text-success" : "text-destructive"
+                        )}>
+                          {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
