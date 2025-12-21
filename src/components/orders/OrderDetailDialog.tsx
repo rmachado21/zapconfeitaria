@@ -934,7 +934,10 @@ export function OrderDetailDialog({
         <DeliveryConfirmDialog
           open={deliveredConfirmOpen}
           onOpenChange={setDeliveredConfirmOpen}
-          remainingAmount={remainingAfterDeposit}
+          clientName={order.client?.name || 'Cliente'}
+          totalAmount={order.total_amount}
+          depositAmount={displayDepositAmount ?? order.deposit_amount}
+          fullPaymentReceived={displayFullPayment}
           onConfirm={(paymentMethod, paymentFee) => confirmDelivered(paymentMethod, paymentFee)}
           onCancel={cancelDelivered}
         />

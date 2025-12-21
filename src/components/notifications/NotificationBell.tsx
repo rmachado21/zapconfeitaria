@@ -7,16 +7,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { useNotifications, Notification } from '@/hooks/useNotifications';
@@ -27,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { openWhatsAppWithTemplate } from '@/lib/whatsapp';
 import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon';
 import { PWAInstallGuide } from '@/components/shared/PWAInstallGuide';
+import { DeliveryConfirmDialog } from '@/components/orders/DeliveryConfirmDialog';
 
 export function NotificationBell() {
   const navigate = useNavigate();
@@ -35,7 +26,16 @@ export function NotificationBell() {
   const { profile, updateProfile } = useProfile();
   const { orders, updateOrderStatus } = useOrders();
   const [open, setOpen] = useState(false);
-  const [confirmDelivery, setConfirmDelivery] = useState<Notification | null>(null);
+  const [confirmDelivery, setConfirmDelivery] = useState<{
+    notification: Notification;
+    order: {
+      id: string;
+      clientName: string;
+      totalAmount: number;
+      depositAmount: number | null;
+      fullPaymentReceived: boolean;
+    };
+  } | null>(null);
   const [showPWAGuide, setShowPWAGuide] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
@@ -57,22 +57,34 @@ export function NotificationBell() {
 
   const handleMarkAsDeliveredClick = (e: React.MouseEvent, notification: Notification) => {
     e.stopPropagation();
-    setConfirmDelivery(notification);
+    
+    const order = orders.find(o => o.id === notification.orderId);
+    if (!order) return;
+    
+    setConfirmDelivery({
+      notification,
+      order: {
+        id: order.id,
+        clientName: order.client?.name || 'Cliente',
+        totalAmount: order.total_amount,
+        depositAmount: order.deposit_amount,
+        fullPaymentReceived: order.full_payment_received ?? false,
+      }
+    });
   };
 
-  const handleConfirmDelivery = async () => {
-    if (!confirmDelivery?.orderId) return;
+  const handleConfirmDelivery = async (paymentMethod?: string, paymentFee?: number) => {
+    if (!confirmDelivery?.order) return;
     
-    const order = orders.find(o => o.id === confirmDelivery.orderId);
-    if (!order) return;
-
     await updateOrderStatus.mutateAsync({ 
-      id: confirmDelivery.orderId, 
+      id: confirmDelivery.order.id, 
       status: 'delivered',
-      clientName: order.client?.name,
-      totalAmount: order.total_amount,
-      previousStatus: order.status,
-      fullPaymentReceived: order.full_payment_received
+      clientName: confirmDelivery.order.clientName,
+      totalAmount: confirmDelivery.order.totalAmount,
+      fullPaymentReceived: confirmDelivery.order.fullPaymentReceived,
+      deliveryPaymentMethod: paymentMethod,
+      deliveryPaymentFee: paymentFee,
+      depositAmount: confirmDelivery.order.depositAmount,
     });
     setConfirmDelivery(null);
     setOpen(false);
@@ -260,32 +272,16 @@ export function NotificationBell() {
         </PopoverContent>
       </Popover>
 
-      {/* Confirmation Dialog */}
-      <AlertDialog open={!!confirmDelivery} onOpenChange={(open) => !open && setConfirmDelivery(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar entrega</AlertDialogTitle>
-            <AlertDialogDescription>
-              Deseja marcar o pedido de <span className="font-medium text-foreground">{confirmDelivery?.clientName}</span> como entregue?
-              {confirmDelivery?.totalAmount && (
-                <span className="block mt-2 text-sm">
-                  O pagamento final será registrado automaticamente.
-                </span>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmDelivery}
-              className="bg-emerald-600 hover:bg-emerald-700"
-            >
-              <Check className="h-4 w-4 mr-2" />
-              Confirmar Entrega
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delivery Confirmation Dialog with Payment Method */}
+      <DeliveryConfirmDialog
+        open={!!confirmDelivery}
+        onOpenChange={() => setConfirmDelivery(null)}
+        clientName={confirmDelivery?.order.clientName || ''}
+        totalAmount={confirmDelivery?.order.totalAmount || 0}
+        depositAmount={confirmDelivery?.order.depositAmount ?? null}
+        fullPaymentReceived={confirmDelivery?.order.fullPaymentReceived ?? false}
+        onConfirm={handleConfirmDelivery}
+      />
 
       {/* PWA Install Guide Modal */}
       <PWAInstallGuide open={showPWAGuide} onOpenChange={setShowPWAGuide} />
