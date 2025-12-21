@@ -183,11 +183,13 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
             {daysRemaining && (
               <span
                 className={cn(
-                  "text-[10px] font-medium",
-                  daysRemaining.urgent ? "text-destructive" : "text-muted-foreground",
+                  "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                  daysRemaining.urgent 
+                    ? "bg-destructive/50 text-destructive-foreground" 
+                    : "text-muted-foreground",
                 )}
               >
-                ({daysRemaining.text})
+                {daysRemaining.text}
               </span>
             )}
           </div>
