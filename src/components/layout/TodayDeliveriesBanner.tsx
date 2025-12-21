@@ -1,28 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import { Truck, X, Check, Banknote } from 'lucide-react';
+import { Truck, X, Check } from 'lucide-react';
 import { useState } from 'react';
-import { useOrders } from '@/hooks/useOrders';
+import { useOrders, Order } from '@/hooks/useOrders';
 import { format } from 'date-fns';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
+import { DeliveryConfirmDialog } from '@/components/orders/DeliveryConfirmDialog';
 
 export function TodayDeliveriesBanner() {
   const [dismissed, setDismissed] = useState(false);
-  const [confirmOrder, setConfirmOrder] = useState<{ id: string; clientName: string; totalAmount: number } | null>(null);
+  const [confirmOrder, setConfirmOrder] = useState<{ id: string; clientName: string; totalAmount: number; depositAmount: number | null; fullPaymentReceived: boolean } | null>(null);
   const { orders, updateOrderStatus } = useOrders();
   const navigate = useNavigate();
   
@@ -57,23 +48,29 @@ export function TodayDeliveriesBanner() {
     return time.slice(0, 5);
   };
 
-  const handleMarkDelivered = (e: React.MouseEvent, order: typeof todayOrders[0]) => {
+  const handleMarkDelivered = (e: React.MouseEvent, order: Order) => {
     e.preventDefault();
     e.stopPropagation();
     setConfirmOrder({
       id: order.id,
       clientName: order.client?.name || 'Cliente',
       totalAmount: order.total_amount || 0,
+      depositAmount: order.deposit_amount,
+      fullPaymentReceived: order.full_payment_received ?? false,
     });
   };
 
-  const confirmDelivery = () => {
+  const confirmDelivery = (paymentMethod?: string, paymentFee?: number) => {
     if (confirmOrder) {
       updateOrderStatus.mutate({
         id: confirmOrder.id,
         status: 'delivered',
         clientName: confirmOrder.clientName,
         totalAmount: confirmOrder.totalAmount,
+        fullPaymentReceived: confirmOrder.fullPaymentReceived,
+        deliveryPaymentMethod: paymentMethod,
+        deliveryPaymentFee: paymentFee,
+        depositAmount: confirmOrder.depositAmount,
       });
       setConfirmOrder(null);
     }
@@ -150,34 +147,16 @@ export function TodayDeliveriesBanner() {
         </div>
       </div>
 
-      {/* Delivery Confirmation Dialog */}
-      <AlertDialog open={!!confirmOrder} onOpenChange={() => setConfirmOrder(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-success/10 flex items-center justify-center">
-                <Banknote className="h-5 w-5 text-success" />
-              </div>
-              <AlertDialogTitle>Confirmar Entrega</AlertDialogTitle>
-            </div>
-            <AlertDialogDescription className="pt-2">
-              Ao marcar como <strong>Entregue</strong>, o sistema registrará automaticamente o pagamento restante de{' '}
-              <strong>{formatCurrency((confirmOrder?.totalAmount || 0) / 2)}</strong> no financeiro.
-              <br /><br />
-              Deseja confirmar a entrega do pedido de <strong>{confirmOrder?.clientName}</strong>?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={confirmDelivery}
-              className="bg-success text-success-foreground hover:bg-success/90"
-            >
-              Confirmar Entrega
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Delivery Confirmation Dialog with Payment Method */}
+      <DeliveryConfirmDialog
+        open={!!confirmOrder}
+        onOpenChange={() => setConfirmOrder(null)}
+        clientName={confirmOrder?.clientName || ''}
+        totalAmount={confirmOrder?.totalAmount || 0}
+        depositAmount={confirmOrder?.depositAmount ?? null}
+        fullPaymentReceived={confirmOrder?.fullPaymentReceived ?? false}
+        onConfirm={confirmDelivery}
+      />
     </>
   );
 }
