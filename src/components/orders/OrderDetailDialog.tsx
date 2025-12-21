@@ -724,25 +724,48 @@ export function OrderDetailDialog({
                     <p className="font-semibold text-sm">Histórico de Pagamentos</p>
                   </div>
                   <div className="space-y-2">
-                    {orderTransactions.map((transaction) => (
-                      <div
-                        key={transaction.id}
-                        className="flex items-center justify-between text-sm py-2 border-b last:border-b-0"
-                      >
-                        <div className="flex flex-col">
-                          <span className="font-medium">{transaction.description || "Pagamento"}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {format(parseISO(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
+                    {orderTransactions.map((transaction) => {
+                      // Extract payment method from description
+                      const description = transaction.description || "Pagamento";
+                      const pixMatch = description.includes("(Pix)");
+                      const cardMatch = description.includes("(Cartão de Crédito)");
+                      const linkMatch = description.includes("(Link)");
+                      
+                      // Clean description by removing payment method suffix
+                      const cleanDescription = description
+                        .replace(" (Pix)", "")
+                        .replace(" (Cartão de Crédito)", "")
+                        .replace(" (Link)", "");
+                      
+                      const paymentMethodLabel = pixMatch ? "Pix" : cardMatch ? "Cartão" : linkMatch ? "Link" : null;
+                      
+                      return (
+                        <div
+                          key={transaction.id}
+                          className="flex items-center justify-between text-sm py-2 border-b last:border-b-0"
+                        >
+                          <div className="flex flex-col">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{cleanDescription}</span>
+                              {paymentMethodLabel && (
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
+                                  {paymentMethodLabel}
+                                </Badge>
+                              )}
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {format(parseISO(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
+                            </span>
+                          </div>
+                          <span className={cn(
+                            "font-semibold",
+                            transaction.type === "income" ? "text-success" : "text-destructive"
+                          )}>
+                            {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
                           </span>
                         </div>
-                        <span className={cn(
-                          "font-semibold",
-                          transaction.type === "income" ? "text-success" : "text-destructive"
-                        )}>
-                          {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </CardContent>
               </Card>
