@@ -51,10 +51,11 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
       deliveryDate.setHours(0, 0, 0, 0);
       const diff = differenceInDays(deliveryDate, today);
 
-      if (diff < 0) return { text: "Atrasado", urgent: true };
-      if (diff === 0) return { text: "Hoje!", urgent: true };
-      if (diff === 1) return { text: "Amanhã", urgent: true };
-      return { text: `${diff} dias`, urgent: diff <= 3 };
+      if (diff < 0) return { text: "Atrasado", level: "critical" as const };
+      if (diff === 0) return { text: "Hoje!", level: "critical" as const };
+      if (diff === 1) return { text: "Amanhã", level: "critical" as const };
+      if (diff <= 3) return { text: `${diff} dias`, level: "warning" as const };
+      return { text: `${diff} dias`, level: "normal" as const };
     } catch {
       return null;
     }
@@ -184,9 +185,9 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
               <span
                 className={cn(
                   "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                  daysRemaining.urgent 
-                    ? "bg-destructive/50 text-destructive-foreground" 
-                    : "text-muted-foreground",
+                  daysRemaining.level === "critical" && "bg-destructive/50 text-destructive-foreground",
+                  daysRemaining.level === "warning" && "bg-warning/50 text-warning-foreground",
+                  daysRemaining.level === "normal" && "bg-muted text-muted-foreground",
                 )}
               >
                 {daysRemaining.text}
