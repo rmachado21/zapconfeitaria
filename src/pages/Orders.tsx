@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input";
 import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { Plus, Loader2, Search, CircleDollarSign, CheckCircle } from "lucide-react";
+import { Plus, Loader2, Search, CircleDollarSign, CheckCircle, DollarSign } from "lucide-react";
+import { StatsCard } from "@/components/dashboard/StatsCard";
 
 const Orders = () => {
   const location = useLocation();
@@ -254,26 +255,21 @@ const Orders = () => {
             />
           </div>
 
-          {/* Filters - sempre na mesma linha */}
-          <div className="flex items-center gap-3 sm:ml-auto">
-            {/* Quick Access - Pending Deposits */}
+          {/* Quick Access Links - Desktop only */}
+          <div className="hidden sm:flex items-center gap-3 sm:ml-auto">
             <button
               onClick={() => setPendingDepositsOpen(true)}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <CircleDollarSign className="h-4 w-4" />
-              <span className="sm:hidden">Sinais Pendentes ({pendingDepositOrders.length})</span>
-              <span className="hidden sm:inline">Sinais Pendentes ({pendingDepositOrders.length})</span>
+              <span>Sinais Pendentes ({pendingDepositOrders.length})</span>
             </button>
-
-            {/* Quick Access - Fully Paid Orders */}
             <button
               onClick={() => setFullyPaidOpen(true)}
               className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
             >
               <CheckCircle className="h-4 w-4" />
-              <span className="sm:hidden">Pedidos Pagos ({fullyPaidOrders.length})</span>
-              <span className="hidden sm:inline">Pedidos Pagos ({fullyPaidOrders.length})</span>
+              <span>Pedidos Pagos ({fullyPaidOrders.length})</span>
             </button>
           </div>
 
@@ -287,8 +283,29 @@ const Orders = () => {
           </div>
         </div>
 
+        {/* Quick Access Cards - Mobile only */}
+        <div className="grid grid-cols-2 gap-3 sm:hidden">
+          <StatsCard
+            title="Sinais Pendentes"
+            value={pendingDepositOrders.reduce((sum, o) => sum + (o.total_amount || 0) / 2, 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            subtitle={`${pendingDepositOrders.length} pedidos aguardando`}
+            icon={CircleDollarSign}
+            variant="warning"
+            onClick={() => setPendingDepositsOpen(true)}
+          />
+          <StatsCard
+            title="Pedidos Pagos"
+            value={fullyPaidOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+            subtitle={`${fullyPaidOrders.length} pedidos a entregar`}
+            icon={DollarSign}
+            variant="success"
+            onClick={() => setFullyPaidOpen(true)}
+          />
+        </div>
+
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
+
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : filteredOrders.length === 0 ? (
