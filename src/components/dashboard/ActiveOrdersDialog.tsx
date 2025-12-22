@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Package, Clock, CheckCircle, FileText, XCircle } from "lucide-react";
 import { formatOrderNumber } from "@/hooks/useOrders";
-import { format, parseISO, differenceInDays, isToday, isPast } from "date-fns";
+import { format, parseISO, differenceInDays, isToday, isPast, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types";
 
@@ -96,7 +96,8 @@ export function ActiveOrdersDialog({
 
               // Calculate urgency
               const deliveryDate = order.delivery_date ? parseISO(order.delivery_date) : null;
-              const daysUntilDelivery = deliveryDate ? differenceInDays(deliveryDate, new Date()) : null;
+              const today = startOfDay(new Date());
+              const daysUntilDelivery = deliveryDate ? differenceInDays(startOfDay(deliveryDate), today) : null;
               const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
               const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
 

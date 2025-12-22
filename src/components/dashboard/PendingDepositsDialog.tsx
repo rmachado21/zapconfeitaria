@@ -8,7 +8,7 @@ import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { formatOrderNumber } from "@/hooks/useOrders";
 import { openWhatsAppWithTemplate } from "@/lib/whatsapp";
 import { useProfile } from "@/hooks/useProfile";
-import { differenceInDays, parseISO, format, isToday, isPast } from "date-fns";
+import { differenceInDays, parseISO, format, isToday, isPast, startOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { OrderStatus } from "@/types";
 import { DepositAmountDialog } from "@/components/orders/DepositAmountDialog";
@@ -138,7 +138,8 @@ export function PendingDepositsDialog({
             {sortedOrders.map((order) => {
               const depositValue = order.total_amount / 2;
               const deliveryDate = order.delivery_date ? parseISO(order.delivery_date) : null;
-              const daysUntilDelivery = deliveryDate ? differenceInDays(deliveryDate, new Date()) : null;
+              const today = startOfDay(new Date());
+              const daysUntilDelivery = deliveryDate ? differenceInDays(startOfDay(deliveryDate), today) : null;
               const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
               const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
 
