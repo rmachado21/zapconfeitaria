@@ -148,7 +148,7 @@ const Index = () => {
         {/* Header */}
         <header className="flex items-center justify-between animate-fade-in">
           <div>
-            <h2 className="text-2xl font-display font-bold text-foreground md:text-xl">
+            <h2 className="font-display font-bold text-foreground md:text-xl text-xl">
               {getGreeting()}
               {firstName ? `, ${firstName}` : ""}! 👋
             </h2>
