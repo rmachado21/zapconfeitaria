@@ -1,4 +1,4 @@
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays, isToday, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CheckCircle, Calendar, Clock, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +87,32 @@ export function FullyPaidOrdersDialog({
             sortedOrders.map((order) => {
               const statusConfig = ORDER_STATUS_CONFIG[order.status as OrderStatus];
               
+              // Calculate urgency
+              const deliveryDate = order.delivery_date ? parseISO(order.delivery_date) : null;
+              const daysUntilDelivery = deliveryDate ? differenceInDays(deliveryDate, new Date()) : null;
+              const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
+              const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
+
+              // Determine urgency level and colors
+              let urgencyText = "";
+              let urgencyBgClass = "";
+              if (isOverdue) {
+                urgencyText = "Atrasado";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (isDeliveryToday) {
+                urgencyText = "Hoje!";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (daysUntilDelivery === 1) {
+                urgencyText = "Amanhã";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (daysUntilDelivery !== null && daysUntilDelivery >= 2 && daysUntilDelivery <= 3) {
+                urgencyText = `${daysUntilDelivery} dias`;
+                urgencyBgClass = "bg-yellow-500/50 text-yellow-900 dark:text-yellow-100";
+              } else if (daysUntilDelivery !== null && daysUntilDelivery > 3) {
+                urgencyText = `${daysUntilDelivery} dias`;
+                urgencyBgClass = "bg-muted text-muted-foreground";
+              }
+
               return (
                 <Card
                   key={order.id}
@@ -97,7 +123,7 @@ export function FullyPaidOrdersDialog({
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         {/* Header */}
-                        <div className="flex items-center gap-2 mb-2">
+                        <div className="flex items-center gap-2 mb-2 flex-wrap">
                           <span className="font-semibold text-sm">
                             #{order.order_number?.toString().padStart(4, "0")}
                           </span>
@@ -112,6 +138,11 @@ export function FullyPaidOrdersDialog({
                             >
                               {statusConfig.label}
                             </Badge>
+                          )}
+                          {urgencyText && (
+                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${urgencyBgClass}`}>
+                              {urgencyText}
+                            </span>
                           )}
                         </div>
 

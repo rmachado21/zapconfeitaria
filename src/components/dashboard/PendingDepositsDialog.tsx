@@ -141,7 +141,26 @@ export function PendingDepositsDialog({
               const daysUntilDelivery = deliveryDate ? differenceInDays(deliveryDate, new Date()) : null;
               const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
               const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
-              const isUrgent = daysUntilDelivery !== null && daysUntilDelivery <= 3 && daysUntilDelivery >= 0;
+
+              // Determine urgency level and colors
+              let urgencyText = "";
+              let urgencyBgClass = "";
+              if (isOverdue) {
+                urgencyText = "Atrasado";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (isDeliveryToday) {
+                urgencyText = "Hoje!";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (daysUntilDelivery === 1) {
+                urgencyText = "Amanhã";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (daysUntilDelivery !== null && daysUntilDelivery >= 2 && daysUntilDelivery <= 3) {
+                urgencyText = `${daysUntilDelivery} dias`;
+                urgencyBgClass = "bg-yellow-500/50 text-yellow-900 dark:text-yellow-100";
+              } else if (daysUntilDelivery !== null && daysUntilDelivery > 3) {
+                urgencyText = `${daysUntilDelivery} dias`;
+                urgencyBgClass = "bg-muted text-muted-foreground";
+              }
 
               return (
                 <Card
@@ -157,16 +176,10 @@ export function PendingDepositsDialog({
                           <span className="font-semibold text-sm">
                             {formatOrderNumber(order.order_number)}
                           </span>
-                          {isOverdue && (
-                            <Badge variant="destructive" className="text-xs px-1.5 py-0">
-                              <AlertTriangle className="h-3 w-3 mr-1" />
-                              ATRASADO
-                            </Badge>
-                          )}
-                          {isDeliveryToday && !isOverdue && (
-                            <Badge variant="destructive" className="text-xs px-1.5 py-0">
-                              HOJE!
-                            </Badge>
+                          {urgencyText && (
+                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${urgencyBgClass}`}>
+                              {urgencyText}
+                            </span>
                           )}
                         </div>
                         <p className="text-sm text-foreground">
