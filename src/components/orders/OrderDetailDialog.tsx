@@ -274,10 +274,11 @@ export function OrderDetailDialog({
       deliveryDate.setHours(0, 0, 0, 0);
       const diff = differenceInDays(deliveryDate, today);
 
-      if (diff < 0) return { text: "Atrasado", urgent: true };
-      if (diff === 0) return { text: "Hoje!", urgent: true };
-      if (diff === 1) return { text: "Amanhã", urgent: true };
-      return { text: `faltam ${diff} dias`, urgent: diff <= 3 };
+      if (diff < 0) return { text: "Atrasado", urgent: "critical" as const };
+      if (diff === 0) return { text: "Hoje!", urgent: "critical" as const };
+      if (diff === 1) return { text: "Amanhã", urgent: "critical" as const };
+      if (diff <= 3) return { text: `${diff} dias`, urgent: "warning" as const };
+      return { text: `${diff} dias`, urgent: "normal" as const };
     } catch {
       return null;
     }
@@ -513,11 +514,13 @@ export function OrderDetailDialog({
                     {daysRemaining && (
                       <span
                         className={cn(
-                          "text-xs font-medium",
-                          daysRemaining.urgent ? "text-destructive" : "text-muted-foreground",
+                          "text-[10px] font-medium px-1.5 py-0.5 rounded",
+                          daysRemaining.urgent === "critical" && "bg-red-500/50 text-red-900 dark:text-red-100",
+                          daysRemaining.urgent === "warning" && "bg-yellow-500/50 text-yellow-900 dark:text-yellow-100",
+                          daysRemaining.urgent === "normal" && "bg-muted text-muted-foreground",
                         )}
                       >
-                        ({daysRemaining.text})
+                        {daysRemaining.text}
                       </span>
                     )}
                   </div>
