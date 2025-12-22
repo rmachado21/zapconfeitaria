@@ -4,6 +4,7 @@ import { StatsCard } from "@/components/dashboard/StatsCard";
 import { StatsCardSkeleton } from "@/components/dashboard/StatsCardSkeleton";
 import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
 import { ActiveOrdersDialog } from "@/components/dashboard/ActiveOrdersDialog";
+import { FullyPaidOrdersDialog } from "@/components/dashboard/FullyPaidOrdersDialog";
 import { GrossProfitDetailDialog } from "@/components/finances/GrossProfitDetailDialog";
 import { KanbanBoard } from "@/components/orders/KanbanBoard";
 import { OrdersList } from "@/components/orders/OrdersList";
@@ -13,13 +14,14 @@ import { useClients } from "@/hooks/useClients";
 import { useProducts } from "@/hooks/useProducts";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { ShoppingBag, TrendingUp, Clock, Plus, Loader2 } from "lucide-react";
+import { ShoppingBag, TrendingUp, Clock, Plus, Loader2, DollarSign } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { isAfter, parseISO, startOfMonth } from "date-fns";
 const Index = () => {
   const navigate = useNavigate();
   const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
   const [activeOrdersOpen, setActiveOrdersOpen] = useState(false);
+  const [fullyPaidOpen, setFullyPaidOpen] = useState(false);
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
   const { orders, isLoading: ordersLoading, updateOrderStatus, updateDepositPaid } = useOrders();
   const { clients, isLoading: clientsLoading } = useClients();
@@ -72,6 +74,13 @@ const Index = () => {
     (o) => !o.deposit_paid && !o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled",
   );
   const pendingDeposits = pendingDepositOrders.reduce((sum, o) => sum + o.total_amount / 2, 0);
+  
+  // Fully paid orders (paid in advance, not yet delivered)
+  const fullyPaidOrders = orders.filter(
+    (o) => o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled",
+  );
+  const totalFullyPaid = fullyPaidOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  
   const periodIncome = filteredOrders
     .filter((o) => o.status === "delivered")
     .reduce((sum, o) => sum + o.total_amount, 0);
@@ -209,10 +218,12 @@ const Index = () => {
                 </div>
                 <div className="animate-fade-in stagger-4">
                   <StatsCard
-                    title="Cadastros"
-                    value={`${clients.length} / ${products.length}`}
-                    subtitle="Clientes / Produtos"
-                    icon={TrendingUp}
+                    title="Pedidos Pagos"
+                    value={formatCurrency(totalFullyPaid)}
+                    subtitle={`${fullyPaidOrders.length} pedidos a entregar`}
+                    icon={DollarSign}
+                    variant="success"
+                    onClick={() => setFullyPaidOpen(true)}
                   />
                 </div>
               </>
@@ -296,6 +307,17 @@ const Index = () => {
           orders={activeOrders}
           onOrderClick={(order) => {
             setActiveOrdersOpen(false);
+            navigate("/orders", { state: { openOrderId: order.id } });
+          }}
+        />
+
+        {/* Fully Paid Orders Dialog */}
+        <FullyPaidOrdersDialog
+          open={fullyPaidOpen}
+          onOpenChange={setFullyPaidOpen}
+          orders={fullyPaidOrders}
+          onOrderClick={(order) => {
+            setFullyPaidOpen(false);
             navigate("/orders", { state: { openOrderId: order.id } });
           }}
         />
