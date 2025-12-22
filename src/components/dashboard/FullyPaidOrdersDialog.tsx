@@ -1,6 +1,6 @@
 import { format, parseISO, differenceInDays, isToday, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CheckCircle, Calendar, Clock, User } from "lucide-react";
+import { CheckCircle, User } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ResponsivePanel } from "@/components/ui/responsive-panel";
@@ -153,22 +153,12 @@ export function FullyPaidOrdersDialog({
                         </div>
 
                         {/* Delivery Info */}
-                        {order.delivery_date && (
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              <span>
-                                {format(parseISO(order.delivery_date), "dd/MM/yyyy", { locale: ptBR })}
-                              </span>
-                            </div>
-                            {order.delivery_time && (
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                <span>{order.delivery_time.slice(0, 5)}</span>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        <p className="text-xs text-muted-foreground">
+                          Entrega:{" "}
+                          {order.delivery_date
+                            ? `${format(parseISO(order.delivery_date), "dd/MM/yyyy", { locale: ptBR })}${order.delivery_time ? ` às ${order.delivery_time.slice(0, 5)}` : ""}`
+                            : "A definir"}
+                        </p>
                       </div>
 
                       {/* Amount */}
