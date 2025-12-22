@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingBag, Package, Clock, CheckCircle, FileText, XCircle } from "lucide-react";
 import { formatOrderNumber } from "@/hooks/useOrders";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInDays, isToday, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { OrderStatus, ORDER_STATUS_CONFIG } from "@/types";
 
@@ -94,6 +94,32 @@ export function ActiveOrdersDialog({
               const config = ORDER_STATUS_CONFIG[order.status];
               const StatusIcon = statusIcons[order.status];
 
+              // Calculate urgency
+              const deliveryDate = order.delivery_date ? parseISO(order.delivery_date) : null;
+              const daysUntilDelivery = deliveryDate ? differenceInDays(deliveryDate, new Date()) : null;
+              const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
+              const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
+
+              // Determine urgency level and colors
+              let urgencyText = "";
+              let urgencyBgClass = "";
+              if (isOverdue) {
+                urgencyText = "Atrasado";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (isDeliveryToday) {
+                urgencyText = "Hoje!";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (daysUntilDelivery === 1) {
+                urgencyText = "Amanhã";
+                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
+              } else if (daysUntilDelivery !== null && daysUntilDelivery >= 2 && daysUntilDelivery <= 3) {
+                urgencyText = `${daysUntilDelivery} dias`;
+                urgencyBgClass = "bg-yellow-500/50 text-yellow-900 dark:text-yellow-100";
+              } else if (daysUntilDelivery !== null && daysUntilDelivery > 3) {
+                urgencyText = `${daysUntilDelivery} dias`;
+                urgencyBgClass = "bg-muted text-muted-foreground";
+              }
+
               return (
                 <Card
                   key={order.id}
@@ -104,7 +130,7 @@ export function ActiveOrdersDialog({
                     {/* Header */}
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <span className="font-semibold text-sm">
                             {formatOrderNumber(order.order_number)}
                           </span>
@@ -112,6 +138,11 @@ export function ActiveOrdersDialog({
                             <StatusIcon className="h-3 w-3 mr-1" />
                             {config.label}
                           </Badge>
+                          {urgencyText && (
+                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${urgencyBgClass}`}>
+                              {urgencyText}
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm text-foreground">
                           {order.client?.name || "Cliente não informado"}
@@ -123,15 +154,12 @@ export function ActiveOrdersDialog({
                     </div>
 
                     {/* Delivery info */}
-                    {order.delivery_date && (
-                      <p className="text-xs text-muted-foreground">
-                        Entrega:{" "}
-                        {format(parseISO(order.delivery_date), "dd/MM/yyyy", {
-                          locale: ptBR,
-                        })}
-                        {order.delivery_time && ` às ${order.delivery_time.slice(0, 5)}`}
-                      </p>
-                    )}
+                    <p className="text-xs text-muted-foreground">
+                      Entrega:{" "}
+                      {order.delivery_date
+                        ? `${format(parseISO(order.delivery_date), "dd/MM/yyyy", { locale: ptBR })}${order.delivery_time ? ` às ${order.delivery_time.slice(0, 5)}` : ""}`
+                        : "A definir"}
+                    </p>
                   </div>
                 </Card>
               );

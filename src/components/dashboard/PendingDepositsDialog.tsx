@@ -3,7 +3,7 @@ import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, AlertTriangle, Check } from "lucide-react";
+import { AlertTriangle, Check } from "lucide-react";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { formatOrderNumber } from "@/hooks/useOrders";
 import { openWhatsAppWithTemplate } from "@/lib/whatsapp";
@@ -192,17 +192,12 @@ export function PendingDepositsDialog({
                     </div>
 
                     {/* Delivery date info */}
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Calendar className="h-3.5 w-3.5" />
-                      {deliveryDate ? (
-                        <span>
-                          Entrega: {format(deliveryDate, "dd/MM/yyyy", { locale: ptBR })}
-                          {order.delivery_time && ` às ${order.delivery_time}`}
-                        </span>
-                      ) : (
-                        <span className="italic">Data de entrega não definida</span>
-                      )}
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Entrega:{" "}
+                      {deliveryDate
+                        ? `${format(deliveryDate, "dd/MM/yyyy", { locale: ptBR })}${order.delivery_time ? ` às ${order.delivery_time.slice(0, 5)}` : ""}`
+                        : "A definir"}
+                    </p>
 
                     {/* Actions */}
                     <div className="flex gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
