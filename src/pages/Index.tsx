@@ -44,18 +44,22 @@ const Index = () => {
   // Filter orders by current month
   const monthStart = startOfMonth(new Date());
   const filteredOrders = useMemo(() => {
-    return orders.filter((o) => isAfter(parseISO(o.created_at), monthStart) || parseISO(o.created_at).getTime() === monthStart.getTime());
+    return orders.filter(
+      (o) => isAfter(parseISO(o.created_at), monthStart) || parseISO(o.created_at).getTime() === monthStart.getTime(),
+    );
   }, [orders, monthStart]);
 
   // Sort orders: active by nearest delivery date, then delivered, then cancelled
   const sortedOrders = useMemo(() => {
-    const sortByDeliveryDate = (a: typeof orders[0], b: typeof orders[0]) => {
+    const sortByDeliveryDate = (a: (typeof orders)[0], b: (typeof orders)[0]) => {
       const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
       const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
       return dateA - dateB;
     };
 
-    const activeOrders = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled").sort(sortByDeliveryDate);
+    const activeOrders = orders
+      .filter((o) => o.status !== "delivered" && o.status !== "cancelled")
+      .sort(sortByDeliveryDate);
     const deliveredOrders = orders.filter((o) => o.status === "delivered").sort(sortByDeliveryDate);
     const cancelledOrders = orders.filter((o) => o.status === "cancelled").sort(sortByDeliveryDate);
 
@@ -197,7 +201,7 @@ const Index = () => {
                   <StatsCard
                     title="Sinais Pendentes"
                     value={formatCurrency(pendingDeposits)}
-                    subtitle={`${pendingDepositOrders.length} Pedidos aguardando`}
+                    subtitle={`${pendingDepositOrders.length} pedidos aguardando`}
                     icon={Clock}
                     variant="warning"
                     onClick={() => setPendingDepositsOpen(true)}
