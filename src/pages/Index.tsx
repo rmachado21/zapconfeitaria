@@ -197,7 +197,7 @@ const Index = () => {
                   <StatsCard
                     title="Sinais Pendentes"
                     value={formatCurrency(pendingDeposits)}
-                    subtitle="Aguardando pagamento"
+                    subtitle={`${pendingDepositOrders.length} Pedidos aguardando`}
                     icon={Clock}
                     variant="warning"
                     onClick={() => setPendingDepositsOpen(true)}
