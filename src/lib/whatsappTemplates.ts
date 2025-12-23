@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'pickup_ready' | 'out_for_delivery';
+export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'payment_thanks' | 'pickup_ready' | 'out_for_delivery';
 
 export interface TemplateConfig {
   id: TemplateType;
@@ -44,6 +44,20 @@ Assim que confirmado, inicio a produção para entrega em [DataEntrega].
 
 Obrigada! 💕`,
     description: 'Cobrar sinal de 50% pendente',
+  },
+  payment_thanks: {
+    id: 'payment_thanks',
+    name: 'Agradecer Pagamento',
+    template: `Olá [Nome]! 💚
+
+Muito obrigada pelo pagamento do pedido [Pedido]! ✅
+
+Valor recebido: [Valor]
+
+Seu pedido está confirmado para [DataEntrega]. Qualquer novidade, aviso por aqui!
+
+Obrigada pela confiança! 🎂`,
+    description: 'Agradecer pelo pagamento completo recebido',
   },
   pickup_ready: {
     id: 'pickup_ready',
@@ -157,6 +171,11 @@ export function getAvailableTemplates(context: {
   // Add deposit collection only if deposit not paid AND full payment not received
   if (!context.depositPaid && !context.fullPaymentReceived && context.status !== 'delivered' && context.status !== 'cancelled') {
     templates.push('deposit_collection');
+  }
+
+  // Add payment thanks if full payment was received
+  if (context.fullPaymentReceived && context.status !== 'delivered' && context.status !== 'cancelled') {
+    templates.push('payment_thanks');
   }
 
   // Add pickup/delivery options for in_production and ready status
