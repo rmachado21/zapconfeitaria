@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,12 +33,13 @@ import {
   FileText,
 } from "lucide-react";
 import { useClients, ClientFormData } from "@/hooks/useClients";
-import { useProducts } from "@/hooks/useProducts";
+import { useProducts, Product } from "@/hooks/useProducts";
 import { OrderFormData, Order, formatOrderNumber } from "@/hooks/useOrders";
 import { CurrencyInput } from "@/components/shared/CurrencyInput";
 import { formatCurrency } from "@/lib/masks";
 import { useToast } from "@/hooks/use-toast";
 import { ClientFormDialog } from "@/components/clients/ClientFormDialog";
+import { ProductSelector } from "@/components/orders/ProductSelector";
 import { cn } from "@/lib/utils";
 
 const orderSchema = z.object({
@@ -73,11 +74,7 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
   const [showNewClientDialog, setShowNewClientDialog] = useState(false);
   const { toast } = useToast();
   const [items, setItems] = useState<OrderItem[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<string>("");
-  const [quantity, setQuantity] = useState<number>(1);
   const [clientSearchOpen, setClientSearchOpen] = useState(false);
-  const [productSearchOpen, setProductSearchOpen] = useState(false);
-  const [justAddedProduct, setJustAddedProduct] = useState(false);
 
   // Additional items state
   const [additionalItemName, setAdditionalItemName] = useState("");
@@ -104,8 +101,6 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
     if (!open) {
       form.reset();
       setItems([]);
-      setSelectedProduct("");
-      setQuantity(1);
       setAdditionalItemName("");
       setAdditionalItemQty(1);
       setAdditionalItemPrice(0);
@@ -200,46 +195,12 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
     setTimeout(() => setJustAddedAdditional(false), 600);
   };
 
-  const selectedProductData = products.find((p) => p.id === selectedProduct);
-
-  const handleAddItem = () => {
-    if (!selectedProduct || !selectedProductData) {
-      toast({
-        title: "Selecione um produto",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!quantity || quantity <= 0 || isNaN(quantity)) {
-      toast({
-        title: "Quantidade inválida",
-        description: "A quantidade deve ser maior que zero.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const unitType = selectedProductData.unit_type;
-    const getMinQuantity = (type: string) => {
-      if (type === "kg") return 0.5;
-      return 1;
-    };
-    const minQuantity = getMinQuantity(unitType);
-    const unitLabel = unitType === "kg" ? "Kg" : unitType === "cento" ? "Cento" : "Un";
-
-    if (quantity < minQuantity) {
-      toast({
-        title: "Quantidade mínima",
-        description: `Mínimo de ${minQuantity} ${unitLabel}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
+  // Handler for adding products from ProductSelector
+  const handleAddProduct = (product: Product, quantity: number) => {
+    const unitType = product.unit_type;
     const validQuantity = unitType === "kg" ? Math.round(quantity * 100) / 100 : Math.floor(quantity);
 
-    const existingIndex = items.findIndex((i) => i.product_id === selectedProduct);
+    const existingIndex = items.findIndex((i) => i.product_id === product.id);
 
     if (existingIndex >= 0) {
       const newItems = [...items];
@@ -249,23 +210,26 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
       setItems([
         ...items,
         {
-          product_id: selectedProductData.id,
-          product_name: selectedProductData.name,
+          product_id: product.id,
+          product_name: product.name,
           quantity: validQuantity,
-          unit_price: selectedProductData.sale_price,
-          unit_type: selectedProductData.unit_type,
+          unit_price: product.sale_price,
+          unit_type: product.unit_type,
           is_gift: false,
         },
       ]);
     }
 
-    // Visual feedback
-    setJustAddedProduct(true);
-    setTimeout(() => setJustAddedProduct(false), 600);
-
-    setSelectedProduct("");
-    setQuantity(1);
+    toast({
+      title: "Produto adicionado",
+      description: `${quantity} ${unitType === "kg" ? "Kg" : unitType === "cento" ? "Cento" : "Un"} de ${product.name}`,
+    });
   };
+
+  // Get list of added product IDs for visual feedback
+  const addedProductIds = useMemo(() => {
+    return items.filter(item => item.product_id).map(item => item.product_id as string);
+  }, [items]);
 
   const handleUpdateItemQuantity = (index: number, delta: number) => {
     const newItems = [...items];
@@ -482,166 +446,12 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
                 Produtos *
               </FormLabel>
 
-              {/* Add Product Row */}
-              <div className="space-y-2">
-                {/* Line 1: Product Combobox */}
-                <Popover open={productSearchOpen} onOpenChange={setProductSearchOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={productSearchOpen}
-                      className={cn(
-                        "w-full justify-between font-normal overflow-hidden transition-all",
-                        !selectedProduct && "text-muted-foreground",
-                        selectedProduct && "ring-2 ring-primary/50 border-primary",
-                        justAddedProduct && "animate-pulse bg-success/10 ring-success/50 border-success",
-                      )}
-                    >
-                      {selectedProductData ? (
-                        <span className="truncate">
-                          {selectedProductData.name} - {formatCurrency(selectedProductData.sale_price)}/
-                          {selectedProductData.unit_type === "kg"
-                            ? "Kg"
-                            : selectedProductData.unit_type === "cento"
-                              ? "Cento"
-                              : "Un"}
-                        </span>
-                      ) : (
-                        "Buscar produto..."
-                      )}
-                      <div className="flex items-center gap-1 ml-2 shrink-0">
-                        {selectedProduct && (
-                          <X
-                            className="h-4 w-4 opacity-50 hover:opacity-100"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedProduct("");
-                            }}
-                          />
-                        )}
-                        <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                      </div>
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                    <Command>
-                      <CommandInput placeholder="Digite para buscar..." />
-                      <CommandList>
-                        <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
-                        <CommandGroup>
-                          {products.map((product) => {
-                            const unitLabel =
-                              product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
-                            return (
-                              <CommandItem
-                                key={product.id}
-                                value={product.name}
-                                onSelect={() => {
-                                  setSelectedProduct(product.id);
-                                  setQuantity(product.unit_type === "kg" ? 0.5 : 1);
-                                  setProductSearchOpen(false);
-                                }}
-                              >
-                                <Check
-                                  className={cn(
-                                    "mr-2 h-4 w-4",
-                                    selectedProduct === product.id ? "opacity-100" : "opacity-0",
-                                  )}
-                                />
-                                <span className="flex-1 truncate">{product.name}</span>
-                                <span className="text-xs text-muted-foreground ml-2">
-                                  {formatCurrency(product.sale_price)}/{unitLabel}
-                                </span>
-                              </CommandItem>
-                            );
-                          })}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-
-                {/* Line 2: Quantity Controls + Add Button */}
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
-                        const min = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
-                        setQuantity(Math.max(min, quantity - step));
-                      }}
-                      disabled={!selectedProduct || quantity <= (selectedProductData?.unit_type === "kg" ? 0.5 : 1)}
-                      className="h-9 w-9 shrink-0"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-
-                    <div className="relative">
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        pattern="[0-9]*[.,]?[0-9]*"
-                        value={quantity}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(",", ".");
-                          const numValue = parseFloat(value);
-                          if (!isNaN(numValue) && numValue >= 0) {
-                            setQuantity(numValue);
-                          } else if (value === "" || value === ".") {
-                            setQuantity(0);
-                          }
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            handleAddItem();
-                          }
-                        }}
-                        className="w-20 pr-9 text-center"
-                        placeholder="Qtd"
-                      />
-                      {selectedProductData && (
-                        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground pointer-events-none">
-                          {selectedProductData.unit_type === "kg"
-                            ? "Kg"
-                            : selectedProductData.unit_type === "cento"
-                              ? "Cto"
-                              : "Un"}
-                        </span>
-                      )}
-                    </div>
-
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      onClick={() => {
-                        const step = selectedProductData?.unit_type === "kg" ? 0.5 : 1;
-                        setQuantity(quantity + step);
-                      }}
-                      disabled={!selectedProduct}
-                      className="h-9 w-9 shrink-0"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="default"
-                    onClick={handleAddItem}
-                    disabled={!selectedProduct}
-                    className="shrink-0 gap-1.5"
-                  >
-                    <Plus className="h-4 w-4" />
-                    Adicionar
-                  </Button>
-                </div>
-              </div>
+              {/* Product Selector with Cards */}
+              <ProductSelector
+                products={products}
+                onAddProduct={handleAddProduct}
+                addedProductIds={addedProductIds}
+              />
 
               {/* Items List */}
               {items.length > 0 && (
