@@ -58,9 +58,10 @@ Obrigada! 💕`,
     template: `Olá [Nome]! ✨
 
 Seu pedido [Pedido] está confirmado! 🎉
+Obrigada pelo pagamento do sinal e confirmar seu pedido.
 
 📅 Entrega: [DataEntrega]
-💰 [InfoPagamento]
+[InfoPagamento]
 
 Já estamos preparando tudo com carinho! Qualquer dúvida, estou à disposição.
 
