@@ -1,7 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
-export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'payment_thanks' | 'pickup_ready' | 'out_for_delivery';
+export type TemplateType = 'quote' | 'birthday' | 'deposit_collection' | 'order_confirmed' | 'payment_thanks' | 'pickup_ready' | 'out_for_delivery';
 
 export interface TemplateConfig {
   id: TemplateType;
@@ -44,6 +44,22 @@ Assim que confirmado, inicio a produção para entrega em [DataEntrega].
 
 Obrigada! 💕`,
     description: 'Cobrar sinal de 50% pendente',
+  },
+  order_confirmed: {
+    id: 'order_confirmed',
+    name: 'Confirmar Pedido',
+    template: `Olá [Nome]! ✨
+
+Seu pedido [Pedido] está confirmado! 🎉
+
+📅 Entrega: [DataEntrega]
+📍 Local: [EnderecoEntrega]
+💰 Valor: [Valor]
+
+Já estamos preparando tudo com carinho! Qualquer dúvida, estou à disposição.
+
+Obrigada pela preferência! 💕`,
+    description: 'Confirmar pedido após pagamento do sinal',
   },
   payment_thanks: {
     id: 'payment_thanks',
@@ -171,6 +187,11 @@ export function getAvailableTemplates(context: {
   // Add deposit collection only if deposit not paid AND full payment not received
   if (!context.depositPaid && !context.fullPaymentReceived && context.status !== 'delivered' && context.status !== 'cancelled') {
     templates.push('deposit_collection');
+  }
+
+  // Add order confirmed if deposit paid or full payment received (order is confirmed)
+  if ((context.depositPaid || context.fullPaymentReceived) && context.status !== 'delivered' && context.status !== 'cancelled') {
+    templates.push('order_confirmed');
   }
 
   // Add payment thanks if full payment was received
