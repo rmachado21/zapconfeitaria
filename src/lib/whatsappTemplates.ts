@@ -62,7 +62,7 @@ Obrigada pelo pagamento do sinal.
 📅 Entrega: [DataEntrega]
 [InfoPagamento]
 
-Já estamos preparando tudo com carinho! Qualquer dúvida, estou à disposição.
+Vamos preparar tudo com carinho! Qualquer dúvida, estou à disposição.
 
 Obrigada pela preferência! 💕`,
     description: "Confirmar pedido após pagamento do sinal",
