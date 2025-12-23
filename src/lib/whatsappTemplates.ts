@@ -154,8 +154,8 @@ export function getAvailableTemplates(context: {
 }): TemplateType[] {
   const templates: TemplateType[] = ['quote'];
 
-  // Add deposit collection if deposit not paid
-  if (!context.depositPaid && context.status !== 'delivered' && context.status !== 'cancelled') {
+  // Add deposit collection only if deposit not paid AND full payment not received
+  if (!context.depositPaid && !context.fullPaymentReceived && context.status !== 'delivered' && context.status !== 'cancelled') {
     templates.push('deposit_collection');
   }
 
