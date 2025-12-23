@@ -54,14 +54,13 @@ Obrigada! 💕`,
   },
   order_confirmed: {
     id: "order_confirmed",
-    name: "Agradecer Pgto Sinal",
+    name: "Confirmar Pgto Sinal",
     template: `Olá [Nome]! ✨
 
 Seu pedido [Pedido] está confirmado! 🎉
-
+Obrigada pelo pagamento do sinal.
 📅 Entrega: [DataEntrega]
-📍 Local: [EnderecoEntrega]
-💰 Valor: [Valor]
+[InfoPagamento]
 
 Já estamos preparando tudo com carinho! Qualquer dúvida, estou à disposição.
 
