@@ -77,12 +77,12 @@ export function WhatsAppTemplatePreview({
           <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-80 p-0" sideOffset={8}>
+      <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0" sideOffset={8}>
         <div className="flex flex-col">
           {/* Template Selection */}
-          <div className="p-3 border-b">
-            <p className="text-sm font-medium mb-2">Escolha o modelo:</p>
-            <div className="flex flex-wrap gap-1.5">
+          <div className="p-4 border-b">
+            <p className="text-sm font-medium mb-3">Escolha o modelo:</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {availableTemplates.map((templateType) => {
                 const template = WHATSAPP_TEMPLATES[templateType];
                 if (!template) return null;
@@ -93,7 +93,7 @@ export function WhatsAppTemplatePreview({
                     variant={isSelected ? "default" : "outline"}
                     size="sm"
                     className={cn(
-                      "text-xs h-7",
+                      "text-sm h-10 justify-start",
                       isSelected && "bg-primary"
                     )}
                     onClick={() => setSelectedTemplate(templateType)}
@@ -107,12 +107,12 @@ export function WhatsAppTemplatePreview({
 
           {/* Preview Area */}
           {selectedTemplate && previewMessage && (
-            <div className="p-3 border-b bg-muted/30">
+            <div className="p-4 border-b bg-muted/30">
               <div className="flex items-center gap-1.5 mb-2 text-xs text-muted-foreground">
                 <Eye className="h-3.5 w-3.5" />
                 Preview da mensagem:
               </div>
-              <ScrollArea className="h-32">
+              <ScrollArea className="h-36">
                 <div className="bg-background rounded-lg p-3 text-sm whitespace-pre-wrap border shadow-sm">
                   {previewMessage}
                 </div>
@@ -121,7 +121,7 @@ export function WhatsAppTemplatePreview({
           )}
 
           {/* Actions */}
-          <div className="p-3 flex flex-col gap-2">
+          <div className="p-4 flex flex-col gap-2">
             <Button
               onClick={handleSend}
               disabled={!selectedTemplate}
