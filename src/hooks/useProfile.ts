@@ -15,6 +15,7 @@ export interface Profile {
   hidden_kanban_columns: string[] | null;
   order_number_start: number;
   pwa_install_suggested: boolean;
+  google_review_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -29,6 +30,7 @@ export interface ProfileFormData {
   hidden_kanban_columns?: string[];
   order_number_start?: number;
   pwa_install_suggested?: boolean;
+  google_review_url?: string;
 }
 
 export function useProfile() {
@@ -74,6 +76,7 @@ export function useProfile() {
       if (formData.hidden_kanban_columns !== undefined) updateData.hidden_kanban_columns = formData.hidden_kanban_columns;
       if (formData.order_number_start !== undefined) updateData.order_number_start = formData.order_number_start;
       if (formData.pwa_install_suggested !== undefined) updateData.pwa_install_suggested = formData.pwa_install_suggested;
+      if (formData.google_review_url !== undefined) updateData.google_review_url = formData.google_review_url || null;
 
       const { data, error } = await supabase
         .from('profiles')

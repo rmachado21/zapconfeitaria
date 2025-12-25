@@ -264,6 +264,7 @@ export type Database = {
           company_name: string | null
           created_at: string
           custom_terms: string | null
+          google_review_url: string | null
           hidden_kanban_columns: string[] | null
           hide_cancelled_orders: boolean
           id: string
@@ -280,6 +281,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           custom_terms?: string | null
+          google_review_url?: string | null
           hidden_kanban_columns?: string[] | null
           hide_cancelled_orders?: boolean
           id?: string
@@ -296,6 +298,7 @@ export type Database = {
           company_name?: string | null
           created_at?: string
           custom_terms?: string | null
+          google_review_url?: string | null
           hidden_kanban_columns?: string[] | null
           hide_cancelled_orders?: boolean
           id?: string

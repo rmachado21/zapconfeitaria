@@ -41,6 +41,7 @@ import {
   CheckCircle,
   RefreshCw,
   Smartphone,
+  Star,
 } from 'lucide-react';
 import { PWAInstallGuide } from '@/components/shared/PWAInstallGuide';
 import { useToast } from '@/hooks/use-toast';
@@ -55,6 +56,7 @@ const profileSchema = z.object({
   include_terms_in_pdf: z.boolean().optional(),
   custom_terms: z.string().max(2000).optional().or(z.literal('')),
   order_number_start: z.coerce.number().min(1, 'Número deve ser no mínimo 1').optional(),
+  google_review_url: z.string().url('URL inválida').optional().or(z.literal('')),
 });
 
 const DEFAULT_TERMS = `• O pedido será confirmado após o pagamento de 50% do valor total (sinal).
@@ -88,6 +90,7 @@ const Profile = () => {
       include_terms_in_pdf: true,
       custom_terms: '',
       order_number_start: 1,
+      google_review_url: '',
     },
   });
 
@@ -101,6 +104,7 @@ const Profile = () => {
         include_terms_in_pdf: profile.include_terms_in_pdf ?? true,
         custom_terms: profile.custom_terms || DEFAULT_TERMS,
         order_number_start: profile.order_number_start || 1,
+        google_review_url: profile.google_review_url || '',
       });
     }
   }, [profile, form]);
@@ -345,6 +349,33 @@ const Profile = () => {
                                 {...field}
                               />
                             </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <h3 className="font-medium flex items-center gap-2 mb-4">
+                        <Star className="h-4 w-4 text-primary" />
+                        Avaliação Google
+                      </h3>
+
+                      <FormField
+                        control={form.control}
+                        name="google_review_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Link de Avaliação do Google</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://g.page/r/..." 
+                                {...field} 
+                              />
+                            </FormControl>
+                            <p className="text-xs text-muted-foreground">
+                              Cole aqui o link do seu Google Meu Negócio para solicitar avaliações aos clientes
+                            </p>
                             <FormMessage />
                           </FormItem>
                         )}

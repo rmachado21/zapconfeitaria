@@ -313,6 +313,7 @@ export function OrderDetailDialog({
     deliveryAddress: order.delivery_address,
     depositPaid: displayDepositPaid,
     fullPaymentReceived: displayFullPayment,
+    googleReviewUrl: profile?.google_review_url || undefined,
   };
 
   const availableTemplates = getAvailableTemplates({
