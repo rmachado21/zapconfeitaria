@@ -118,7 +118,7 @@ Muito obrigada por escolher a [NomeEmpresa]! 💕
 
 Ficamos muito felizes em fazer parte do seu momento especial. Se você gostou do nosso trabalho, ficaríamos muito gratos se pudesse deixar uma avaliação no Google:
 
-👉 https://g.page/r/CQjuiJbRcD4-EAE/review
+👉 [LinkAvaliacao]
 
 Sua opinião é muito importante para nós! ⭐
 
@@ -139,6 +139,7 @@ export interface TemplateContext {
   deliveryAddress?: string | null;
   depositPaid?: boolean;
   fullPaymentReceived?: boolean;
+  googleReviewUrl?: string | null;
 }
 
 function formatCurrency(value: number): string {
@@ -185,6 +186,7 @@ export function processTemplate(templateType: TemplateType, context: TemplateCon
   );
   message = message.replace(/\[DataEntrega\]/g, formatDeliveryDate(context.deliveryDate, context.deliveryTime));
   message = message.replace(/\[EnderecoEntrega\]/g, context.deliveryAddress || "endereço combinado");
+  message = message.replace(/\[LinkAvaliacao\]/g, context.googleReviewUrl || "https://g.page/r/CQjuiJbRcD4-EAE/review");
 
   // Smart payment info replacement
   if (context.fullPaymentReceived) {
