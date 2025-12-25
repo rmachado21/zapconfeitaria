@@ -8,7 +8,8 @@ export type TemplateType =
   | "order_confirmed"
   | "payment_thanks"
   | "pickup_ready"
-  | "out_for_delivery";
+  | "out_for_delivery"
+  | "review_request";
 
 export interface TemplateConfig {
   id: TemplateType;
@@ -107,6 +108,22 @@ Seu pedido [Pedido] saiu para entrega!
 
 Em breve estaremos aí! 🎂`,
     description: "Avisar que o pedido saiu para entrega",
+  },
+  review_request: {
+    id: "review_request",
+    name: "Pedir Avaliação",
+    template: `Olá [Nome]! 😊
+
+Muito obrigada por escolher a [NomeEmpresa]! 💕
+
+Ficamos muito felizes em fazer parte do seu momento especial. Se você gostou do nosso trabalho, ficaríamos muito gratos se pudesse deixar uma avaliação no Google:
+
+👉 https://g.page/r/CQjuiJbRcD4-EAE/review
+
+Sua opinião é muito importante para nós! ⭐
+
+Obrigada pela confiança e até a próxima! 🎂`,
+    description: "Agradecer e pedir avaliação no Google após entrega",
   },
 };
 
@@ -218,6 +235,11 @@ export function getAvailableTemplates(context: {
   if (context.status === "in_production" || context.status === "ready") {
     templates.push("pickup_ready");
     templates.push("out_for_delivery");
+  }
+
+  // Add review request for delivered orders
+  if (context.status === "delivered") {
+    templates.push("review_request");
   }
 
   return templates;
