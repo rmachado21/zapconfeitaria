@@ -167,6 +167,11 @@ function formatOrderNumber(orderNumber: number | null | undefined): string {
   return `#${String(orderNumber).padStart(4, "0")}`;
 }
 
+function getFirstName(fullName: string | undefined): string {
+  if (!fullName) return "Cliente";
+  return fullName.split(" ")[0];
+}
+
 /**
  * Process a template by replacing variables with actual values
  */
@@ -174,8 +179,8 @@ export function processTemplate(templateType: TemplateType, context: TemplateCon
   const config = WHATSAPP_TEMPLATES[templateType];
   let message = config.template;
 
-  // Replace variables
-  message = message.replace(/\[Nome\]/g, context.clientName || "Cliente");
+  // Replace variables - use only first name for a friendlier tone
+  message = message.replace(/\[Nome\]/g, getFirstName(context.clientName));
   message = message.replace(/\[NomeEmpresa\]/g, context.companyName || "nossa confeitaria");
   message = message.replace(/\[Pedido\]/g, formatOrderNumber(context.orderNumber));
   message = message.replace(/\[Valor\]/g, formatCurrency(context.totalAmount || 0));
