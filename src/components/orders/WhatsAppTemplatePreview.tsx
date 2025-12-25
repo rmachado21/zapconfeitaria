@@ -9,8 +9,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { WHATSAPP_TEMPLATES, TemplateType, TemplateContext, processTemplate } from "@/lib/whatsappTemplates";
 import { openWhatsApp } from "@/lib/whatsapp";
-import { ChevronDown, Send, MessageCircle, Eye } from "lucide-react";
+import { ChevronDown, Send, MessageCircle, Eye, FileText, Cake, Wallet, CheckCircle, Heart, Package, Truck, Star, LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const TEMPLATE_ICONS: Record<TemplateType, LucideIcon> = {
+  quote: FileText,
+  birthday: Cake,
+  deposit_collection: Wallet,
+  order_confirmed: CheckCircle,
+  payment_thanks: Heart,
+  pickup_ready: Package,
+  out_for_delivery: Truck,
+  review_request: Star,
+};
 
 interface WhatsAppTemplatePreviewProps {
   phone: string;
@@ -87,17 +98,19 @@ export function WhatsAppTemplatePreview({
                 const template = WHATSAPP_TEMPLATES[templateType];
                 if (!template) return null;
                 const isSelected = selectedTemplate === templateType;
+                const Icon = TEMPLATE_ICONS[templateType];
                 return (
                   <Button
                     key={templateType}
                     variant={isSelected ? "default" : "outline"}
                     size="sm"
                     className={cn(
-                      "text-sm h-10 justify-start",
+                      "text-sm h-10 justify-start gap-2",
                       isSelected && "bg-primary"
                     )}
                     onClick={() => setSelectedTemplate(templateType)}
                   >
+                    <Icon className="h-4 w-4 shrink-0" />
                     {template.name}
                   </Button>
                 );
