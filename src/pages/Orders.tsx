@@ -14,8 +14,11 @@ import { Input } from "@/components/ui/input";
 import { useOrders, OrderFormData, Order } from "@/hooks/useOrders";
 import { useProfile } from "@/hooks/useProfile";
 import { OrderStatus } from "@/types";
-import { Plus, Loader2, Search, CircleDollarSign, CheckCircle, DollarSign } from "lucide-react";
+import { MonthFilter } from "@/hooks/useTransactions";
+import { Plus, Loader2, Search, CircleDollarSign, CheckCircle, DollarSign, ChevronLeft, ChevronRight, Calendar, X } from "lucide-react";
 import { StatsCard } from "@/components/dashboard/StatsCard";
+import { format, parseISO, endOfMonth, subMonths, addMonths } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 const Orders = () => {
   const location = useLocation();
@@ -26,6 +29,47 @@ const Orders = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [pendingDepositsOpen, setPendingDepositsOpen] = useState(false);
   const [fullyPaidOpen, setFullyPaidOpen] = useState(false);
+  
+  // Month navigation state
+  const [selectedMonth, setSelectedMonth] = useState<MonthFilter | null>(null);
+
+  // Month navigation functions
+  const goToPreviousMonth = () => {
+    if (selectedMonth) {
+      const prevDate = subMonths(new Date(selectedMonth.year, selectedMonth.month, 1), 1);
+      setSelectedMonth({ month: prevDate.getMonth(), year: prevDate.getFullYear() });
+    } else {
+      const now = new Date();
+      const prevDate = subMonths(now, 1);
+      setSelectedMonth({ month: prevDate.getMonth(), year: prevDate.getFullYear() });
+    }
+  };
+
+  const goToNextMonth = () => {
+    if (selectedMonth) {
+      const nextDate = addMonths(new Date(selectedMonth.year, selectedMonth.month, 1), 1);
+      setSelectedMonth({ month: nextDate.getMonth(), year: nextDate.getFullYear() });
+    } else {
+      const now = new Date();
+      const nextDate = addMonths(now, 1);
+      setSelectedMonth({ month: nextDate.getMonth(), year: nextDate.getFullYear() });
+    }
+  };
+
+  const resetToCurrentPeriod = () => {
+    setSelectedMonth(null);
+  };
+
+  // Get current month display label
+  const currentMonthLabel = useMemo(() => {
+    if (selectedMonth) {
+      const date = new Date(selectedMonth.year, selectedMonth.month, 1);
+      return format(date, "MMMM 'de' yyyy", { locale: ptBR });
+    }
+    return format(new Date(), "MMMM 'de' yyyy", { locale: ptBR });
+  }, [selectedMonth]);
+
+  const capitalizedMonthLabel = currentMonthLabel.charAt(0).toUpperCase() + currentMonthLabel.slice(1);
 
   const {
     orders,
@@ -71,6 +115,17 @@ const Orders = () => {
   const filteredOrders = useMemo(() => {
     let result = orders;
 
+    // Filter by selected month (by delivery_date)
+    if (selectedMonth) {
+      const monthStart = new Date(selectedMonth.year, selectedMonth.month, 1);
+      const monthEnd = endOfMonth(monthStart);
+      result = result.filter((order) => {
+        if (!order.delivery_date) return false;
+        const deliveryDate = parseISO(order.delivery_date);
+        return deliveryDate >= monthStart && deliveryDate <= monthEnd;
+      });
+    }
+
     // Filter by client name or order number
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
@@ -102,21 +157,21 @@ const Orders = () => {
     cancelledOrders.sort(sortByDeliveryDate);
 
     return [...activeOrders, ...deliveredOrders, ...cancelledOrders];
-  }, [orders, searchQuery]);
+  }, [orders, searchQuery, selectedMonth]);
 
-  // Calculate pending deposit orders
+  // Calculate pending deposit orders (from filtered orders)
   const pendingDepositOrders = useMemo(
     () =>
-      orders.filter(
+      filteredOrders.filter(
         (o) => !o.deposit_paid && !o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled",
       ),
-    [orders],
+    [filteredOrders],
   );
 
-  // Calculate fully paid orders (active only)
+  // Calculate fully paid orders (active only, from filtered orders)
   const fullyPaidOrders = useMemo(
-    () => orders.filter((o) => o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled"),
-    [orders],
+    () => filteredOrders.filter((o) => o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled"),
+    [filteredOrders],
   );
 
   const handleCreate = () => {
@@ -242,6 +297,41 @@ const Orders = () => {
             Novo Pedido
           </Button>
         </header>
+
+        {/* Month Navigation */}
+        <div className="flex items-center justify-center gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToPreviousMonth}
+            className="h-9 w-9"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg min-w-[200px] justify-center">
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <span className="font-medium text-foreground">{capitalizedMonthLabel}</span>
+          </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={goToNextMonth}
+            className="h-9 w-9"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {selectedMonth && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetToCurrentPeriod}
+              className="ml-2 text-muted-foreground hover:text-foreground"
+            >
+              <X className="h-4 w-4 mr-1" />
+              Voltar
+            </Button>
+          )}
+        </div>
 
         {/* Search and Sort Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
