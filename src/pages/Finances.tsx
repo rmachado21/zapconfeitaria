@@ -467,12 +467,12 @@ const Finances = () => {
           {selectedMonth && (
             <Button
               variant="ghost"
-              size="sm"
+              size="icon"
               onClick={resetToCurrentPeriod}
-              className="ml-2 text-muted-foreground hover:text-foreground"
+              className="h-9 w-9 text-muted-foreground hover:text-foreground"
+              title="Voltar ao mês atual"
             >
-              <X className="h-4 w-4 mr-1" />
-              Voltar
+              <X className="h-4 w-4" />
             </Button>
           )}
         </div>
