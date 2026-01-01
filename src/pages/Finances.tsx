@@ -167,9 +167,10 @@ const Finances = () => {
 
     const deliveredOrders = orders.filter(order => {
       if (order.status !== 'delivered') return false;
+      if (!order.delivery_date) return false;
       if (!startDate) return true;
       
-      const orderDate = parseISO(order.updated_at);
+      const orderDate = parseISO(order.delivery_date);
       const afterStart = isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
       
       if (endDate) {
