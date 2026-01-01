@@ -8,7 +8,6 @@ import { OrderFormDialog } from "@/components/orders/OrderFormDialog";
 import { OrderDetailDialog } from "@/components/orders/OrderDetailDialog";
 import { PendingDepositsDialog } from "@/components/dashboard/PendingDepositsDialog";
 import { FullyPaidOrdersDialog } from "@/components/dashboard/FullyPaidOrdersDialog";
-import { NewOrdersBadge } from "@/components/orders/NewOrdersBadge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -332,9 +331,6 @@ const Orders = () => {
               <X className="h-4 w-4" />
             </Button>
           )}
-          
-          {/* New Orders Badge */}
-          <NewOrdersBadge orders={orders} onOrderClick={handleOrderClick} />
         </div>
 
         {/* Search and Sort Controls */}
