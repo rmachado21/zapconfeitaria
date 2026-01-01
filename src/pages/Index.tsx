@@ -57,10 +57,14 @@ const Index = () => {
   // Hidden Kanban columns from profile
   const hiddenColumns = (profile?.hidden_kanban_columns || []) as OrderStatus[];
 
-  // Filter orders by current month
+  // Filter orders by delivery date in current month
   const monthStart = startOfMonth(new Date());
   const filteredOrders = useMemo(() => {
-    return orders.filter(o => isAfter(parseISO(o.created_at), monthStart) || parseISO(o.created_at).getTime() === monthStart.getTime());
+    return orders.filter(o => {
+      if (!o.delivery_date) return false;
+      const deliveryDate = parseISO(o.delivery_date);
+      return isAfter(deliveryDate, monthStart) || deliveryDate.getTime() === monthStart.getTime();
+    });
   }, [orders, monthStart]);
 
   // Sort orders: active by nearest delivery date, then delivered, then cancelled
