@@ -46,6 +46,7 @@ import {
   PackageCheck,
   Undo2,
   History,
+  Clock,
 } from "lucide-react";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -351,6 +352,15 @@ export function OrderDetailDialog({
 
   const title = order.order_number ? `Pedido ${formatOrderNumber(order.order_number)}` : "Detalhes do Pedido";
 
+  const createdAtSubtitle = (
+    <div className="flex items-center gap-1.5 text-xs text-muted-foreground mt-1">
+      <Clock className="h-3 w-3" />
+      <span>
+        Criado: {format(parseISO(order.created_at), "dd/MM 'às' HH:mm", { locale: ptBR })}
+      </span>
+    </div>
+  );
+
   const footerContent = (
     <div className="space-y-3">
       <div className="flex flex-col sm:flex-row gap-2">
@@ -416,6 +426,7 @@ export function OrderDetailDialog({
         open={open}
         onOpenChange={onOpenChange}
         title={title}
+        subtitle={createdAtSubtitle}
         footer={footerContent}
       >
         <div className="space-y-4">

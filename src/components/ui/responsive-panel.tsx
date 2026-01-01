@@ -12,6 +12,7 @@ interface ResponsivePanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title: string;
+  subtitle?: React.ReactNode;
   description?: string;
   children: React.ReactNode;
   footer?: React.ReactNode;
@@ -22,6 +23,7 @@ export function ResponsivePanel({
   open,
   onOpenChange,
   title,
+  subtitle,
   description,
   children,
   footer,
@@ -43,6 +45,7 @@ export function ResponsivePanel({
         {/* Header fixo */}
         <SheetHeader className="shrink-0 px-5 pt-5 pb-4 border-b">
           <SheetTitle>{title}</SheetTitle>
+          {subtitle}
           {description && (
             <SheetDescription>{description}</SheetDescription>
           )}
