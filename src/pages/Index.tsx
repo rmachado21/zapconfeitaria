@@ -77,8 +77,8 @@ const Index = () => {
   }, [orders]);
 
   // Calculate stats from filtered data
-  const activeOrders = filteredOrders.filter(o => o.status !== "delivered" && o.status !== "cancelled");
-  const pendingDepositOrders = filteredOrders.filter(o => !o.deposit_paid && !o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled");
+  const activeOrders = orders.filter(o => o.status !== "delivered" && o.status !== "cancelled");
+  const pendingDepositOrders = orders.filter(o => !o.deposit_paid && !o.full_payment_received && o.status !== "delivered" && o.status !== "cancelled");
   const pendingDeposits = pendingDepositOrders.reduce((sum, o) => sum + o.total_amount / 2, 0);
 
   // Fully paid orders (paid in advance, not yet delivered)
