@@ -38,9 +38,16 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
       
       if (priorityA !== priorityB) return priorityA - priorityB;
       
-      // Within same priority, sort by delivery date (nearest first)
+      // Within same priority, sort by delivery date
       const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
       const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
+      
+      // For delivered orders, show most recent first
+      if (a.status === 'delivered' && b.status === 'delivered') {
+        return dateB - dateA;
+      }
+      
+      // For other orders, show nearest delivery first
       return dateA - dateB;
     });
   };

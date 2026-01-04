@@ -31,6 +31,12 @@ export function KanbanBoard({ orders, onOrderClick, onStatusChange, onDepositCha
       .sort((a, b) => {
         const dateA = a.delivery_date ? new Date(a.delivery_date).getTime() : Infinity;
         const dateB = b.delivery_date ? new Date(b.delivery_date).getTime() : Infinity;
+        
+        // For delivered orders, show most recent first
+        if (status === 'delivered') {
+          return dateB - dateA;
+        }
+        
         return dateA - dateB;
       });
   };
