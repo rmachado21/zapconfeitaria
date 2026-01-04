@@ -87,7 +87,10 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
   return (
     <Card
       variant="elevated"
-      className="cursor-pointer group hover:border-primary/30 hover:shadow-warm transition-all duration-200 animate-fade-in"
+      className={cn(
+        "cursor-pointer group hover:border-primary/30 hover:shadow-warm transition-all duration-200 animate-fade-in",
+        order.status === "delivered" && "bg-blue-50/50 dark:bg-blue-950/30 border-blue-100 dark:border-blue-900/50"
+      )}
       onClick={onClick}
     >
       <CardContent className="p-4">
