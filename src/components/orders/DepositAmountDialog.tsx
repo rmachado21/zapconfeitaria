@@ -18,7 +18,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Banknote } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Banknote, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type DepositPaymentMethod = 'pix' | 'credit_card' | 'link';
@@ -68,6 +69,7 @@ export function DepositAmountDialog({
   };
 
   const percentage = totalAmount > 0 ? ((depositAmount / totalAmount) * 100).toFixed(0) : 0;
+  const isFullPayment = depositAmount >= totalAmount;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,16 +123,16 @@ export function DepositAmountDialog({
             >
               50%
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => setDepositAmount(totalAmount)}
-              className="flex-1"
-            >
-              100%
-            </Button>
           </div>
+
+          {isFullPayment && (
+            <Alert variant="default" className="bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800">
+              <Info className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <AlertDescription className="text-amber-700 dark:text-amber-300 text-sm">
+                Para pagamentos de 100%, use a opção <strong>"Pagamento Antecipado"</strong> no menu do pedido.
+              </AlertDescription>
+            </Alert>
+          )}
 
           <div className="space-y-2">
             <Label className="text-sm">Forma de Pagamento</Label>
@@ -228,7 +230,7 @@ export function DepositAmountDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancelar
           </Button>
-          <Button onClick={handleConfirm} disabled={depositAmount <= 0}>
+          <Button onClick={handleConfirm} disabled={depositAmount <= 0 || isFullPayment}>
             Confirmar Recebimento
           </Button>
         </DialogFooter>
