@@ -123,6 +123,15 @@ export function DepositAmountDialog({
             >
               50%
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setDepositAmount(totalAmount * 0.7)}
+              className="flex-1"
+            >
+              70%
+            </Button>
           </div>
 
           {isFullPayment && (
