@@ -165,6 +165,32 @@ export function useProductCategories() {
     },
   });
 
+  const reorderCategories = useMutation({
+    mutationFn: async (reorderedCategories: { id: string; display_order: number }[]) => {
+      // Update each category's display_order
+      const updates = reorderedCategories.map(({ id, display_order }) =>
+        supabase
+          .from('product_categories')
+          .update({ display_order })
+          .eq('id', id)
+      );
+
+      const results = await Promise.all(updates);
+      const error = results.find(r => r.error)?.error;
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['product-categories'] });
+    },
+    onError: (error) => {
+      toast({
+        title: 'Erro ao reordenar categorias',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   return {
     categories,
     isLoading,
@@ -172,5 +198,6 @@ export function useProductCategories() {
     createCategory,
     updateCategory,
     deleteCategory,
+    reorderCategories,
   };
 }

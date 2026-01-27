@@ -33,22 +33,31 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
     );
   }, [products, searchQuery]);
 
-  // Group by category
+  // Group by category (preserving category display_order from the hook)
   const groupedProducts = useMemo(() => {
-    const groups: Record<string, Product[]> = {};
+    const groups: { categoryName: string; categoryOrder: number; emoji: string; products: Product[] }[] = [];
     const uncategorized: Product[] = [];
 
     filteredProducts.forEach((product) => {
       if (product.category) {
-        const categoryName = product.category.name;
-        if (!groups[categoryName]) {
-          groups[categoryName] = [];
+        const existingGroup = groups.find(g => g.categoryName === product.category!.name);
+        if (existingGroup) {
+          existingGroup.products.push(product);
+        } else {
+          groups.push({
+            categoryName: product.category.name,
+            categoryOrder: (product.category as any).display_order ?? 999,
+            emoji: product.category.emoji,
+            products: [product],
+          });
         }
-        groups[categoryName].push(product);
       } else {
         uncategorized.push(product);
       }
     });
+
+    // Sort groups by display_order (category custom order)
+    groups.sort((a, b) => a.categoryOrder - b.categoryOrder);
 
     return { groups, uncategorized };
   }, [filteredProducts]);
@@ -84,18 +93,16 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
 
       {/* Product Grid */}
       <div className="space-y-4">
-        {Object.entries(groupedProducts.groups)
-          .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
-          .map(([categoryName, categoryProducts]) => (
-          <div key={categoryName} className="space-y-2">
+        {groupedProducts.groups.map((group) => (
+          <div key={group.categoryName} className="space-y-2">
             <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-                {categoryProducts[0]?.category?.emoji} {categoryName}
+                {group.emoji} {group.categoryName}
               </span>
               <div className="flex-1 h-px bg-border" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {categoryProducts.map((product) => (
+              {group.products.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}

@@ -17,6 +17,7 @@ export interface Product {
     name: string;
     emoji: string;
     color: string;
+    display_order: number;
   } | null;
   created_at: string;
   updated_at: string;
@@ -47,7 +48,7 @@ export function useProducts() {
         .from('products')
         .select(`
           *,
-          category:product_categories(id, name, emoji, color)
+          category:product_categories(id, name, emoji, color, display_order)
         `)
         .order('name', { ascending: true });
       
