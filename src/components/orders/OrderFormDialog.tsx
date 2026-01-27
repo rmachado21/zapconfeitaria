@@ -31,7 +31,9 @@ import {
   MapPin,
   Truck,
   FileText,
+  ChevronDown,
 } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useClients, ClientFormData } from "@/hooks/useClients";
 import { useProducts, Product } from "@/hooks/useProducts";
 import { OrderFormData, Order, formatOrderNumber } from "@/hooks/useOrders";
@@ -693,117 +695,148 @@ export function OrderFormDialog({ open, onOpenChange, onSubmit, isLoading, editO
               </div>
             </div>
 
-            {/* Delivery Date and Time */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="delivery_date"
-                render={({ field }) => (
-                  <FormItem className="overflow-hidden">
-                    <FormLabel className="flex items-center gap-1.5">
-                      <CalendarDays className="h-4 w-4" />
-                      Data de Entrega
-                    </FormLabel>
-                    <FormControl>
-                      <Input type="date" {...field} className="max-w-full" />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Delivery Section - Collapsible */}
+            <Collapsible defaultOpen={isEditMode || !!form.getValues("delivery_date")}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full justify-between px-0 py-2 h-auto font-normal hover:bg-transparent"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <Truck className="h-4 w-4 text-muted-foreground" />
+                    Entrega
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-4 pt-2">
+                {/* Delivery Date and Time */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="delivery_date"
+                    render={({ field }) => (
+                      <FormItem className="overflow-hidden">
+                        <FormLabel className="flex items-center gap-1.5">
+                          <CalendarDays className="h-4 w-4" />
+                          Data de Entrega
+                        </FormLabel>
+                        <FormControl>
+                          <Input type="date" {...field} className="max-w-full" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-              <FormField
-                control={form.control}
-                name="delivery_time"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" />
-                      Horário
-                    </FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ""}>
+                  <FormField
+                    control={form.control}
+                    name="delivery_time"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center gap-1.5">
+                          <Clock className="h-4 w-4" />
+                          Horário
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {Array.from({ length: 36 }, (_, i) => {
+                              const hour = Math.floor(i / 2) + 6;
+                              const minute = (i % 2) * 30;
+                              const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
+                              return (
+                                <SelectItem key={time} value={time}>
+                                  {time}
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Delivery Address */}
+                <FormField
+                  control={form.control}
+                  name="delivery_address"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <MapPin className="h-4 w-4" />
+                        Endereço de Entrega
+                      </FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione..." />
-                        </SelectTrigger>
+                        <Input placeholder="Rua, número, bairro..." {...field} />
                       </FormControl>
-                      <SelectContent>
-                        {Array.from({ length: 36 }, (_, i) => {
-                          const hour = Math.floor(i / 2) + 6;
-                          const minute = (i % 2) * 30;
-                          const time = `${hour.toString().padStart(2, "0")}:${minute.toString().padStart(2, "0")}`;
-                          return (
-                            <SelectItem key={time} value={time}>
-                              {time}
-                            </SelectItem>
-                          );
-                        })}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            {/* Delivery Address */}
-            <FormField
-              control={form.control}
-              name="delivery_address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" />
-                    Endereço de Entrega
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Rua, número, bairro..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                {/* Delivery Fee */}
+                <FormField
+                  control={form.control}
+                  name="delivery_fee"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-1.5">
+                        <Truck className="h-4 w-4" />
+                        Taxa de Entrega
+                      </FormLabel>
+                      <FormControl>
+                        <CurrencyInput value={field.value || 0} onChange={field.onChange} placeholder="R$ 0,00" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
-            {/* Delivery Fee */}
-            <FormField
-              control={form.control}
-              name="delivery_fee"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <Truck className="h-4 w-4" />
-                    Taxa de Entrega
-                  </FormLabel>
-                  <FormControl>
-                    <CurrencyInput value={field.value || 0} onChange={field.onChange} placeholder="R$ 0,00" />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Notes */}
-            <FormField
-              control={form.control}
-              name="notes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-1.5">
-                    <FileText className="h-4 w-4" />
+            {/* Notes Section - Collapsible */}
+            <Collapsible defaultOpen={isEditMode || !!form.getValues("notes")}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full justify-between px-0 py-2 h-auto font-normal hover:bg-transparent"
+                >
+                  <span className="flex items-center gap-2 text-sm font-medium">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
                     Observações
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Detalhes sobre decoração, restrições alimentares..."
-                      className="resize-none"
-                      rows={2}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-2">
+                <FormField
+                  control={form.control}
+                  name="notes"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Detalhes sobre decoração, restrições alimentares..."
+                          className="resize-none"
+                          rows={2}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </CollapsibleContent>
+            </Collapsible>
 
             {/* Total */}
             {items.length > 0 && (
