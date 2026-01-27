@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Search, Plus, Minus, Check, Package } from "lucide-react";
 import { Product } from "@/hooks/useProducts";
 import { formatCurrency } from "@/lib/masks";
@@ -17,8 +18,7 @@ interface ProductSelectorProps {
 
 export function ProductSelector({ products, onAddProduct, addedProductIds = [] }: ProductSelectorProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [quantity, setQuantity] = useState<number>(1);
+  const [dialogProduct, setDialogProduct] = useState<Product | null>(null);
   const [justAdded, setJustAdded] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
@@ -54,48 +54,20 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
   }, [filteredProducts]);
 
   const handleProductClick = (product: Product) => {
-    if (selectedProduct?.id === product.id) {
-      setSelectedProduct(null);
-      setQuantity(1);
-    } else {
-      setSelectedProduct(product);
-      setQuantity(product.unit_type === "kg" ? 0.5 : 1);
-    }
+    setDialogProduct(product);
   };
 
-  const handleAddProduct = () => {
-    if (!selectedProduct) return;
+  const handleConfirmAdd = (quantity: number) => {
+    if (!dialogProduct) return;
 
-    onAddProduct(selectedProduct, quantity);
+    onAddProduct(dialogProduct, quantity);
     
     // Visual feedback
-    setJustAdded(selectedProduct.id);
+    setJustAdded(dialogProduct.id);
     setTimeout(() => setJustAdded(null), 800);
 
-    setSelectedProduct(null);
-    setQuantity(1);
+    setDialogProduct(null);
   };
-
-  const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const defaultQty = product.unit_type === "kg" ? 0.5 : 1;
-    onAddProduct(product, defaultQty);
-    
-    // Visual feedback
-    setJustAdded(product.id);
-    setTimeout(() => setJustAdded(null), 800);
-  };
-
-  const getUnitLabel = (unitType: string) => {
-    switch (unitType) {
-      case "kg": return "Kg";
-      case "cento": return "Cento";
-      default: return "Un";
-    }
-  };
-
-  const getStep = (unitType: string) => unitType === "kg" ? 0.5 : 1;
-  const getMinQty = (unitType: string) => unitType === "kg" ? 0.5 : 1;
 
   return (
     <div className="space-y-3">
@@ -110,8 +82,8 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
         />
       </div>
 
-      {/* Product Grid - Removed nested scroll, added padding for sticky panel */}
-      <div className={cn("space-y-4", selectedProduct && "pb-28")}>
+      {/* Product Grid */}
+      <div className="space-y-4">
         {Object.entries(groupedProducts.groups).map(([categoryName, categoryProducts]) => (
           <div key={categoryName} className="space-y-2">
             <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
@@ -125,11 +97,9 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
                 <ProductCard
                   key={product.id}
                   product={product}
-                  isSelected={selectedProduct?.id === product.id}
                   isAdded={addedProductIds.includes(product.id)}
                   justAdded={justAdded === product.id}
                   onClick={() => handleProductClick(product)}
-                  onQuickAdd={(e) => handleQuickAdd(product, e)}
                   isMobile={isMobile}
                 />
               ))}
@@ -152,11 +122,9 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
                 <ProductCard
                   key={product.id}
                   product={product}
-                  isSelected={selectedProduct?.id === product.id}
                   isAdded={addedProductIds.includes(product.id)}
                   justAdded={justAdded === product.id}
                   onClick={() => handleProductClick(product)}
-                  onQuickAdd={(e) => handleQuickAdd(product, e)}
                   isMobile={isMobile}
                 />
               ))}
@@ -172,112 +140,26 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
         )}
       </div>
 
-      {/* Quantity Controls - Sticky at bottom when product is selected */}
-      {selectedProduct && (
-        <div className="sticky bottom-0 left-0 right-0 bg-background pt-2 -mx-1 px-1 pb-1 z-20">
-          <Card className="p-3 bg-primary/5 border-primary/20 animate-fade-in shadow-lg">
-            {/* Line 1: Product name + Quantity controls */}
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-sm truncate">{selectedProduct.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {formatCurrency(selectedProduct.sale_price)}/{getUnitLabel(selectedProduct.unit_type)}
-                </p>
-              </div>
-              
-              <div className="flex items-center gap-1">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    const step = getStep(selectedProduct.unit_type);
-                    const min = getMinQty(selectedProduct.unit_type);
-                    setQuantity(Math.max(min, quantity - step));
-                  }}
-                  disabled={quantity <= getMinQty(selectedProduct.unit_type)}
-                >
-                  <Minus className="h-3 w-3" />
-                </Button>
-                
-                <div className="relative">
-                  <Input
-                    type="text"
-                    inputMode="decimal"
-                    value={quantity}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(",", ".");
-                      const numValue = parseFloat(value);
-                      if (!isNaN(numValue) && numValue >= 0) {
-                        setQuantity(numValue);
-                      } else if (value === "" || value === ".") {
-                        setQuantity(0);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddProduct();
-                      }
-                    }}
-                    className="w-16 h-8 text-center text-sm pr-6"
-                  />
-                  <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
-                    {getUnitLabel(selectedProduct.unit_type).substring(0, 2)}
-                  </span>
-                </div>
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => {
-                    const step = getStep(selectedProduct.unit_type);
-                    setQuantity(quantity + step);
-                  }}
-                >
-                  <Plus className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-            
-            {/* Line 2: Subtotal + Add button */}
-            <div className="mt-3 pt-2 border-t border-primary/10 flex justify-between items-center">
-              <div>
-                <span className="text-xs text-muted-foreground">Subtotal</span>
-                <span className="font-semibold text-base ml-2">
-                  {formatCurrency(selectedProduct.sale_price * quantity)}
-                </span>
-              </div>
-              <Button
-                type="button"
-                onClick={handleAddProduct}
-                className="gap-1.5"
-              >
-                <Plus className="h-4 w-4" />
-                Adicionar
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+      {/* Add Product Dialog */}
+      <AddProductDialog
+        product={dialogProduct}
+        open={!!dialogProduct}
+        onOpenChange={(open) => !open && setDialogProduct(null)}
+        onConfirm={handleConfirmAdd}
+      />
     </div>
   );
 }
 
 interface ProductCardProps {
   product: Product;
-  isSelected: boolean;
   isAdded: boolean;
   justAdded: boolean;
   onClick: () => void;
-  onQuickAdd: (e: React.MouseEvent) => void;
   isMobile: boolean;
 }
 
-function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuickAdd, isMobile }: ProductCardProps) {
+function ProductCard({ product, isAdded, justAdded, onClick, isMobile }: ProductCardProps) {
   const unitLabel = product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
 
   return (
@@ -286,9 +168,8 @@ function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuick
       className={cn(
         "p-2 cursor-pointer transition-all duration-200 relative overflow-hidden group",
         "hover:shadow-md hover:border-primary/30",
-        isSelected && "ring-2 ring-primary border-primary bg-primary/5",
         justAdded && "animate-pulse bg-success/20 ring-2 ring-success border-success",
-        isAdded && !isSelected && !justAdded && "border-success/50 bg-success/5"
+        isAdded && !justAdded && "border-success/50 bg-success/5"
       )}
     >
       {/* Horizontal Layout - Compact */}
@@ -332,7 +213,10 @@ function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuick
             "h-7 w-7 shrink-0 shadow-sm transition-opacity",
             isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
           )}
-          onClick={onQuickAdd}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
         >
           <Plus className="h-3.5 w-3.5" />
         </Button>
@@ -356,5 +240,143 @@ function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuick
         </div>
       )}
     </Card>
+  );
+}
+
+interface AddProductDialogProps {
+  product: Product | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (quantity: number) => void;
+}
+
+function AddProductDialog({ product, open, onOpenChange, onConfirm }: AddProductDialogProps) {
+  const [quantity, setQuantity] = useState(1);
+
+  // Reset quantity when product changes
+  useEffect(() => {
+    if (product) {
+      setQuantity(product.unit_type === "kg" ? 0.5 : 1);
+    }
+  }, [product]);
+
+  if (!product) return null;
+
+  const unitLabel = product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
+  const step = product.unit_type === "kg" ? 0.5 : 1;
+  const minQty = product.unit_type === "kg" ? 0.5 : 1;
+
+  const handleDecrement = () => {
+    setQuantity(Math.max(minQty, quantity - step));
+  };
+
+  const handleIncrement = () => {
+    setQuantity(quantity + step);
+  };
+
+  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(",", ".");
+    const numValue = parseFloat(value);
+    if (!isNaN(numValue) && numValue >= 0) {
+      setQuantity(numValue);
+    } else if (value === "" || value === ".") {
+      setQuantity(0);
+    }
+  };
+
+  const handleConfirm = () => {
+    const finalQty = quantity < minQty ? minQty : quantity;
+    onConfirm(finalQty);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-xs">
+        <DialogHeader>
+          <DialogTitle className="sr-only">Adicionar Produto</DialogTitle>
+        </DialogHeader>
+
+        {/* Product Info */}
+        <div className="flex items-center gap-3">
+          {product.photo_url ? (
+            <div className="h-16 w-16 rounded-lg overflow-hidden bg-muted shrink-0">
+              <img
+                src={product.photo_url}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="h-16 w-16 rounded-lg bg-muted/50 flex items-center justify-center shrink-0">
+              <Package className="h-6 w-6 text-muted-foreground/30" />
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="font-medium leading-tight">{product.name}</p>
+            <p className="text-sm text-muted-foreground">
+              {formatCurrency(product.sale_price)} / {unitLabel}
+            </p>
+          </div>
+        </div>
+
+        {/* Quantity Controls */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium">Quantidade</label>
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-10 w-10"
+              onClick={handleDecrement}
+              disabled={quantity <= minQty}
+            >
+              <Minus className="h-4 w-4" />
+            </Button>
+            <div className="relative">
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={quantity}
+                onChange={handleQuantityChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    handleConfirm();
+                  }
+                }}
+                className="w-20 h-10 text-center text-lg font-medium pr-7"
+              />
+              <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                {unitLabel.substring(0, 2)}
+              </span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              className="h-10 w-10"
+              onClick={handleIncrement}
+            >
+              <Plus className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Subtotal */}
+        <div className="flex justify-between items-center py-3 border-t">
+          <span className="text-sm text-muted-foreground">Subtotal</span>
+          <span className="text-lg font-semibold">
+            {formatCurrency(product.sale_price * (quantity < minQty ? minQty : quantity))}
+          </span>
+        </div>
+
+        {/* Add Button */}
+        <Button onClick={handleConfirm} className="w-full gap-2">
+          <Plus className="h-4 w-4" />
+          Adicionar ao Pedido
+        </Button>
+      </DialogContent>
+    </Dialog>
   );
 }
