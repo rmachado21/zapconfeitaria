@@ -7,6 +7,7 @@ import { Search, Plus, Minus, Check, Package } from "lucide-react";
 import { Product } from "@/hooks/useProducts";
 import { formatCurrency } from "@/lib/masks";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProductSelectorProps {
   products: Product[];
@@ -19,6 +20,7 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState<number>(1);
   const [justAdded, setJustAdded] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   // Filter and group products by category
   const filteredProducts = useMemo(() => {
@@ -108,17 +110,17 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
         />
       </div>
 
-      {/* Product Grid */}
-      <div className="max-h-[280px] overflow-y-auto space-y-4 pr-1">
+      {/* Product Grid - Removed nested scroll, added padding for sticky panel */}
+      <div className={cn("space-y-4", selectedProduct && "pb-28")}>
         {Object.entries(groupedProducts.groups).map(([categoryName, categoryProducts]) => (
           <div key={categoryName} className="space-y-2">
-            <div className="flex items-center gap-2 sticky top-0 bg-background py-1">
+            <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                 {categoryProducts[0]?.category?.emoji} {categoryName}
               </span>
               <div className="flex-1 h-px bg-border" />
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {categoryProducts.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -128,6 +130,7 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
                   justAdded={justAdded === product.id}
                   onClick={() => handleProductClick(product)}
                   onQuickAdd={(e) => handleQuickAdd(product, e)}
+                  isMobile={isMobile}
                 />
               ))}
             </div>
@@ -137,14 +140,14 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
         {groupedProducts.uncategorized.length > 0 && (
           <div className="space-y-2">
             {Object.keys(groupedProducts.groups).length > 0 && (
-              <div className="flex items-center gap-2 sticky top-0 bg-background py-1">
+              <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   📦 Outros
                 </span>
                 <div className="flex-1 h-px bg-border" />
               </div>
             )}
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {groupedProducts.uncategorized.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -154,6 +157,7 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
                   justAdded={justAdded === product.id}
                   onClick={() => handleProductClick(product)}
                   onQuickAdd={(e) => handleQuickAdd(product, e)}
+                  isMobile={isMobile}
                 />
               ))}
             </div>
@@ -168,94 +172,96 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
         )}
       </div>
 
-      {/* Quantity Controls (shown when product is selected) */}
+      {/* Quantity Controls - Sticky at bottom when product is selected */}
       {selectedProduct && (
-        <Card className="p-3 bg-primary/5 border-primary/20 animate-fade-in">
-          {/* Line 1: Product name + Quantity controls */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1 min-w-0">
-              <p className="font-medium text-sm truncate">{selectedProduct.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatCurrency(selectedProduct.sale_price)}/{getUnitLabel(selectedProduct.unit_type)}
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => {
-                  const step = getStep(selectedProduct.unit_type);
-                  const min = getMinQty(selectedProduct.unit_type);
-                  setQuantity(Math.max(min, quantity - step));
-                }}
-                disabled={quantity <= getMinQty(selectedProduct.unit_type)}
-              >
-                <Minus className="h-3 w-3" />
-              </Button>
-              
-              <div className="relative">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={quantity}
-                  onChange={(e) => {
-                    const value = e.target.value.replace(",", ".");
-                    const numValue = parseFloat(value);
-                    if (!isNaN(numValue) && numValue >= 0) {
-                      setQuantity(numValue);
-                    } else if (value === "" || value === ".") {
-                      setQuantity(0);
-                    }
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      e.preventDefault();
-                      handleAddProduct();
-                    }
-                  }}
-                  className="w-16 h-8 text-center text-sm pr-6"
-                />
-                <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
-                  {getUnitLabel(selectedProduct.unit_type).substring(0, 2)}
-                </span>
+        <div className="sticky bottom-0 left-0 right-0 bg-background pt-2 -mx-1 px-1 pb-1 z-20">
+          <Card className="p-3 bg-primary/5 border-primary/20 animate-fade-in shadow-lg">
+            {/* Line 1: Product name + Quantity controls */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="font-medium text-sm truncate">{selectedProduct.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {formatCurrency(selectedProduct.sale_price)}/{getUnitLabel(selectedProduct.unit_type)}
+                </p>
               </div>
               
+              <div className="flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    const step = getStep(selectedProduct.unit_type);
+                    const min = getMinQty(selectedProduct.unit_type);
+                    setQuantity(Math.max(min, quantity - step));
+                  }}
+                  disabled={quantity <= getMinQty(selectedProduct.unit_type)}
+                >
+                  <Minus className="h-3 w-3" />
+                </Button>
+                
+                <div className="relative">
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    value={quantity}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(",", ".");
+                      const numValue = parseFloat(value);
+                      if (!isNaN(numValue) && numValue >= 0) {
+                        setQuantity(numValue);
+                      } else if (value === "" || value === ".") {
+                        setQuantity(0);
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddProduct();
+                      }
+                    }}
+                    className="w-16 h-8 text-center text-sm pr-6"
+                  />
+                  <span className="absolute right-1.5 top-1/2 -translate-y-1/2 text-[10px] text-muted-foreground">
+                    {getUnitLabel(selectedProduct.unit_type).substring(0, 2)}
+                  </span>
+                </div>
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => {
+                    const step = getStep(selectedProduct.unit_type);
+                    setQuantity(quantity + step);
+                  }}
+                >
+                  <Plus className="h-3 w-3" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Line 2: Subtotal + Add button */}
+            <div className="mt-3 pt-2 border-t border-primary/10 flex justify-between items-center">
+              <div>
+                <span className="text-xs text-muted-foreground">Subtotal</span>
+                <span className="font-semibold text-base ml-2">
+                  {formatCurrency(selectedProduct.sale_price * quantity)}
+                </span>
+              </div>
               <Button
                 type="button"
-                variant="outline"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => {
-                  const step = getStep(selectedProduct.unit_type);
-                  setQuantity(quantity + step);
-                }}
+                onClick={handleAddProduct}
+                className="gap-1.5"
               >
-                <Plus className="h-3 w-3" />
+                <Plus className="h-4 w-4" />
+                Adicionar
               </Button>
             </div>
-          </div>
-          
-          {/* Line 2: Subtotal + Add button */}
-          <div className="mt-3 pt-2 border-t border-primary/10 flex justify-between items-center">
-            <div>
-              <span className="text-xs text-muted-foreground">Subtotal</span>
-              <span className="font-semibold text-base ml-2">
-                {formatCurrency(selectedProduct.sale_price * quantity)}
-              </span>
-            </div>
-            <Button
-              type="button"
-              onClick={handleAddProduct}
-              className="gap-1.5"
-            >
-              <Plus className="h-4 w-4" />
-              Adicionar
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        </div>
       )}
     </div>
   );
@@ -268,71 +274,75 @@ interface ProductCardProps {
   justAdded: boolean;
   onClick: () => void;
   onQuickAdd: (e: React.MouseEvent) => void;
+  isMobile: boolean;
 }
 
-function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuickAdd }: ProductCardProps) {
+function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuickAdd, isMobile }: ProductCardProps) {
   const unitLabel = product.unit_type === "kg" ? "Kg" : product.unit_type === "cento" ? "Cento" : "Un";
 
   return (
     <Card
       onClick={onClick}
       className={cn(
-        "p-2.5 cursor-pointer transition-all duration-200 relative overflow-hidden group",
+        "p-2 cursor-pointer transition-all duration-200 relative overflow-hidden group",
         "hover:shadow-md hover:border-primary/30",
         isSelected && "ring-2 ring-primary border-primary bg-primary/5",
         justAdded && "animate-pulse bg-success/20 ring-2 ring-success border-success",
         isAdded && !isSelected && !justAdded && "border-success/50 bg-success/5"
       )}
     >
-      {/* Photo or Placeholder - Compact size */}
-      {product.photo_url ? (
-        <div className="h-12 w-12 mx-auto mb-2 rounded-md overflow-hidden bg-muted shrink-0">
-          <img
-            src={product.photo_url}
-            alt={product.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      ) : (
-        <div className="h-12 w-12 mx-auto mb-2 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
-          <Package className="h-5 w-5 text-muted-foreground/30" />
-        </div>
-      )}
-
-      {/* Product Info */}
-      <div className="space-y-1">
-        <p className="text-xs font-medium leading-tight line-clamp-2 min-h-[2rem]">
-          {product.name}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold text-primary">
-            {formatCurrency(product.sale_price)}
-          </span>
-          <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
-            {unitLabel}
-          </Badge>
-        </div>
-      </div>
-
-      {/* Quick Add Button */}
-      <Button
-        type="button"
-        size="icon"
-        variant="default"
-        className={cn(
-          "absolute top-1.5 right-1.5 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity",
-          "shadow-sm"
+      {/* Horizontal Layout - Compact */}
+      <div className="flex items-center gap-2">
+        {/* Photo - Smaller and on the side */}
+        {product.photo_url ? (
+          <div className="h-10 w-10 rounded-md overflow-hidden bg-muted shrink-0">
+            <img
+              src={product.photo_url}
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="h-10 w-10 rounded-md bg-muted/50 flex items-center justify-center shrink-0">
+            <Package className="h-4 w-4 text-muted-foreground/30" />
+          </div>
         )}
-        onClick={onQuickAdd}
-      >
-        <Plus className="h-3 w-3" />
-      </Button>
+
+        {/* Info */}
+        <div className="flex-1 min-w-0">
+          <p className="text-xs font-medium leading-tight line-clamp-1">
+            {product.name}
+          </p>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-xs font-semibold text-primary">
+              {formatCurrency(product.sale_price)}
+            </span>
+            <Badge variant="secondary" className="text-[9px] px-1 py-0 h-4">
+              {unitLabel}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Quick Add Button - Always visible on mobile */}
+        <Button
+          type="button"
+          size="icon"
+          variant="default"
+          className={cn(
+            "h-7 w-7 shrink-0 shadow-sm transition-opacity",
+            isMobile ? "opacity-100" : "opacity-0 group-hover:opacity-100"
+          )}
+          onClick={onQuickAdd}
+        >
+          <Plus className="h-3.5 w-3.5" />
+        </Button>
+      </div>
 
       {/* Added Indicator */}
       {isAdded && !justAdded && (
-        <div className="absolute top-1.5 left-1.5">
-          <div className="h-5 w-5 rounded-full bg-success flex items-center justify-center">
-            <Check className="h-3 w-3 text-success-foreground" />
+        <div className="absolute top-1 left-1">
+          <div className="h-4 w-4 rounded-full bg-success flex items-center justify-center">
+            <Check className="h-2.5 w-2.5 text-success-foreground" />
           </div>
         </div>
       )}
@@ -340,8 +350,8 @@ function ProductCard({ product, isSelected, isAdded, justAdded, onClick, onQuick
       {/* Just Added Animation */}
       {justAdded && (
         <div className="absolute inset-0 flex items-center justify-center bg-success/20 animate-fade-in">
-          <div className="h-10 w-10 rounded-full bg-success flex items-center justify-center animate-scale-in">
-            <Check className="h-5 w-5 text-success-foreground" />
+          <div className="h-8 w-8 rounded-full bg-success flex items-center justify-center animate-scale-in">
+            <Check className="h-4 w-4 text-success-foreground" />
           </div>
         </div>
       )}
