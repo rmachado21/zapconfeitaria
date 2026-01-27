@@ -1,5 +1,11 @@
 import { useState } from 'react';
 import {
+  DragDropContext,
+  Droppable,
+  Draggable,
+  DropResult,
+} from '@hello-pangea/dnd';
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -15,7 +21,7 @@ import {
   getCategoryColorClasses 
 } from '@/hooks/useProductCategories';
 import { CategoryFormDialog } from './CategoryFormDialog';
-import { Pencil, Trash2, Plus, Lightbulb, Loader2 } from 'lucide-react';
+import { Pencil, Trash2, Plus, Lightbulb, Loader2, GripVertical } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -34,7 +40,7 @@ interface CategoryManagerProps {
 }
 
 export function CategoryManager({ open, onOpenChange }: CategoryManagerProps) {
-  const { categories, isLoading, createCategory, updateCategory, deleteCategory } = useProductCategories();
+  const { categories, isLoading, createCategory, updateCategory, deleteCategory, reorderCategories } = useProductCategories();
   const [formOpen, setFormOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ProductCategory | null>(null);
@@ -72,6 +78,28 @@ export function CategoryManager({ open, onOpenChange }: CategoryManagerProps) {
 
   const handleAddSuggested = async (suggestion: CategoryFormData) => {
     await createCategory.mutateAsync(suggestion);
+  };
+
+  const handleDragEnd = async (result: DropResult) => {
+    if (!result.destination) return;
+    
+    const sourceIndex = result.source.index;
+    const destinationIndex = result.destination.index;
+    
+    if (sourceIndex === destinationIndex) return;
+
+    // Create new order
+    const reordered = Array.from(categories);
+    const [removed] = reordered.splice(sourceIndex, 1);
+    reordered.splice(destinationIndex, 0, removed);
+
+    // Build update payload
+    const updates = reordered.map((cat, index) => ({
+      id: cat.id,
+      display_order: index,
+    }));
+
+    await reorderCategories.mutateAsync(updates);
   };
 
   const suggestedNotAdded = SUGGESTED_CATEGORIES.filter(
@@ -117,7 +145,7 @@ export function CategoryManager({ open, onOpenChange }: CategoryManagerProps) {
                 </div>
               )}
 
-              {/* Category List */}
+              {/* Category List with Drag & Drop */}
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -127,39 +155,79 @@ export function CategoryManager({ open, onOpenChange }: CategoryManagerProps) {
                   <p>Nenhuma categoria cadastrada</p>
                 </div>
               ) : (
-                <div className="space-y-2">
-                  {categories.map((category) => (
-                    <div
-                      key={category.id}
-                      className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/5 transition-colors"
-                    >
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium",
-                        getCategoryColorClasses(category.color)
-                      )}>
-                        {category.emoji} {category.name}
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => handleEdit(category)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                          onClick={() => handleDeleteClick(category)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                <DragDropContext onDragEnd={handleDragEnd}>
+                  <Droppable droppableId="categories">
+                    {(provided) => (
+                      <div
+                        {...provided.droppableProps}
+                        ref={provided.innerRef}
+                        className="space-y-2"
+                      >
+                        {categories.map((category, index) => (
+                          <Draggable
+                            key={category.id}
+                            draggableId={category.id}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={cn(
+                                  "flex items-center justify-between p-3 rounded-lg border bg-card transition-colors",
+                                  snapshot.isDragging 
+                                    ? "shadow-lg ring-2 ring-primary/20" 
+                                    : "hover:bg-accent/5"
+                                )}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    {...provided.dragHandleProps}
+                                    className="p-1 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors"
+                                  >
+                                    <GripVertical className="h-4 w-4" />
+                                  </div>
+                                  <span className={cn(
+                                    "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-sm font-medium",
+                                    getCategoryColorClasses(category.color)
+                                  )}>
+                                    {category.emoji} {category.name}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => handleEdit(category)}
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                    onClick={() => handleDeleteClick(category)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    )}
+                  </Droppable>
+                </DragDropContext>
+              )}
+
+              {/* Reorder hint */}
+              {categories.length > 1 && (
+                <p className="text-xs text-center text-muted-foreground">
+                  Arraste para reordenar as categorias
+                </p>
               )}
 
               {/* Add Button */}
