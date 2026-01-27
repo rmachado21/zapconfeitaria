@@ -84,7 +84,9 @@ export function ProductSelector({ products, onAddProduct, addedProductIds = [] }
 
       {/* Product Grid */}
       <div className="space-y-4">
-        {Object.entries(groupedProducts.groups).map(([categoryName, categoryProducts]) => (
+        {Object.entries(groupedProducts.groups)
+          .sort(([a], [b]) => a.localeCompare(b, 'pt-BR'))
+          .map(([categoryName, categoryProducts]) => (
           <div key={categoryName} className="space-y-2">
             <div className="flex items-center gap-2 sticky top-0 bg-background py-1 z-10">
               <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
