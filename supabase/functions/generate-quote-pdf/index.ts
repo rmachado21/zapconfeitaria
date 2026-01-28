@@ -7,6 +7,9 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// Pix icon in base64 (official teal color #32BCAD)
+const PIX_ICON_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADaElEQVR4nO2ZS2gTURSGv0ljrY9qfeBbFHGhiFpcKC5ciLhRwYUguBIRXIgLV4IILl2IC0FciIgr3blyIaILwQe+UPGBYlFRq9ZXa9VYk8bjf+EGQjIzmcncmVTywyWZSe49/7nnnnPuzARaaMFHjAWWAkuA6cB4YBjQEXGfPwG3gfPAOeB1NRudCmwC7gJpoBziMa33LQeGeWn0aGAHcL+Exj1N7z0J7AQmBWl8HrAzYMO+p+ee74F5fhkeChwAXofo0O/0Ergf+NJLw13ACeCaT4YJcSRtc5qJwA5gkR/GjwC3IjCepnOyO1CjTaEDwGM7P+4FjgJfIzROiN0BDrkZfwK4E7JxQnz23WfDdDxFAbFNINPsh0FqP2wEqgJi25/cMoF04CywMSD2GBntNANI+mEYsAi4GZJ9Qpx+17d9Qpy+17PNBPI04CwwMCD2CPA5YPsdwGmgqxbbhDgBeBlgGx3ADOBJyHZLhddcIx0GrAhBZ7OmH8AKYLbfhoF5wP0QNbek/8AZYKJfhgFDgAchGuakJ8ACYJxfhgFdNI0haufXg3F2jvTLMOB7yCMQ0lLqOtDVy40pujL/DTLKEEeYu2m7l5sSoS9pFnCFJqELdM2Ng/QMlrq/i37gJU0i7wcFaQpYQxOJeyHbDGtprW8c6AfWBKl9Oq2kSYR5HlgL7A3K8EZgL7CN5hD5deAIMMOu8SPAVOAoMJHoE+rF4E9gPDAU2GlXt9GHRB+Ah4AqG4YBbUArTaQf+J24FLhHE4l7IeuD1v6hNJl+YEfI9h8Ax4A6e0ZRoTPsDNm+V8cKXQ8Z0OdhXOgMnA7Z/lvgX6AT+AOoB84CA0K2/wG4Sm6pJsA2EKkwCGw3fGMUZAJ0A+dsG5NeB0rNxoT+YG9IJq3QAhwG/gNm4kI/8ASIxG1N+xF9Dx3e9HvBNKL3tKr0O3hI8xgBdNA8IruR/AM2kZvNGAcs1zqMJPeN8EloOuBu4t80Qk/gB9kVbVT0AU/QhXZIlmcD2Wsb/4L/Af7qRuzfDfwNbCU6dAEdwHN9XwQMcXhsIvlL2D8BDyj8N20p9AAvbRv9EtGfhRxCf8HKCP0lXqmj0GvKz0bbALfbmwGpz1uI5gfyJeC+09OCNS5ETYk/Eb3/ZNCS8gvB4a2IJyepIQAAAABJRU5ErkJggg==";
+
 interface QuoteRequest {
   orderId: string;
   saveToStorage?: boolean;
@@ -434,7 +437,15 @@ const handler = async (req: Request): Promise<Response> => {
       doc.setFontSize(10);
 
       if (typedProfile.pix_key) {
-        doc.text(`Chave Pix: ${typedProfile.pix_key}`, margin, yPos);
+        // Draw Pix icon
+        const pixIconSize = 5;
+        try {
+          doc.addImage(PIX_ICON_BASE64, 'PNG', margin, yPos - 4, pixIconSize, pixIconSize);
+          doc.text(`Chave Pix: ${typedProfile.pix_key}`, margin + pixIconSize + 2, yPos);
+        } catch {
+          // Fallback without icon if image fails
+          doc.text(`Chave Pix: ${typedProfile.pix_key}`, margin, yPos);
+        }
         yPos += 7;
       }
 
