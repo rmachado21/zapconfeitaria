@@ -10,6 +10,9 @@ const corsHeaders = {
 // Pix icon in base64 (official teal color #32BCAD)
 const PIX_ICON_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAADaElEQVR4nO2ZS2gTURSGv0ljrY9qfeBbFHGhiFpcKC5ciLhRwYUguBIRXIgLV4IILl2IC0FciIgr3blyIaILwQe+UPGBYlFRq9ZXa9VYk8bjf+EGQjIzmcncmVTywyWZSe49/7nnnnPuzARaaMFHjAWWAkuA6cB4YBjQEXGfPwG3gfPAOeB1NRudCmwC7gJpoBziMa33LQeGeWn0aGAHcL+Exj1N7z0J7AQmBWl8HrAzYMO+p+ee74F5fhkeChwAXofo0O/0Ergf+NJLw13ACeCaT4YJcSRtc5qJwA5gkR/GjwC3IjCepnOyO1CjTaEDwGM7P+4FjgJfIzROiN0BDrkZfwK4E7JxQnz23WfDdDxFAbFNINPsh0FqP2wEqgJi25/cMoF04CywMSD2GBntNANI+mEYsAi4GZJ9Qpx+17d9Qpy+17PNBPI04CwwMCD2CPA5YPsdwGmgqxbbhDgBeBlgGx3ADOBJyHZLhddcIx0GrAhBZ7OmH8AKYLbfhoF5wP0QNbek/8AZYKJfhgFDgAchGuakJ8ACYJxfhgFdNI0haufXg3F2jvTLMOB7yCMQ0lLqOtDVy40pujL/DTLKEEeYu2m7l5sSoS9pFnCFJqELdM2Ng/QMlrq/i37gJU0i7wcFaQpYQxOJeyHbDGtprW8c6AfWBKl9Oq2kSYR5HlgL7A3K8EZgL7CN5hD5deAIMMOu8SPAVOAoMJHoE+rF4E9gPDAU2GlXt9GHRB+Ah4AqG4YBbUArTaQf+J24FLhHE4l7IeuD1v6hNJl+YEfI9h8Ax4A6e0ZRoTPsDNm+V8cKXQ8Z0OdhXOgMnA7Z/lvgX6AT+AOoB84CA0K2/wG4Sm6pJsA2EKkwCGw3fGMUZAJ0A+dsG5NeB0rNxoT+YG9IJq3QAhwG/gNm4kI/8ASIxG1N+xF9Dx3e9HvBNKL3tKr0O3hI8xgBdNA8IruR/AM2kZvNGAcs1zqMJPeN8EloOuBu4t80Qk/gB9kVbVT0AU/QhXZIlmcD2Wsb/4L/Af7qRuzfDfwNbCU6dAEdwHN9XwQMcXhsIvlL2D8BDyj8N20p9AAvbRv9EtGfhRxCf8HKCP0lXqmj0GvKz0bbALfbmwGpz1uI5gfyJeC+09OCNS5ETYk/Eb3/ZNCS8gvB4a2IJyepIQAAAABJRU5ErkJggg==";
 
+// Bank/institution icon in base64 (gray color for bank details)
+const BANK_ICON_BASE64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAAB+klEQVR4nO2YTUoDQRCFv4gLFyq4ceNCPIE38Ai6ELyBnsGFbhS8gSfQlYoewBvoRs+gC0EU/yLGxCJPKJgMk5numUzG+GBoZqa76nVVd1cXBAKBQCBQfnYB14EbwCPgFfBTw2/iNfn4FrgO3ABGgK5SG58B3AdeBGq0FPUi13sDuILJLpAaLgCPfDXsC3sWuEZT0wVy3wt+G44GlgAvQ3TqKxbcA4x4adgXdi+wP0Tj+xbjIu+GXQA8D9GuExe+y6zhNLASGBeSfSIZB67SphgBnIRowEWaY0OQ5G6I5vAC9sG+sFvdE60PeI+OYV5gvAEPkHGfLiSHgQnSr5C7kIz7k/0/ahnAfeBVmwtWIZkHfijMV5gzGaA7DPQbk0n2gYNp1lKaKxLCQT8OupYRuk3guM0FyeVAqe9xG3Q5zzHadeMo8YkLkl7gkg0F3SBMM+/SjAMDAR+0e3ELOk2aRj/0I65I+oHTpF8Ft4An5L4rU+gdyS3LbchV4gZNog/6ot6kSfSTLwPkfCqrA2+4J3oV6i+wP0S7VlzUBe8LuxM4RppGN/C4sFdpJmMpd0MSP0g76c9H2xL5IJ3lHYq1/nVhryL0W+G+gMuBDcBzL4o64FJAHXC0vSj9E7kEuOhFAbcOlIqNxBLgHFAK+sNuwXLCvv0TGECYpkx5TAAAAABJRU5ErkJggg==";
+
 interface QuoteRequest {
   orderId: string;
   saveToStorage?: boolean;
@@ -451,8 +454,20 @@ const handler = async (req: Request): Promise<Response> => {
 
       if (typedProfile.bank_details) {
         const bankLines = typedProfile.bank_details.split("\n");
+        const bankIconSize = 4;
+        let isFirstLine = true;
         for (const line of bankLines) {
-          doc.text(line, margin, yPos);
+          if (isFirstLine) {
+            try {
+              doc.addImage(BANK_ICON_BASE64, 'PNG', margin, yPos - 3, bankIconSize, bankIconSize);
+              doc.text(line, margin + bankIconSize + 2, yPos);
+            } catch {
+              doc.text(line, margin, yPos);
+            }
+            isFirstLine = false;
+          } else {
+            doc.text(line, margin + bankIconSize + 2, yPos);
+          }
           yPos += 6;
         }
       }
