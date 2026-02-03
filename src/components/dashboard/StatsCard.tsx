@@ -126,7 +126,7 @@ export function StatsCard({
                 )}
               >
                 <span>{trend.isPositive ? "↑" : "↓"}</span>
-                <span className="truncate">{Math.abs(trend.value)}% x mês anterior</span>
+                <span className="truncate">{Math.abs(trend.value)}% (comp. ao mês anterior)</span>
               </div>
             )}
             {mobileDescription && (
