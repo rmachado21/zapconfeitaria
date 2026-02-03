@@ -22,8 +22,10 @@ interface ReportRequest {
     date: string;
     type: 'income' | 'expense';
     description: string | null;
+    category: string | null;
     amount: number;
     order_id: string | null;
+    order_number: number | null;
   }>;
   expensesByCategory: Array<{
     category: string;
@@ -45,11 +47,39 @@ const formatDate = (dateString: string): string => {
     return date.toLocaleDateString("pt-BR", {
       day: "2-digit",
       month: "2-digit",
-      year: "numeric",
+      year: "2-digit",
     });
   } catch {
     return dateString;
   }
+};
+
+// Parse category from description if not provided
+const parseCategory = (description: string | null, providedCategory: string | null): { category: string; cleanDesc: string } => {
+  if (providedCategory) {
+    // If category is provided, clean the description
+    if (description && description.startsWith(providedCategory + ' - ')) {
+      return { category: providedCategory, cleanDesc: description.substring(providedCategory.length + 3) };
+    }
+    return { category: providedCategory, cleanDesc: description || 'Sem descrição' };
+  }
+  
+  if (!description) return { category: '', cleanDesc: 'Sem descrição' };
+  
+  const dashIndex = description.indexOf(' - ');
+  if (dashIndex > 0) {
+    const potentialCategory = description.substring(0, dashIndex);
+    const knownCategories = ['Insumos', 'Embalagens', 'Combustível', 'Equipamentos', 
+                            'Marketing', 'Aluguel', 'Sinal', 'Sinal 50%', 
+                            'Pagamento Final', 'Venda Avulsa', 'Outros'];
+    if (knownCategories.some(c => potentialCategory.includes(c))) {
+      return { 
+        category: potentialCategory, 
+        cleanDesc: description.substring(dashIndex + 3) 
+      };
+    }
+  }
+  return { category: '', cleanDesc: description };
 };
 
 // Fetch image as base64 for PDF embedding
@@ -72,6 +102,25 @@ const fetchImageAsBase64 = async (url: string): Promise<string | null> => {
     console.error('Error fetching image:', error);
     return null;
   }
+};
+
+// Draw table header (reusable for pagination)
+const drawTableHeader = (doc: jsPDF, yPos: number, margin: number, tableWidth: number, col1W: number, col2W: number, col3W: number): number => {
+  const headerHeight = 10;
+  
+  doc.setFillColor(180, 100, 70);
+  doc.roundedRect(margin, yPos, tableWidth, headerHeight, 1.5, 1.5, "F");
+  
+  doc.setFontSize(8);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(255, 255, 255);
+  const headerTextY = yPos + 7;
+  doc.text("Data", margin + 2, headerTextY);
+  doc.text("Categoria", margin + col1W + 2, headerTextY);
+  doc.text("Descrição", margin + col1W + col2W + 2, headerTextY);
+  doc.text("Valor", margin + col1W + col2W + col3W + 2, headerTextY);
+  
+  return yPos + headerHeight + 1;
 };
 
 const handler = async (req: Request): Promise<Response> => {
@@ -207,11 +256,43 @@ const handler = async (req: Request): Promise<Response> => {
 
     yPos += cardHeight + 8;
 
-    // Margin info for Gross Profit
-    doc.setFontSize(8);
-    doc.setTextColor(100, 100, 100);
-    doc.text(`Margem de lucro: ${summary.grossProfit.margin.toFixed(1)}%`, pageWidth - margin, yPos, { align: "right" });
-    yPos += 10;
+    // Gross Profit Details Section
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(80, 80, 80);
+    doc.text("Detalhamento do Lucro Bruto", margin, yPos);
+    yPos += 5;
+
+    const detailBoxWidth = (pageWidth - margin * 2 - 6) / 4;
+    const detailBoxHeight = 16;
+    const grossProfitDetails = [
+      { label: 'Faturamento', value: summary.grossProfit.revenue, color: [34, 197, 94] },
+      { label: 'Custo Produtos', value: summary.grossProfit.costs, color: [239, 68, 68] },
+      { label: 'Lucro Bruto', value: summary.grossProfit.profit, color: summary.grossProfit.profit >= 0 ? [34, 197, 94] : [234, 179, 8] },
+      { label: 'Margem', value: null, percentage: summary.grossProfit.margin, color: [100, 100, 100] },
+    ];
+
+    grossProfitDetails.forEach((detail, i) => {
+      const x = margin + i * (detailBoxWidth + 2);
+      
+      doc.setFillColor(248, 248, 248);
+      doc.roundedRect(x, yPos, detailBoxWidth, detailBoxHeight, 1.5, 1.5, "F");
+      
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(120, 120, 120);
+      doc.text(detail.label, x + detailBoxWidth / 2, yPos + 5, { align: "center" });
+      
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(detail.color[0], detail.color[1], detail.color[2]);
+      const valueText = detail.percentage !== undefined 
+        ? `${detail.percentage.toFixed(1)}%`
+        : formatCurrency(detail.value!);
+      doc.text(valueText, x + detailBoxWidth / 2, yPos + 12, { align: "center" });
+    });
+
+    yPos += detailBoxHeight + 10;
 
     // Transactions Table
     doc.setFontSize(11);
@@ -220,41 +301,30 @@ const handler = async (req: Request): Promise<Response> => {
     doc.text("Transações", margin, yPos);
     yPos += 6;
 
-    // Table headers
+    // Table dimensions
     const tableWidth = pageWidth - margin * 2;
     const col1W = tableWidth * 0.12; // Data
-    const col2W = tableWidth * 0.12; // Tipo
-    const col3W = tableWidth * 0.52; // Descrição
+    const col2W = tableWidth * 0.22; // Categoria
+    const col3W = tableWidth * 0.42; // Descrição
     const col4W = tableWidth * 0.24; // Valor
-    const rowHeight = 8;
-    const headerHeight = 12;
+    const rowHeight = 7;
 
-    // Header row
-    doc.setFillColor(180, 100, 70);
-    doc.roundedRect(margin, yPos, tableWidth, headerHeight, 1.5, 1.5, "F");
-    
-    doc.setFontSize(9);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(255, 255, 255);
-    const headerTextY = yPos + 8;
-    doc.text("Data", margin + 3, headerTextY);
-    doc.text("Tipo", margin + col1W + 3, headerTextY);
-    doc.text("Descrição", margin + col1W + col2W + 3, headerTextY);
-    doc.text("Valor", margin + col1W + col2W + col3W + 3, headerTextY);
-    yPos += headerHeight + 1;
+    // Draw initial header
+    yPos = drawTableHeader(doc, yPos, margin, tableWidth, col1W, col2W, col3W);
 
     doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
 
-    // Transaction rows (limit to fit page)
-    const maxRowsPerPage = 25;
-    const displayTransactions = transactions.slice(0, maxRowsPerPage);
-    
-    displayTransactions.forEach((t, i) => {
+    // All transactions with proper pagination
+    transactions.forEach((t, i) => {
       // Check if we need a new page
-      if (yPos > pageHeight - 50) {
+      if (yPos > pageHeight - 40) {
         doc.addPage();
         yPos = 20;
+        // Redraw header on new page
+        yPos = drawTableHeader(doc, yPos, margin, tableWidth, col1W, col2W, col3W);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
       }
 
       // Alternating background
@@ -263,50 +333,68 @@ const handler = async (req: Request): Promise<Response> => {
       } else {
         doc.setFillColor(250, 248, 245);
       }
-      doc.rect(margin, yPos - 4, tableWidth, rowHeight, "F");
+      doc.rect(margin, yPos - 3.5, tableWidth, rowHeight, "F");
+
+      // Parse category and clean description
+      const { category, cleanDesc } = parseCategory(t.description, t.category);
 
       // Date
       doc.setTextColor(80, 80, 80);
-      doc.text(formatDate(t.date), margin + 3, yPos + 1);
+      doc.text(formatDate(t.date), margin + 2, yPos + 1);
 
-      // Type
-      if (t.type === 'income') {
-        doc.setTextColor(34, 197, 94);
-        doc.text("Receita", margin + col1W + 3, yPos + 1);
+      // Category
+      if (category) {
+        if (t.type === 'income') {
+          doc.setTextColor(34, 197, 94);
+        } else {
+          doc.setTextColor(239, 68, 68);
+        }
+        doc.text(category.substring(0, 18), margin + col1W + 2, yPos + 1);
       } else {
-        doc.setTextColor(239, 68, 68);
-        doc.text("Despesa", margin + col1W + 3, yPos + 1);
+        if (t.type === 'income') {
+          doc.setTextColor(34, 197, 94);
+          doc.text("Receita", margin + col1W + 2, yPos + 1);
+        } else {
+          doc.setTextColor(239, 68, 68);
+          doc.text("Despesa", margin + col1W + 2, yPos + 1);
+        }
       }
 
-      // Description (truncated)
+      // Description with order number if available
       doc.setTextColor(60, 60, 60);
-      const desc = (t.description || 'Sem descrição').substring(0, 45);
-      doc.text(desc, margin + col1W + col2W + 3, yPos + 1);
+      let descText = cleanDesc.substring(0, 38);
+      if (t.order_number) {
+        const orderSuffix = ` (#${String(t.order_number).padStart(4, '0')})`;
+        if (descText.length + orderSuffix.length > 42) {
+          descText = cleanDesc.substring(0, 38 - orderSuffix.length) + orderSuffix;
+        } else {
+          descText = descText + orderSuffix;
+        }
+      }
+      doc.text(descText, margin + col1W + col2W + 2, yPos + 1);
 
       // Amount
       if (t.type === 'income') {
         doc.setTextColor(34, 197, 94);
-        doc.text(`+ ${formatCurrency(t.amount)}`, margin + col1W + col2W + col3W + 3, yPos + 1);
+        doc.text(`+ ${formatCurrency(t.amount)}`, margin + col1W + col2W + col3W + 2, yPos + 1);
       } else {
         doc.setTextColor(239, 68, 68);
-        doc.text(`- ${formatCurrency(t.amount)}`, margin + col1W + col2W + col3W + 3, yPos + 1);
+        doc.text(`- ${formatCurrency(t.amount)}`, margin + col1W + col2W + col3W + 2, yPos + 1);
       }
 
       yPos += rowHeight;
     });
 
-    // Show if there are more transactions
-    if (transactions.length > maxRowsPerPage) {
-      doc.setFontSize(7);
-      doc.setTextColor(120, 120, 120);
-      doc.text(`... e mais ${transactions.length - maxRowsPerPage} transações`, margin, yPos + 3);
-      yPos += 8;
-    }
+    yPos += 8;
 
-    yPos += 10;
+    // Expenses by Category (if there are expenses and space allows)
+    if (expensesByCategory.length > 0) {
+      // Check if we need a new page
+      if (yPos > pageHeight - 60) {
+        doc.addPage();
+        yPos = 20;
+      }
 
-    // Expenses by Category (if there are expenses)
-    if (expensesByCategory.length > 0 && yPos < pageHeight - 60) {
       doc.setFontSize(11);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(51, 51, 51);
@@ -320,21 +408,27 @@ const handler = async (req: Request): Promise<Response> => {
       const catCol3W = catTableWidth * 0.20;
 
       doc.setFillColor(100, 100, 100);
-      doc.roundedRect(margin, yPos, catTableWidth, 12, 1.5, 1.5, "F");
+      doc.roundedRect(margin, yPos, catTableWidth, 10, 1.5, 1.5, "F");
       
-      doc.setFontSize(9);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 255, 255);
-      const catHeaderTextY = yPos + 8;
+      const catHeaderTextY = yPos + 7;
       doc.text("Categoria", margin + 3, catHeaderTextY);
       doc.text("Valor", margin + catCol1W + 3, catHeaderTextY);
       doc.text("%", margin + catCol1W + catCol2W + 3, catHeaderTextY);
-      yPos += 13;
+      yPos += 11;
 
       doc.setFont("helvetica", "normal");
       doc.setFontSize(8);
 
       expensesByCategory.forEach((cat, i) => {
+        // Check if we need a new page
+        if (yPos > pageHeight - 20) {
+          doc.addPage();
+          yPos = 20;
+        }
+
         if (i % 2 === 0) {
           doc.setFillColor(255, 255, 255);
         } else {
@@ -353,19 +447,24 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Footer
-    yPos = pageHeight - 12;
-    doc.setFontSize(8);
-    doc.setTextColor(150, 150, 150);
-    const now = new Date();
-    const footerText = `Gerado em ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })} - ${companyName}`;
-    doc.text(footerText, pageWidth / 2, yPos, { align: "center" });
+    // Footer on last page
+    const totalPages = doc.internal.pages.length - 1;
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      const now = new Date();
+      const footerText = `Gerado em ${now.toLocaleDateString("pt-BR")} às ${now.toLocaleTimeString("pt-BR", { hour: '2-digit', minute: '2-digit' })} - ${companyName}`;
+      doc.text(footerText, pageWidth / 2, pageHeight - 8, { align: "center" });
+      doc.text(`Página ${i} de ${totalPages}`, pageWidth - margin, pageHeight - 8, { align: "right" });
+    }
 
     // Generate base64
     const pdfOutput = doc.output("datauristring");
+    const now = new Date();
     const fileName = `relatorio-financeiro-${period}-${now.toISOString().split('T')[0]}.pdf`;
 
-    console.log("Finance report PDF generated successfully");
+    console.log("Finance report PDF generated successfully with", transactions.length, "transactions across", totalPages, "pages");
 
     return new Response(
       JSON.stringify({ pdf: pdfOutput, fileName }),

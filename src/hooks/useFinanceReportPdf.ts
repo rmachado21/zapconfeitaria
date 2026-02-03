@@ -3,7 +3,18 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Transaction, PeriodFilter } from '@/hooks/useTransactions';
 
-interface ReportData {
+export interface ReportTransaction {
+  id: string;
+  date: string;
+  type: 'income' | 'expense';
+  description: string | null;
+  category: string | null;
+  amount: number;
+  order_id: string | null;
+  order_number: number | null;
+}
+
+export interface ReportData {
   period: PeriodFilter;
   periodLabel: string;
   periodDates: { start: string; end: string };
@@ -13,7 +24,7 @@ interface ReportData {
     totalExpenses: number;
     grossProfit: { profit: number; margin: number; revenue: number; costs: number };
   };
-  transactions: Transaction[];
+  transactions: ReportTransaction[];
   expensesByCategory: Array<{
     category: string;
     amount: number;
