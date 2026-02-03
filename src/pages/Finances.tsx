@@ -541,7 +541,7 @@ const Finances = () => {
             title={`Saldo (${displayPeriodLabel})`}
             value={formatCurrency(balance)}
             icon={Wallet}
-            variant={balance >= 0 ? 'primary' : 'warning'}
+            variant={balance >= 0 ? 'delivered' : 'warning'}
             trend={{
               value: Math.abs(Number(monthVariations.balance.toFixed(1))),
               isPositive: monthVariations.balance >= 0
