@@ -1,112 +1,107 @@
 
 
-## Plano: Ajustar Margens do PDF de Orçamento
+## Plano: Tornar Histórico de Pagamentos Mais Sutil
 
 ### Situação Atual
 
-Analisando o código e a imagem do PDF:
+O componente "Histórico de Pagamentos" no `OrderDetailDialog` possui estilo proeminente:
 
-| Configuração | Valor Atual | Observação |
-|--------------|-------------|------------|
-| **Margem** | 20mm | Margem lateral ampla |
-| **Coluna Produto** | 45% da largura | Trunca nomes longos em ~28-35 caracteres |
-| **Padding interno** | 5mm | Espaço fixo dentro das células |
-
-### Problemas Identificados
-
-1. **Margens muito largas**: 20mm de cada lado desperdiça espaço horizontal
-2. **Coluna Produto limitada**: Trunca nomes como "Topo Idade + Flores Natura [ADICIONAL]"
-3. **Proporções fixas**: Colunas Qtd, Unit. e Total ocupam mais espaço que precisam
+| Elemento | Estilo Atual | Problema |
+|----------|--------------|----------|
+| Container | `<Card>` com `p-4` | Destaque visual igual às seções principais |
+| Título | `font-semibold` | Muito enfático para info secundária |
+| Descrição | `font-medium` | Peso desnecessário |
+| Valor | `font-semibold text-success` | Verde vibrante chama muita atenção |
+| Borda | `border-b` entre itens | Separação visual forte |
 
 ### Alterações Propostas
 
-#### Arquivo: `supabase/functions/generate-quote-pdf/index.ts`
+#### Arquivo: `src/components/orders/OrderDetailDialog.tsx`
 
-##### 1. Reduzir margens laterais
+##### 1. Container mais leve
 ```typescript
 // Antes
-const margin = 20;
+<Card>
+  <CardContent className="p-4">
+
+// Depois - Sem Card, usa div com borda sutil
+<div className="border-t pt-4 mt-2">
+```
+
+##### 2. Título mais discreto
+```typescript
+// Antes
+<p className="font-semibold text-sm">Histórico de Pagamentos</p>
 
 // Depois
-const margin = 15;  // Reduz 5mm de cada lado = +10mm para conteúdo
+<p className="text-xs text-muted-foreground font-medium">Histórico de Pagamentos</p>
 ```
 
-##### 2. Redistribuir proporções das colunas
+##### 3. Descrição sem ênfase
 ```typescript
-// Antes (linhas 260-263)
-const col1Width = tableWidth * 0.45; // Produto
-const col2Width = tableWidth * 0.15; // Qtd
-const col3Width = tableWidth * 0.20; // Unit
-const col4Width = tableWidth * 0.20; // Total
-
-// Depois - Mais espaço para Produto
-const col1Width = tableWidth * 0.50; // Produto (+5%)
-const col2Width = tableWidth * 0.14; // Qtd (-1%)
-const col3Width = tableWidth * 0.18; // Unit (-2%)
-const col4Width = tableWidth * 0.18; // Total (-2%)
-```
-
-##### 3. Aumentar limite de caracteres do nome do produto
-```typescript
-// Antes (linhas 313, 316, 319)
-item.product_name.substring(0, 28)  // com [BRINDE]
-item.product_name.substring(0, 26)  // com [ADICIONAL]
-item.product_name.substring(0, 35)  // normal
+// Antes
+<span className="font-medium">{cleanDescription}</span>
 
 // Depois
-item.product_name.substring(0, 38)  // com [BRINDE]
-item.product_name.substring(0, 36)  // com [ADICIONAL]
-item.product_name.substring(0, 48)  // normal
+<span className="text-muted-foreground">{cleanDescription}</span>
 ```
 
-##### 4. Reduzir padding interno das células
+##### 4. Valores mais sutis
 ```typescript
-// Antes - padding de 5mm em vários locais
-margin + 5
+// Antes
+<span className={cn("font-semibold", transaction.type === "income" ? "text-success" : "text-destructive")}>
 
-// Depois - padding de 3mm
-margin + 3
+// Depois - Remove bold, usa cor mais suave
+<span className={cn(
+  "font-normal",
+  transaction.type === "income" ? "text-muted-foreground" : "text-muted-foreground"
+)}>
+```
+
+##### 5. Reduzir espaçamento e bordas
+```typescript
+// Antes
+<div className="flex items-center justify-between text-sm py-2 border-b last:border-b-0">
+
+// Depois
+<div className="flex items-center justify-between text-xs py-1.5">
 ```
 
 ### Comparativo Visual
 
 ```text
-ANTES (margin: 20mm)
-┌────────────────────────────────────────────────────────────┐
-│                                                            │
-│   ┌────────────────────────────────────────────────────┐   │
-│   │ Produto (45%)    │ Qtd │   Unit.   │    Total     │   │
-│   │ Topo Idade + Fl..│     │           │              │   │
-│   └────────────────────────────────────────────────────┘   │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
+ANTES (Proeminente)
+┌────────────────────────────────────────────┐
+│ 🕐 Histórico de Pagamentos                 │   ← Card com borda
+│ ─────────────────────────────────────────  │
+│ Sinal 51% - Tâmara Carla        +R$ 180,00 │   ← Verde vibrante, bold
+│ 22/01/2026                    ────────────  │
+└────────────────────────────────────────────┘
 
-DEPOIS (margin: 15mm)
-┌────────────────────────────────────────────────────────────┐
-│                                                            │
-│ ┌────────────────────────────────────────────────────────┐ │
-│ │ Produto (50%)              │ Qtd │  Unit. │   Total   │ │
-│ │ Topo Idade + Flores Natura │     │        │           │ │
-│ └────────────────────────────────────────────────────────┘ │
-│                                                            │
-└────────────────────────────────────────────────────────────┘
+DEPOIS (Sutil)
+─────────────────────────────────────────────
+🕐 Histórico de Pagamentos                      ← Apenas linha divisória
+   Sinal 51% - Tâmara Carla         +R$ 180,00  ← Texto muted, sem bold
+   22/01/2026
 ```
-
-### Ganho de Espaço
-
-| Item | Antes | Depois | Ganho |
-|------|-------|--------|-------|
-| Largura útil | 170mm | 180mm | +10mm |
-| Coluna Produto | 76.5mm | 90mm | +13.5mm |
-| Caracteres Produto | 35 | 48 | +13 chars |
 
 ### Resumo das Alterações
 
-**Arquivo a modificar**: `supabase/functions/generate-quote-pdf/index.ts`
+| Linha | Alteração |
+|-------|-----------|
+| 706-707 | Trocar `<Card><CardContent className="p-4">` por `<div className="border-t pt-4 mt-2">` |
+| 708 | Reduzir margin: `mb-3` → `mb-2` |
+| 710 | Título: `font-semibold text-sm` → `text-xs text-muted-foreground font-medium` |
+| 712 | Espaçamento: `space-y-2` → `space-y-1` |
+| 731 | Itens: `text-sm py-2 border-b last:border-b-0` → `text-xs py-1.5` |
+| 735 | Descrição: `font-medium` → `text-muted-foreground` |
+| 746-749 | Valor: remover `font-semibold`, usar `text-muted-foreground` para ambos |
+| 756-757 | Fechar com `</div>` em vez de `</CardContent></Card>` |
 
-1. **Linha 194**: `margin = 20` para `margin = 15`
-2. **Linhas 260-263**: Novas proporções das colunas (50/14/18/18)
-3. **Linhas 279-282**: Padding interno de 5 para 3
-4. **Linhas 313, 316, 319**: Limites de caracteres aumentados
-5. **Linhas 323-324, 328, 339**: Padding das outras colunas
+### Benefícios
+
+1. **Hierarquia visual**: Info principal (valores, status) permanece destacada
+2. **Menos ruído**: Histórico fica disponível mas não compete por atenção
+3. **Consistência**: Alinha com o conceito de informação secundária
+4. **Mobile-friendly**: Menos elementos visuais = leitura mais rápida
 
