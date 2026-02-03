@@ -1,123 +1,91 @@
 
 
-## Plano: Reorganizar Cards na Página Financeiro
+## Plano: Refinar Cores das Barras nos Gráficos
 
-### Objetivo
-Organizar os 4 StatsCards em 2 linhas (grid 2x2) no mobile e reordenar na sequência: **Saldo → Lucro Bruto → Receitas → Despesas**
+### Problema
+As barras de progresso dos cards "Top 5 Produtos" e "Quantidade Vendida" usam `hsl(var(--primary))` (laranja forte), criando contraste excessivo que compete com elementos de ação e destaca demais os dados.
 
-### Estado Atual
+### Solução Proposta
+Trocar para tons de verde/teal mais suaves, alinhados com a paleta já usada no gráfico de "Receitas por Produto" (ProductRevenueChart), que usa tons como `hsl(155, 60%, 40%)`.
 
-**Layout:**
+### Paleta Atual vs Proposta
+
+| Posição | Atual (laranja agressivo) | Proposta (verde/teal suave) |
+|---------|---------------------------|------------------------------|
+| #1 | `hsl(var(--primary))` | `hsl(160, 45%, 45%)` |
+| #2 | `hsl(var(--primary) / 0.85)` | `hsl(155, 40%, 50%)` |
+| #3 | `hsl(var(--primary) / 0.7)` | `hsl(150, 35%, 55%)` |
+| #4 | `hsl(var(--primary) / 0.55)` | `hsl(145, 30%, 60%)` |
+| #5 | `hsl(var(--primary) / 0.4)` | `hsl(140, 25%, 65%)` |
+
+### Visualização
+
+```text
+ANTES (laranja saturado):        DEPOIS (verde suave):
+━━━━━━━━━━━━ 🟠                  ━━━━━━━━━━━━ 🟢
+━━━━━━━━━━ 🟠                    ━━━━━━━━━━ 🟢
+━━━━━━━ 🟠                       ━━━━━━━ 🟢
 ```
-Mobile: 1 coluna (cards empilhados verticalmente)
-grid-cols-1 sm:grid-cols-2 lg:grid-cols-4
-```
 
-**Ordem atual:**
-1. Saldo
-2. Receitas
-3. Despesas
-4. Lucro Bruto
+### Alterações Técnicas
 
-### Alterações Necessárias
+#### 1. `src/components/finances/TopProductsChart.tsx` (linha 45-51)
 
-#### `src/pages/Finances.tsx`
-
-**1. Alterar grid para 2 colunas no mobile:**
 ```typescript
 // ANTES
-<section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+const CHART_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--primary) / 0.85)',
+  'hsl(var(--primary) / 0.7)',
+  'hsl(var(--primary) / 0.55)',
+  'hsl(var(--primary) / 0.4)',
+];
 
 // DEPOIS
-<section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+const CHART_COLORS = [
+  'hsl(160, 45%, 45%)',  // Teal escuro
+  'hsl(155, 40%, 50%)',  // Teal médio
+  'hsl(150, 35%, 55%)',  // Verde suave
+  'hsl(145, 30%, 60%)',  // Verde claro
+  'hsl(140, 25%, 65%)',  // Verde mais claro
+];
 ```
 
-**2. Reordenar os cards:**
-```text
-ANTES:                    DEPOIS:
-┌──────────────────┐      ┌─────────┬─────────┐
-│ Saldo            │      │ Saldo   │ Lucro   │
-├──────────────────┤  →   │         │ Bruto   │
-│ Receitas         │      ├─────────┼─────────┤
-├──────────────────┤      │ Receitas│ Despesas│
-│ Despesas         │      │         │         │
-├──────────────────┤      └─────────┴─────────┘
-│ Lucro Bruto      │
-└──────────────────┘
-```
+#### 2. `src/components/finances/ProductQuantityChart.tsx` (linha 37-43)
 
-Nova ordem no código:
-1. `<StatsCard title="Saldo" ... />`
-2. `<StatsCard title="Lucro Bruto" ... />` (mover para cima)
-3. `<StatsCard title="Receitas" ... />`
-4. `<StatsCard title="Despesas" ... />`
-
-### Detalhes Técnicos
+Mesma alteração de cores:
 
 ```typescript
-// Linha 539 - Alterar classe do grid
-<section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-  {/* 1. Saldo (permanece primeiro) */}
-  <StatsCard
-    title={`Saldo (${displayPeriodLabel})`}
-    value={formatCurrency(balance)}
-    icon={Wallet}
-    variant={balance >= 0 ? 'delivered' : 'warning'}
-    trend={{ ... }}
-  />
-  
-  {/* 2. Lucro Bruto (movido para segundo) */}
-  <StatsCard
-    title="Lucro Bruto"
-    value={formatCurrency(estimatedProfit.profit)}
-    subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
-    icon={PiggyBank}
-    variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
-    tooltip="..."
-    mobileDescription="Vendas - Custo dos produtos. Toque para detalhes."
-    onClick={() => setGrossProfitDialogOpen(true)}
-  />
-  
-  {/* 3. Receitas (movido para terceiro) */}
-  <StatsCard
-    title="Receitas"
-    value={formatCurrency(totalIncome)}
-    icon={TrendingUp}
-    variant="success"
-    trend={{ ... }}
-  />
-  
-  {/* 4. Despesas (permanece último) */}
-  <StatsCard
-    title="Despesas"
-    value={formatCurrency(totalExpenses)}
-    icon={TrendingDown}
-    variant="warning"
-    trend={{ ... }}
-  />
-</section>
+const CHART_COLORS = [
+  'hsl(160, 45%, 45%)',
+  'hsl(155, 40%, 50%)',
+  'hsl(150, 35%, 55%)',
+  'hsl(145, 30%, 60%)',
+  'hsl(140, 25%, 65%)',
+];
 ```
 
-### Visualização Final (Mobile)
+Também atualizar a cor fixa usada nos itens expandidos (linha 192):
 
-```text
-┌─────────────────┬─────────────────┐
-│ 💰 Saldo        │ 🐷 Lucro Bruto  │
-│ -R$ 27,70       │ R$ 122,50       │
-│ ↓ 95.2% vs mês  │ Margem: 52.2%   │
-├─────────────────┼─────────────────┤
-│ 📈 Receitas     │ 📉 Despesas     │
-│ R$ 400,00       │ R$ 427,70       │
-│ ↓ 95.3% vs mês  │ ↑ 95.4% vs mês  │
-└─────────────────┴─────────────────┘
+```typescript
+// ANTES
+className="... bg-primary/40"
+
+// DEPOIS  
+style={{ 
+  width: `${barWidth}%`,
+  backgroundColor: 'hsl(140, 25%, 65%)',
+}}
 ```
 
 ### Benefícios
-1. Melhor aproveitamento de espaço no mobile (grid 2x2 vs lista vertical)
-2. Ordem lógica: Saldo geral → Lucro → Entradas → Saídas
-3. Gap menor no mobile (gap-3) para melhor proporção
-4. Consistência com o layout do dashboard (Index.tsx)
 
-### Arquivo a Modificar
-- `src/pages/Finances.tsx` (linhas 539-579)
+1. **Menos agressivo**: Verde/teal é mais neutro e não compete com CTAs
+2. **Consistência**: Harmoniza com o gráfico de pizza "Receitas por Produto"
+3. **Hierarquia visual**: Dados ficam informativos sem gritar
+4. **Profissionalismo**: Paleta mais sofisticada e equilibrada
+
+### Arquivos a Modificar
+- `src/components/finances/TopProductsChart.tsx` (linhas 45-51)
+- `src/components/finances/ProductQuantityChart.tsx` (linhas 37-43, 192)
 
