@@ -197,22 +197,22 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
                 })}
               </div>
             ) : (
-              <div className="h-[240px] w-full">
+              <div className="h-[220px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={topProducts.map((p, i) => ({
                       ...p,
-                      displayName: `#${i + 1}  ${p.productName.length > 22 ? p.productName.substring(0, 21) + '…' : p.productName}`,
+                      displayName: `#${i + 1}  ${p.productName.length > 18 ? p.productName.substring(0, 17) + '…' : p.productName}`,
                       rank: i + 1,
                     }))}
                     layout="vertical"
-                    margin={{ top: 5, right: 40, left: 5, bottom: 5 }}
+                    margin={{ top: 5, right: 75, left: 0, bottom: 5 }}
                   >
                     <XAxis type="number" hide />
                     <YAxis
                       type="category"
                       dataKey="displayName"
-                      width={180}
+                      width={150}
                       tick={{ 
                         fill: 'hsl(var(--foreground))', 
                         fontSize: 12,
@@ -223,7 +223,7 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
                     <Bar
                       dataKey="orderCount"
                       radius={[0, 4, 4, 0]}
-                      maxBarSize={28}
+                      maxBarSize={24}
                     >
                       {topProducts.map((_, index) => (
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index]} />
