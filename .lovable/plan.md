@@ -1,91 +1,63 @@
 
+Objetivo
+- Deixar as barras/linhas dos cards “Top 5 Produtos” e “Quantidade Vendida” mais discretas, com tons de cinza claros e sutis, evitando o aspecto “agressivo”/saturado.
+- Manter boa leitura em light e dark mode (cores “theme-aware”).
 
-## Plano: Refinar Cores das Barras nos Gráficos
+Diagnóstico rápido (como está hoje)
+- Ambos os componentes usam uma paleta fixa de verdes/teal em `CHART_COLORS`, aplicada:
+  - TopProductsChart:
+    - Mobile: `style.backgroundColor = CHART_COLORS[index]`
+    - Desktop (Recharts): `<Cell fill={CHART_COLORS[index]} />`
+  - ProductQuantityChart:
+    - Top 5 e lista expandida: `style.backgroundColor = CHART_COLORS[colorIndex]` e um valor fixo no expandido.
+- Mesmo sendo mais suave que o laranja anterior, ainda há saturação perceptível nas barras.
 
-### Problema
-As barras de progresso dos cards "Top 5 Produtos" e "Quantidade Vendida" usam `hsl(var(--primary))` (laranja forte), criando contraste excessivo que compete com elementos de ação e destaca demais os dados.
+Solução proposta (cinzas sutis e consistentes com o tema)
+1) Trocar `CHART_COLORS` (em ambos os arquivos) para uma escala de cinza baseada em variáveis do tema (Shadcn/Tailwind tokens):
+- Usar `hsl(var(--muted-foreground) / <alpha>)` para gerar cinzas “macios” e responsivos ao dark mode.
+- Escala sugerida (do mais “presente” ao mais sutil):
+  - 0.30, 0.26, 0.22, 0.18, 0.14
 
-### Solução Proposta
-Trocar para tons de verde/teal mais suaves, alinhados com a paleta já usada no gráfico de "Receitas por Produto" (ProductRevenueChart), que usa tons como `hsl(155, 60%, 40%)`.
-
-### Paleta Atual vs Proposta
-
-| Posição | Atual (laranja agressivo) | Proposta (verde/teal suave) |
-|---------|---------------------------|------------------------------|
-| #1 | `hsl(var(--primary))` | `hsl(160, 45%, 45%)` |
-| #2 | `hsl(var(--primary) / 0.85)` | `hsl(155, 40%, 50%)` |
-| #3 | `hsl(var(--primary) / 0.7)` | `hsl(150, 35%, 55%)` |
-| #4 | `hsl(var(--primary) / 0.55)` | `hsl(145, 30%, 60%)` |
-| #5 | `hsl(var(--primary) / 0.4)` | `hsl(140, 25%, 65%)` |
-
-### Visualização
-
-```text
-ANTES (laranja saturado):        DEPOIS (verde suave):
-━━━━━━━━━━━━ 🟠                  ━━━━━━━━━━━━ 🟢
-━━━━━━━━━━ 🟠                    ━━━━━━━━━━ 🟢
-━━━━━━━ 🟠                       ━━━━━━━ 🟢
-```
-
-### Alterações Técnicas
-
-#### 1. `src/components/finances/TopProductsChart.tsx` (linha 45-51)
-
-```typescript
-// ANTES
+Exemplo:
+```ts
 const CHART_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--primary) / 0.85)',
-  'hsl(var(--primary) / 0.7)',
-  'hsl(var(--primary) / 0.55)',
-  'hsl(var(--primary) / 0.4)',
-];
-
-// DEPOIS
-const CHART_COLORS = [
-  'hsl(160, 45%, 45%)',  // Teal escuro
-  'hsl(155, 40%, 50%)',  // Teal médio
-  'hsl(150, 35%, 55%)',  // Verde suave
-  'hsl(145, 30%, 60%)',  // Verde claro
-  'hsl(140, 25%, 65%)',  // Verde mais claro
+  'hsl(var(--muted-foreground) / 0.30)',
+  'hsl(var(--muted-foreground) / 0.26)',
+  'hsl(var(--muted-foreground) / 0.22)',
+  'hsl(var(--muted-foreground) / 0.18)',
+  'hsl(var(--muted-foreground) / 0.14)',
 ];
 ```
 
-#### 2. `src/components/finances/ProductQuantityChart.tsx` (linha 37-43)
+2) Ajustar a lista expandida do “Quantidade Vendida” para não ter “cor fixa” fora da paleta
+- Hoje a lista expandida usa um `backgroundColor` hardcoded.
+- Trocar para algo derivado da própria paleta (ex.: `CHART_COLORS[CHART_COLORS.length - 1]`) para ficar consistente e fácil de ajustar no futuro.
 
-Mesma alteração de cores:
-
-```typescript
-const CHART_COLORS = [
-  'hsl(160, 45%, 45%)',
-  'hsl(155, 40%, 50%)',
-  'hsl(150, 35%, 55%)',
-  'hsl(145, 30%, 60%)',
-  'hsl(140, 25%, 65%)',
-];
+Exemplo:
+```ts
+backgroundColor: CHART_COLORS[CHART_COLORS.length - 1]
 ```
 
-Também atualizar a cor fixa usada nos itens expandidos (linha 192):
+3) (Opcional, se ainda ficar forte ou fraco após ver no preview) Ajuste fino de contraste
+- Se as barras ficarem “apagadas demais” no fundo `bg-muted`, aumentar levemente os alphas (ex.: +0.02).
+- Se ainda estiverem “fortes”, reduzir levemente os alphas (ex.: -0.02).
+- Essa regulagem é rápida porque fica centralizada no `CHART_COLORS`.
 
-```typescript
-// ANTES
-className="... bg-primary/40"
+Arquivos que serão alterados
+- `src/components/finances/TopProductsChart.tsx`
+  - Atualizar `CHART_COLORS` para a escala de cinzas com `--muted-foreground`.
+- `src/components/finances/ProductQuantityChart.tsx`
+  - Atualizar `CHART_COLORS` para a mesma escala de cinzas.
+  - Trocar a cor fixa da barra na lista expandida para usar `CHART_COLORS[...]`.
 
-// DEPOIS  
-style={{ 
-  width: `${barWidth}%`,
-  backgroundColor: 'hsl(140, 25%, 65%)',
-}}
-```
+Checklist de validação (QA)
+- Em /finances (mobile):
+  - Card “Top 5 Produtos”: barras com cinza suave, sem “gritar” visualmente, ainda legíveis.
+  - Card “Quantidade Vendida”: barras idem, e a lista expandida mantém a mesma linguagem de cor.
+- Em /finances (desktop):
+  - “Top 5 Produtos” (Recharts): as barras e labels continuam com boa leitura.
+- Testar em light e dark mode:
+  - Garantir que as barras não “somem” no dark, nem fiquem pesadas no light.
 
-### Benefícios
-
-1. **Menos agressivo**: Verde/teal é mais neutro e não compete com CTAs
-2. **Consistência**: Harmoniza com o gráfico de pizza "Receitas por Produto"
-3. **Hierarquia visual**: Dados ficam informativos sem gritar
-4. **Profissionalismo**: Paleta mais sofisticada e equilibrada
-
-### Arquivos a Modificar
-- `src/components/finances/TopProductsChart.tsx` (linhas 45-51)
-- `src/components/finances/ProductQuantityChart.tsx` (linhas 37-43, 192)
-
+Notas técnicas
+- O projeto já usa tokens HSL no `src/index.css` (ex.: `--muted-foreground`), então `hsl(var(--muted-foreground) / 0.xx)` tende a ficar bem consistente com o resto do sistema e automaticamente adaptável ao tema.
