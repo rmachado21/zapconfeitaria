@@ -82,16 +82,16 @@ export function StatsCard({
       )}
       onClick={onClick}
     >
-      <CardContent className="p-4 relative">
+      <CardContent className="p-3 md:p-4 relative">
         <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <div className="flex items-center gap-1.5 mb-1">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1 md:gap-1.5 mb-0.5 md:mb-1">
               <Icon className={cn(
-                "md:hidden h-4 w-4",
+                "md:hidden h-3.5 w-3.5 flex-shrink-0",
                 getTextColor('icon')
               )} />
               <p className={cn(
-                "text-xs font-medium",
+                "text-[10px] md:text-xs font-medium truncate",
                 getTextColor('title')
               )}>
                 {title}
@@ -101,7 +101,7 @@ export function StatsCard({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Info className={cn(
-                        "hidden md:block h-3.5 w-3.5 cursor-help",
+                        "hidden md:block h-3.5 w-3.5 cursor-help flex-shrink-0",
                         variant === 'primary' ? 'text-primary-foreground/60' 
                           : variant === 'delivered' ? 'text-sky-500/60 dark:text-sky-400/60'
                           : 'text-muted-foreground/60'
@@ -115,14 +115,14 @@ export function StatsCard({
               )}
             </div>
             <p className={cn(
-              "text-2xl font-display font-bold",
+              "text-xl md:text-2xl font-display font-bold",
               getTextColor('value')
             )}>
               {value}
             </p>
             {subtitle && (
               <p className={cn(
-                "text-xs mt-1",
+                "text-[10px] md:text-xs mt-0.5 md:mt-1",
                 getTextColor('subtitle')
               )}>
                 {subtitle}
@@ -130,16 +130,16 @@ export function StatsCard({
             )}
             {trend && (
               <div className={cn(
-                "flex items-center gap-1 mt-2 text-xs font-medium",
+                "flex items-center gap-0.5 md:gap-1 mt-1 md:mt-2 text-[10px] md:text-xs font-medium",
                 trend.isPositive ? 'text-success' : 'text-destructive'
               )}>
                 <span>{trend.isPositive ? '↑' : '↓'}</span>
-                <span>{Math.abs(trend.value)}% vs mês anterior</span>
+                <span className="truncate">{Math.abs(trend.value)}% vs mês anterior</span>
               </div>
             )}
             {mobileDescription && (
               <p className={cn(
-                "md:hidden text-[10px] mt-1.5 leading-tight",
+                "md:hidden text-[9px] mt-1 leading-tight line-clamp-2",
                 getTextColor('subtitle')
               )}>
                 {mobileDescription}
