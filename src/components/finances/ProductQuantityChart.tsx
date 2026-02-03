@@ -35,11 +35,11 @@ interface ProductQuantity {
 }
 
 const CHART_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--primary) / 0.85)',
-  'hsl(var(--primary) / 0.7)',
-  'hsl(var(--primary) / 0.55)',
-  'hsl(var(--primary) / 0.4)',
+  'hsl(160, 45%, 45%)',  // Teal escuro
+  'hsl(155, 40%, 50%)',  // Teal médio
+  'hsl(150, 35%, 55%)',  // Verde suave
+  'hsl(145, 30%, 60%)',  // Verde claro
+  'hsl(140, 25%, 65%)',  // Verde mais claro
 ];
 
 const formatQuantity = (qty: number, unitType: string) => {
@@ -188,10 +188,13 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
                           </span>
                         </div>
                         <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                          <div 
-                            className="h-full rounded-full transition-all duration-300 bg-primary/40"
-                            style={{ width: `${barWidth}%` }}
-                          />
+                        <div 
+                          className="h-full rounded-full transition-all duration-300"
+                          style={{ 
+                            width: `${barWidth}%`,
+                            backgroundColor: 'hsl(140, 25%, 65%)',
+                          }}
+                        />
                         </div>
                       </div>
                     );

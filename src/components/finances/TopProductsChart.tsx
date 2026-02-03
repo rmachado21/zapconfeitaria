@@ -43,11 +43,11 @@ interface TopProduct {
 }
 
 const CHART_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--primary) / 0.85)',
-  'hsl(var(--primary) / 0.7)',
-  'hsl(var(--primary) / 0.55)',
-  'hsl(var(--primary) / 0.4)',
+  'hsl(160, 45%, 45%)',  // Teal escuro
+  'hsl(155, 40%, 50%)',  // Teal médio
+  'hsl(150, 35%, 55%)',  // Verde suave
+  'hsl(145, 30%, 60%)',  // Verde claro
+  'hsl(140, 25%, 65%)',  // Verde mais claro
 ];
 
 export function TopProductsChart({ orders, selectedMonth, period }: TopProductsChartProps) {
