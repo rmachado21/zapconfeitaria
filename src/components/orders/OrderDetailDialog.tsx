@@ -25,6 +25,7 @@ import { getAvailableTemplates } from "@/lib/whatsappTemplates";
 import { WhatsAppTemplatePreview } from "./WhatsAppTemplatePreview";
 import { DepositAmountDialog } from "./DepositAmountDialog";
 import { DeliveryConfirmDialog } from "./DeliveryConfirmDialog";
+import { UrgencyBadge } from "@/components/shared/UrgencyBadge";
 import { ORDER_STATUS_CONFIG, OrderStatus } from "@/types";
 import {
   Calendar,
@@ -266,26 +267,7 @@ export function OrderDetailDialog({
     }
   };
 
-  const getDaysRemaining = (dateString: string | null) => {
-    if (!dateString) return null;
-    try {
-      const deliveryDate = parseISO(dateString);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      deliveryDate.setHours(0, 0, 0, 0);
-      const diff = differenceInDays(deliveryDate, today);
-
-      if (diff < 0) return { text: "Atrasado", urgent: "critical" as const };
-      if (diff === 0) return { text: "Hoje!", urgent: "critical" as const };
-      if (diff === 1) return { text: "Amanhã", urgent: "critical" as const };
-      if (diff <= 3) return { text: `${diff} dias`, urgent: "warning" as const };
-      return { text: `${diff} dias`, urgent: "normal" as const };
-    } catch {
-      return null;
-    }
-  };
-
-  const daysRemaining = order.status !== "delivered" ? getDaysRemaining(order.delivery_date) : null;
+  const showUrgencyBadge = order.status !== "delivered";
 
   const isMobile = typeof window !== 'undefined' && (window.innerWidth < 768 || 'ontouchstart' in window);
 
@@ -523,18 +505,7 @@ export function OrderDetailDialog({
                       <Calendar className="h-4 w-4" />
                       Data de Entrega
                     </div>
-                    {daysRemaining && (
-                      <span
-                        className={cn(
-                          "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                          daysRemaining.urgent === "critical" && "bg-red-500/50 text-red-900 dark:text-red-100",
-                          daysRemaining.urgent === "warning" && "bg-yellow-500/50 text-yellow-900 dark:text-yellow-100",
-                          daysRemaining.urgent === "normal" && "bg-muted text-muted-foreground",
-                        )}
-                      >
-                        {daysRemaining.text}
-                      </span>
-                    )}
+                    {showUrgencyBadge && <UrgencyBadge deliveryDate={order.delivery_date} />}
                   </div>
                   <p className="font-medium text-sm mt-1">{formatDate(order.delivery_date, order.delivery_time)}</p>
                 </CardContent>

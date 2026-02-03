@@ -2,13 +2,14 @@ import React from "react";
 import { Order, ORDER_STATUS_CONFIG } from "@/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Calendar, MapPin, ChevronRight, Package, Check, AlertTriangle, PackagePlus, StickyNote } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, parseISO, differenceInDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatOrderNumber } from "@/hooks/useOrders";
+import { UrgencyBadge } from "@/components/shared/UrgencyBadge";
+
 interface OrderCardProps {
   order: Order;
   onClick?: () => void;
@@ -42,26 +43,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
     }
   };
 
-  const getDaysRemaining = (dateString: string) => {
-    if (!dateString) return null;
-    try {
-      const deliveryDate = parseISO(dateString);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      deliveryDate.setHours(0, 0, 0, 0);
-      const diff = differenceInDays(deliveryDate, today);
-
-      if (diff < 0) return { text: "Atrasado", level: "critical" as const };
-      if (diff === 0) return { text: "Hoje!", level: "critical" as const };
-      if (diff === 1) return { text: "Amanhã", level: "critical" as const };
-      if (diff <= 3) return { text: `${diff} dias`, level: "warning" as const };
-      return { text: `${diff} dias`, level: "normal" as const };
-    } catch {
-      return null;
-    }
-  };
-
-  const daysRemaining = order.status !== "delivered" ? getDaysRemaining(order.deliveryDate) : null;
+  const showUrgencyBadge = order.status !== "delivered";
 
   // Check if deposit is overdue (more than 7 days since order creation)
   const getDepositOverdueDays = () => {
@@ -184,18 +166,7 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
               <Calendar className="h-3 w-3 text-muted-foreground" />
             </div>
             <span className="text-foreground font-medium">{formatDate(order.deliveryDate, order.deliveryTime)}</span>
-            {daysRemaining && (
-              <span
-                className={cn(
-                  "text-[10px] font-medium px-1.5 py-0.5 rounded",
-                  daysRemaining.level === "critical" && "bg-destructive/50 text-destructive-foreground",
-                  daysRemaining.level === "warning" && "bg-warning/50 text-warning-foreground",
-                  daysRemaining.level === "normal" && "bg-muted text-muted-foreground",
-                )}
-              >
-                {daysRemaining.text}
-              </span>
-            )}
+            {showUrgencyBadge && <UrgencyBadge deliveryDate={order.deliveryDate} />}
           </div>
           {order.deliveryAddress && (
             <div className="flex items-center gap-1.5 text-xs">
