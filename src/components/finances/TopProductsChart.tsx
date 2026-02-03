@@ -119,7 +119,7 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
     });
 
     const sorted = Array.from(productMap.values())
-      .sort((a, b) => b.quantity - a.quantity)
+      .sort((a, b) => b.orderCount - a.orderCount)
       .slice(0, 5);
 
     return { 
