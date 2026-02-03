@@ -191,7 +191,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Generate PDF
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 20;
+    const margin = 15;
     let yPos = 20;
 
     // Header with logo or company name
@@ -257,10 +257,10 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Items table - improved styling with borders
     const tableWidth = pageWidth - margin * 2;
-    const col1Width = tableWidth * 0.45; // Produto
-    const col2Width = tableWidth * 0.15; // Qtd
-    const col3Width = tableWidth * 0.20; // Unit
-    const col4Width = tableWidth * 0.20; // Total
+    const col1Width = tableWidth * 0.50; // Produto (50%)
+    const col2Width = tableWidth * 0.14; // Qtd (14%)
+    const col3Width = tableWidth * 0.18; // Unit (18%)
+    const col4Width = tableWidth * 0.18; // Total (18%)
     const rowHeight = 10;
 
     // Table header with terracotta color and rounded top corners
@@ -276,10 +276,10 @@ const handler = async (req: Request): Promise<Response> => {
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
-    doc.text("Produto", margin + 5, yPos + 1);
-    doc.text("Qtd", margin + col1Width + 5, yPos + 1);
-    doc.text("Unit.", margin + col1Width + col2Width + 5, yPos + 1);
-    doc.text("Total", margin + col1Width + col2Width + col3Width + 5, yPos + 1);
+    doc.text("Produto", margin + 3, yPos + 1);
+    doc.text("Qtd", margin + col1Width + 3, yPos + 1);
+    doc.text("Unit.", margin + col1Width + col2Width + 3, yPos + 1);
+    doc.text("Total", margin + col1Width + col2Width + col3Width + 3, yPos + 1);
     yPos += rowHeight + 2;
 
     // Items with borders
@@ -310,22 +310,22 @@ const handler = async (req: Request): Promise<Response> => {
       // Product name with BRINDE or ADICIONAL tag
       if (isGift) {
         doc.setTextColor(22, 163, 74); // Green for gifts
-        doc.text(`${item.product_name.substring(0, 28)} [BRINDE]`, margin + 5, yPos + 1);
+        doc.text(`${item.product_name.substring(0, 38)} [BRINDE]`, margin + 3, yPos + 1);
       } else if (isAdditional) {
         doc.setTextColor(100, 100, 100); // Muted gray for additional items
-        doc.text(`${item.product_name.substring(0, 26)} [ADICIONAL]`, margin + 5, yPos + 1);
+        doc.text(`${item.product_name.substring(0, 36)} [ADICIONAL]`, margin + 3, yPos + 1);
       } else {
         doc.setTextColor(60, 60, 60);
-        doc.text(item.product_name.substring(0, 35), margin + 5, yPos + 1);
+        doc.text(item.product_name.substring(0, 48), margin + 3, yPos + 1);
       }
       
       doc.setTextColor(60, 60, 60);
-      doc.text(`${item.quantity} ${unitLabel}`, margin + col1Width + 5, yPos + 1);
-      doc.text(formatCurrency(item.unit_price), margin + col1Width + col2Width + 5, yPos + 1);
+      doc.text(`${item.quantity} ${unitLabel}`, margin + col1Width + 3, yPos + 1);
+      doc.text(formatCurrency(item.unit_price), margin + col1Width + col2Width + 3, yPos + 1);
       
       // For gifts: show strikethrough price and R$ 0,00
       if (isGift) {
-        const priceX = margin + col1Width + col2Width + col3Width + 5;
+        const priceX = margin + col1Width + col2Width + col3Width + 3;
         doc.setTextColor(150, 150, 150);
         const priceText = formatCurrency(itemTotal);
         doc.text(priceText, priceX, yPos + 1);
@@ -336,7 +336,7 @@ const handler = async (req: Request): Promise<Response> => {
         doc.setTextColor(22, 163, 74);
         doc.text("R$ 0,00", priceX + priceWidth + 2, yPos + 1);
       } else {
-        doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 5, yPos + 1);
+        doc.text(formatCurrency(itemTotal), margin + col1Width + col2Width + col3Width + 3, yPos + 1);
       }
       
       yPos += rowHeight;
