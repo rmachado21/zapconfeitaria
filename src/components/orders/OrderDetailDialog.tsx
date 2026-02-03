@@ -703,13 +703,12 @@ export function OrderDetailDialog({
 
             {/* Payment History */}
             {orderTransactions.length > 0 && (
-              <Card>
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <History className="h-4 w-4 text-muted-foreground" />
-                    <p className="font-semibold text-sm">Histórico de Pagamentos</p>
+              <div className="border-t pt-4 mt-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <History className="h-3.5 w-3.5 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground font-medium">Histórico de Pagamentos</p>
                   </div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     {orderTransactions.map((transaction) => {
                       // Extract payment method from description
                       const description = transaction.description || "Pagamento";
@@ -728,33 +727,29 @@ export function OrderDetailDialog({
                       return (
                         <div
                           key={transaction.id}
-                          className="flex items-center justify-between text-sm py-2 border-b last:border-b-0"
+                          className="flex items-center justify-between text-xs py-1.5"
                         >
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{cleanDescription}</span>
+                              <span className="text-muted-foreground">{cleanDescription}</span>
                               {paymentMethodLabel && (
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal">
+                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground">
                                   {paymentMethodLabel}
                                 </Badge>
                               )}
                             </div>
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-[11px] text-muted-foreground/70">
                               {format(parseISO(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
                             </span>
                           </div>
-                          <span className={cn(
-                            "font-semibold",
-                            transaction.type === "income" ? "text-success" : "text-destructive"
-                          )}>
+                          <span className="text-muted-foreground">
                             {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
                           </span>
                         </div>
                       );
                     })}
                   </div>
-                </CardContent>
-              </Card>
+              </div>
             )}
 
             {/* Upfront Payment Card - Only show if neither deposit nor full payment received */}
