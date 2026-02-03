@@ -1,181 +1,112 @@
 
 
-## Plano: Melhorias no Relatório Financeiro PDF
+## Plano: Ajustar Margens do PDF de Orçamento
 
-### Análise do Estado Atual
+### Situação Atual
 
-Analisando o PDF atual (imagem) e comparando com os componentes implementados recentemente:
+Analisando o código e a imagem do PDF:
 
-| Aspecto | PDF Atual | TransactionListPanel / GrossProfitDetailDialog |
-|---------|-----------|------------------------------------------------|
-| **Categorias** | Não mostra categoria nas transações | Badge colorido com categoria |
-| **Link Pedido** | Não indica qual pedido | Mostra número do pedido (#0042) |
-| **Lucro Bruto** | Card simples só com valor | Cards detalhados: Faturamento, Custo, Lucro, Margem |
-| **Organização** | Transações misturadas | Separação clara e resumos visuais |
+| Configuração | Valor Atual | Observação |
+|--------------|-------------|------------|
+| **Margem** | 20mm | Margem lateral ampla |
+| **Coluna Produto** | 45% da largura | Trunca nomes longos em ~28-35 caracteres |
+| **Padding interno** | 5mm | Espaço fixo dentro das células |
 
-### Melhorias Propostas
+### Problemas Identificados
 
-#### 1. Adicionar Categoria nas Transações
+1. **Margens muito largas**: 20mm de cada lado desperdiça espaço horizontal
+2. **Coluna Produto limitada**: Trunca nomes como "Topo Idade + Flores Natura [ADICIONAL]"
+3. **Proporções fixas**: Colunas Qtd, Unit. e Total ocupam mais espaço que precisam
 
-**Situação atual**: A tabela mostra apenas "Receita" ou "Despesa" na coluna Tipo.
+### Alterações Propostas
 
-**Melhoria**: Mostrar a categoria extraída da descrição (ex: "Insumos", "Embalagens", "Sinal", "Pagamento Final").
+#### Arquivo: `supabase/functions/generate-quote-pdf/index.ts`
+
+##### 1. Reduzir margens laterais
+```typescript
+// Antes
+const margin = 20;
+
+// Depois
+const margin = 15;  // Reduz 5mm de cada lado = +10mm para conteúdo
+```
+
+##### 2. Redistribuir proporções das colunas
+```typescript
+// Antes (linhas 260-263)
+const col1Width = tableWidth * 0.45; // Produto
+const col2Width = tableWidth * 0.15; // Qtd
+const col3Width = tableWidth * 0.20; // Unit
+const col4Width = tableWidth * 0.20; // Total
+
+// Depois - Mais espaço para Produto
+const col1Width = tableWidth * 0.50; // Produto (+5%)
+const col2Width = tableWidth * 0.14; // Qtd (-1%)
+const col3Width = tableWidth * 0.18; // Unit (-2%)
+const col4Width = tableWidth * 0.18; // Total (-2%)
+```
+
+##### 3. Aumentar limite de caracteres do nome do produto
+```typescript
+// Antes (linhas 313, 316, 319)
+item.product_name.substring(0, 28)  // com [BRINDE]
+item.product_name.substring(0, 26)  // com [ADICIONAL]
+item.product_name.substring(0, 35)  // normal
+
+// Depois
+item.product_name.substring(0, 38)  // com [BRINDE]
+item.product_name.substring(0, 36)  // com [ADICIONAL]
+item.product_name.substring(0, 48)  // normal
+```
+
+##### 4. Reduzir padding interno das células
+```typescript
+// Antes - padding de 5mm em vários locais
+margin + 5
+
+// Depois - padding de 3mm
+margin + 3
+```
+
+### Comparativo Visual
 
 ```text
-Antes:  | 05/03/2026 | Despesa | Insumos - Shopping do Confeiteiro | -R$ 118,95 |
-Depois: | 05/03/2026 | Insumos | Shopping do Confeiteiro            | -R$ 118,95 |
+ANTES (margin: 20mm)
+┌────────────────────────────────────────────────────────────┐
+│                                                            │
+│   ┌────────────────────────────────────────────────────┐   │
+│   │ Produto (45%)    │ Qtd │   Unit.   │    Total     │   │
+│   │ Topo Idade + Fl..│     │           │              │   │
+│   └────────────────────────────────────────────────────┘   │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+
+DEPOIS (margin: 15mm)
+┌────────────────────────────────────────────────────────────┐
+│                                                            │
+│ ┌────────────────────────────────────────────────────────┐ │
+│ │ Produto (50%)              │ Qtd │  Unit. │   Total   │ │
+│ │ Topo Idade + Flores Natura │     │        │           │ │
+│ └────────────────────────────────────────────────────────┘ │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
 ```
 
-#### 2. Incluir Número do Pedido nas Receitas
+### Ganho de Espaço
 
-**Situação atual**: Descrição mostra "Sinal 50% - Raquel Vitoria" sem referência ao pedido.
+| Item | Antes | Depois | Ganho |
+|------|-------|--------|-------|
+| Largura útil | 170mm | 180mm | +10mm |
+| Coluna Produto | 76.5mm | 90mm | +13.5mm |
+| Caracteres Produto | 35 | 48 | +13 chars |
 
-**Melhoria**: Para transações com `order_id`, mostrar o número do pedido.
+### Resumo das Alterações
 
-```text
-Antes:  Sinal 50% - Raquel Vitoria
-Depois: Sinal 50% - Raquel Vitoria (#0042)
-```
+**Arquivo a modificar**: `supabase/functions/generate-quote-pdf/index.ts`
 
-#### 3. Expandir Seção de Lucro Bruto
-
-**Situação atual**: Apenas um card com o valor do lucro bruto e margem ao lado.
-
-**Melhoria**: Adicionar mini-seção de detalhamento similar ao GrossProfitDetailDialog.
-
-```text
-┌────────────────────────────────────────────────────┐
-│ Lucro Bruto                                        │
-├────────────────────────────────────────────────────┤
-│ Faturamento: R$ 234,50   │ Custo Produtos: R$ 112  │
-│ Lucro Bruto: R$ 122,50   │ Margem: 52.2%           │
-└────────────────────────────────────────────────────┘
-```
-
-#### 4. Melhorar Formatação da Coluna "Tipo"
-
-Trocar de "Receita/Despesa" genérico para a categoria específica da transação.
-
-#### 5. Paginação Aprimorada
-
-**Situação atual**: Limita a 25 transações e mostra "... e mais X transações".
-
-**Melhoria**: Implementar paginação real com múltiplas páginas, incluindo header da tabela em cada página.
-
-### Alterações Técnicas
-
-#### Arquivo: `supabase/functions/generate-finance-report-pdf/index.ts`
-
-##### 1. Atualizar interface para incluir `order_number` e `category`:
-```typescript
-interface ReportRequest {
-  // ...
-  transactions: Array<{
-    id: string;
-    date: string;
-    type: 'income' | 'expense';
-    description: string | null;
-    category: string | null;  // Nova propriedade
-    amount: number;
-    order_id: string | null;
-    order_number: number | null;  // Nova propriedade
-  }>;
-}
-```
-
-##### 2. Adicionar função para extrair categoria da descrição:
-```typescript
-const parseCategory = (description: string | null): { category: string; cleanDesc: string } => {
-  if (!description) return { category: '', cleanDesc: 'Sem descrição' };
-  const dashIndex = description.indexOf(' - ');
-  if (dashIndex > 0) {
-    const potentialCategory = description.substring(0, dashIndex);
-    const knownCategories = ['Insumos', 'Embalagens', 'Combustível', 'Equipamentos', 
-                            'Marketing', 'Aluguel', 'Sinal', 'Sinal 50%', 
-                            'Pagamento Final', 'Venda Avulsa', 'Outros'];
-    if (knownCategories.some(c => potentialCategory.includes(c))) {
-      return { 
-        category: potentialCategory, 
-        cleanDesc: description.substring(dashIndex + 3) 
-      };
-    }
-  }
-  return { category: '', cleanDesc: description };
-};
-```
-
-##### 3. Modificar tabela de transações para usar categoria:
-- Coluna "Tipo" → exibe a categoria (ex: "Insumos", "Sinal 50%")
-- Descrição mais limpa (sem repetir a categoria)
-- Adicionar número do pedido quando disponível
-
-##### 4. Adicionar seção expandida de Lucro Bruto:
-```typescript
-// Após os 4 cards de resumo, adicionar mini-tabela
-const grossProfitDetails = [
-  { label: 'Faturamento', value: summary.grossProfit.revenue },
-  { label: 'Custo Produtos', value: summary.grossProfit.costs },
-  { label: 'Lucro Bruto', value: summary.grossProfit.profit },
-];
-```
-
-##### 5. Implementar paginação real:
-```typescript
-// Remover limite fixo de 25
-// Adicionar lógica para nova página quando yPos > pageHeight - 50
-// Redesenhar header da tabela em cada nova página
-```
-
-#### Arquivo: `src/hooks/useFinanceReportPdf.ts` e `src/pages/Finances.tsx`
-
-Atualizar a construção do objeto `ReportData` para incluir:
-- `category` extraída de cada transação
-- `order_number` buscando do `orderNumberMap`
-
-### Estrutura Visual Proposta
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    [LOGO]                                   │
-│              RELATÓRIO FINANCEIRO                           │
-│         Este Mês (01/02/2026 - 28/02/2026)                 │
-├─────────────────────────────────────────────────────────────┤
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐       │
-│  │  Saldo   │ │ Receitas │ │ Despesas │ │L. Bruto  │       │
-│  │-R$ 27,70 │ │ R$ 400   │ │ R$ 427   │ │R$ 122,50 │       │
-│  └──────────┘ └──────────┘ └──────────┘ └──────────┘       │
-│                                                             │
-│  Detalhamento Lucro Bruto                                   │
-│  ┌──────────────────────┬──────────────────────┐           │
-│  │ Faturamento R$ 234   │ Custo Prod. R$ 112   │           │
-│  │ Lucro Bruto R$ 122   │ Margem 52.2%         │           │
-│  └──────────────────────┴──────────────────────┘           │
-│                                                             │
-│  Transações                                                 │
-│  ┌──────────────────────────────────────────────────────┐  │
-│  │ Data      │ Categoria       │ Descrição        │Valor│  │
-│  ├──────────────────────────────────────────────────────┤  │
-│  │ 05/03/26  │ Insumos         │ Shopping Conf.   │-119 │  │
-│  │ 02/02/26  │ Sinal 50%       │ Raquel V. #0042  │ +91 │  │
-│  │ 02/02/26  │ Pagto Final     │ Kelly M. #0038   │+105 │  │
-│  └──────────────────────────────────────────────────────┘  │
-│                                                             │
-│  Despesas por Categoria (já existente, mantém)             │
-└─────────────────────────────────────────────────────────────┘
-```
-
-### Arquivos a Modificar
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `supabase/functions/generate-finance-report-pdf/index.ts` | Adicionar parseCategory, seção Lucro Bruto, paginação |
-| `src/hooks/useFinanceReportPdf.ts` | Incluir category e order_number no ReportData |
-| `src/pages/Finances.tsx` | Passar dados expandidos para o hook de PDF |
-
-### Benefícios
-
-1. **Informação mais rica**: Categoria e número do pedido facilitam rastreabilidade
-2. **Consistência visual**: PDF reflete a mesma organização da interface web
-3. **Detalhamento do Lucro**: Usuário entende composição do lucro bruto no PDF
-4. **Relatório completo**: Paginação permite exportar todas as transações
+1. **Linha 194**: `margin = 20` para `margin = 15`
+2. **Linhas 260-263**: Novas proporções das colunas (50/14/18/18)
+3. **Linhas 279-282**: Padding interno de 5 para 3
+4. **Linhas 313, 316, 319**: Limites de caracteres aumentados
+5. **Linhas 323-324, 328, 339**: Padding das outras colunas
 
