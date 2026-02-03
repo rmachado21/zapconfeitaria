@@ -448,6 +448,21 @@ const Finances = () => {
   }, [filteredTransactions]);
 
   const handleExportPDF = useCallback(() => {
+    // Enrich transactions with category and order_number for PDF
+    const enrichedTransactions = listFilteredTransactions.map(t => {
+      const { category } = parseTransaction(t.description);
+      return {
+        id: t.id,
+        date: t.date,
+        type: t.type,
+        description: t.description,
+        category: category,
+        amount: t.amount,
+        order_id: t.order_id,
+        order_number: t.order_id ? orderNumberMap[t.order_id] || null : null,
+      };
+    });
+
     shareReportPdf({
       period,
       periodLabel: selectedMonth ? capitalizedMonthLabel : periodLabels[period],
@@ -458,10 +473,10 @@ const Finances = () => {
         totalExpenses,
         grossProfit: estimatedProfit,
       },
-      transactions: listFilteredTransactions,
+      transactions: enrichedTransactions,
       expensesByCategory,
     });
-  }, [period, selectedMonth, capitalizedMonthLabel, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, shareReportPdf]);
+  }, [period, selectedMonth, capitalizedMonthLabel, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, shareReportPdf, orderNumberMap]);
 
   // Get the period label to display in stats cards
   const displayPeriodLabel = selectedMonth ? capitalizedMonthLabel : periodLabels[period];
