@@ -149,7 +149,7 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
                         {product.orderCount} {product.orderCount === 1 ? "pedido" : "pedidos"}
                       </span>
                     </div>
-                    <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-1 w-full bg-muted rounded-full overflow-hidden">
                       <div
                         className="h-full rounded-full transition-all duration-300"
                         style={{
