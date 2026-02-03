@@ -1,101 +1,117 @@
 
-## Padronização do Badge de Urgência
 
-### Problema Identificado
+## Substituir Evolução Financeira por Top 5 Produtos Mais Vendidos
 
-Existem **inconsistências visuais** entre os componentes que exibem badges de urgência:
+### Justificativa da Escolha
 
-| Componente | Classes (Critical) | Classes (Warning) |
-|------------|-------------------|------------------|
-| `OrderCard.tsx` | `bg-destructive/50 text-destructive-foreground` | `bg-warning/50 text-warning-foreground` |
-| `OrderDetailDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
-| `PendingDepositsDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
-| `ActiveOrdersDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
-| `FullyPaidOrdersDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
+Entre as duas opções sugeridas ("Top 5 produtos mais vendidos" ou "Previsão de recebimentos"), optei pelo **Top 5 Produtos** porque:
 
-### Solução Proposta
+1. **Dados já disponíveis** - Temos `order_items` com `product_name` e `quantity`, e `orders` com `delivery_date` e `status`
+2. **Acionável para o negócio** - Ajuda a confeiteira a entender quais produtos priorizar, estocar ingredientes e precificar
+3. **Alinhado com filtros existentes** - Pode respeitar o período/mês selecionado na página
+4. **Previsão de recebimentos** exigiria lógica mais complexa de pagamentos pendentes e estimativas
 
-Criar um componente reutilizavel `UrgencyBadge` que centraliza:
-1. A logica de calculo de dias restantes
-2. O estilo visual padronizado
-3. Suporte a dark mode
+### Implementação
 
-### Implementacao
+#### 1. Criar Componente `TopProductsChart`
 
-#### 1. Criar Componente `UrgencyBadge`
+Novo arquivo: `src/components/finances/TopProductsChart.tsx`
 
-Novo arquivo: `src/components/shared/UrgencyBadge.tsx`
+**Props:**
+- `orders`: lista de pedidos com `order_items`
+- `selectedMonth`: mês selecionado (opcional)
+- `period`: período do filtro
+
+**Lógica:**
+```text
+1. Filtrar pedidos por período (mesma lógica do estimatedProfit)
+2. Considerar apenas pedidos "delivered" (entregues = confirmados)
+3. Agrupar order_items por product_name
+4. Somar quantity por produto
+5. Ordenar por quantidade decrescente
+6. Pegar top 5
+```
+
+**Visualização:**
+- Gráfico de barras horizontal (Recharts BarChart)
+- Mostrar nome do produto e quantidade vendida
+- Badge com posição (#1, #2, etc.)
+- Cores em gradiente do primário ao muted
+
+#### 2. Layout do Componente
 
 ```text
-+------------------------------------------+
-|  Props:                                  |
-|  - deliveryDate: string                  |
-|  - showForDelivered?: boolean            |
-+------------------------------------------+
-|  Retorna:                                |
-|  - null (se nao houver data)             |
-|  - Badge com texto e cor apropriada      |
-+------------------------------------------+
++--------------------------------------------------+
+|  Top 5 Produtos Mais Vendidos          [período] |
++--------------------------------------------------+
+|                                                  |
+|  #1  Bolo de Chocolate        ████████████  47   |
+|  #2  Cupcake Morango          ████████      32   |
+|  #3  Brownie                  ██████        24   |
+|  #4  Torta de Limão           ████          18   |
+|  #5  Brigadeiro (cento)       ███           12   |
+|                                                  |
+|  [ícone] Baseado em 23 pedidos entregues         |
++--------------------------------------------------+
 ```
 
-Classes padronizadas (baseadas no tema):
-- **Critical** (Atrasado, Hoje!, Amanha): `bg-red-500/50 text-red-900 dark:text-red-100`
-- **Warning** (2-3 dias): `bg-amber-500/50 text-amber-900 dark:text-amber-100`
-- **Normal** (4+ dias): `bg-muted text-muted-foreground`
+#### 3. Atualizar Página Finances.tsx
 
-#### 2. Atualizar Componentes Existentes
+**Remover:**
+- Import do `FinanceChart`
+- Uso do `<FinanceChart />` na section de charts
 
-| Arquivo | Alteracao |
-|---------|-----------|
-| `OrderCard.tsx` | Substituir logica inline por `<UrgencyBadge />` |
-| `OrderDetailDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
-| `PendingDepositsDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
-| `ActiveOrdersDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
-| `FullyPaidOrdersDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
+**Adicionar:**
+- Import do `TopProductsChart`
+- Passar `orders`, `selectedMonth` e `period` como props
 
-#### 3. Cores Escolhidas
-
-Optei por usar cores explicitas (`red-500`, `amber-500`) em vez de variaveis de tema (`destructive`, `warning`) porque:
-- Mantem consistencia visual entre todos os componentes
-- As cores do tema `destructive` e `warning` podem ter leves variacoes de tom
-- Cores explicitas garantem contraste adequado no dark mode
-
-### Estrutura do Componente
-
+**Grid atualizado:**
 ```tsx
-interface UrgencyBadgeProps {
-  deliveryDate: string | null;
-  showForDelivered?: boolean; // Para permitir ocultar em pedidos entregues
-}
+<section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <TopProductsChart 
+    orders={orders} 
+    selectedMonth={selectedMonth} 
+    period={period} 
+  />
+  <ExpenseCategoryChart transactions={filteredTransactions} />
+</section>
+```
 
-function UrgencyBadge({ deliveryDate, showForDelivered = false }: UrgencyBadgeProps) {
-  // Logica de calculo
-  const urgency = useMemo(() => {
-    if (!deliveryDate) return null;
-    const date = parseISO(deliveryDate);
-    const today = new Date();
-    // ... calculo de diff
-    return { text, level };
-  }, [deliveryDate]);
+#### 4. Detalhes Técnicos
 
-  if (!urgency) return null;
-
-  return (
-    <span className={cn(
-      "text-[10px] font-medium px-1.5 py-0.5 rounded",
-      urgency.level === "critical" && "bg-red-500/50 text-red-900 dark:text-red-100",
-      urgency.level === "warning" && "bg-amber-500/50 text-amber-900 dark:text-amber-100",
-      urgency.level === "normal" && "bg-muted text-muted-foreground",
-    )}>
-      {urgency.text}
-    </span>
-  );
+**Estrutura de dados:**
+```typescript
+interface TopProduct {
+  productName: string;
+  quantity: number;
+  revenue: number; // unit_price * quantity
+  orderCount: number; // em quantos pedidos apareceu
 }
 ```
 
-### Beneficios
+**Lógica de filtragem (reutilizar do estimatedProfit):**
+- Se `selectedMonth` definido: filtrar por mês específico
+- Senão: usar `period` (week/month/year/all)
+- Apenas pedidos com `status === 'delivered'`
+- Filtrar por `delivery_date`
 
-1. **DRY** - Logica de urgencia em um unico lugar
-2. **Consistencia** - Mesma aparencia em todos os lugares
-3. **Manutencao** - Alteracoes futuras em um unico arquivo
-4. **Dark Mode** - Suporte garantido e testado
+**Estado vazio:**
+- Mostrar ilustração + texto "Nenhum pedido entregue no período"
+- Botão para ajustar período
+
+### Arquivos a Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/finances/TopProductsChart.tsx` | CRIAR |
+| `src/pages/Finances.tsx` | Substituir FinanceChart por TopProductsChart |
+| `src/components/finances/FinanceChart.tsx` | REMOVER (opcional, pode manter para uso futuro) |
+
+### Benefícios
+
+1. **Insight acionável** - Usuário sabe quais produtos focar
+2. **Alinhado ao negócio** - Confeitarias precisam entender demanda
+3. **Consistência visual** - Usa mesmos padrões de cards/charts existentes
+4. **Performance** - Dados já carregados via `useOrders()`
+5. **Responsivo** - Barras horizontais funcionam bem em mobile
+
