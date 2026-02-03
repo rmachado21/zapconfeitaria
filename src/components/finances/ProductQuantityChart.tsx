@@ -35,11 +35,11 @@ interface ProductQuantity {
 }
 
 const CHART_COLORS = [
-  "hsl(var(--muted-foreground) / 0.30)",
-  "hsl(var(--muted-foreground) / 0.26)",
-  "hsl(var(--muted-foreground) / 0.22)",
-  "hsl(var(--muted-foreground) / 0.18)",
-  "hsl(var(--muted-foreground) / 0.14)",
+  "hsl(var(--primary) / 0.40)",
+  "hsl(var(--primary) / 0.32)",
+  "hsl(var(--primary) / 0.25)",
+  "hsl(var(--primary) / 0.18)",
+  "hsl(var(--primary) / 0.12)",
 ];
 
 const formatQuantity = (qty: number, unitType: string) => {
