@@ -1,17 +1,7 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Cell,
-  LabelList,
-} from 'recharts';
 import { parseISO, startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter } from 'date-fns';
 import { Package, TrendingUp } from 'lucide-react';
-import { useIsMobile } from '@/hooks/use-mobile';
 
 interface OrderItem {
   id: string;
@@ -51,8 +41,6 @@ const CHART_COLORS = [
 ];
 
 export function TopProductsChart({ orders, selectedMonth, period }: TopProductsChartProps) {
-  const isMobile = useIsMobile();
-  
   const { topProducts, deliveredOrdersCount } = useMemo(() => {
     const now = new Date();
     let startDate: Date | null = null;
@@ -128,27 +116,6 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
     };
   }, [orders, selectedMonth, period]);
 
-  const formatQuantity = (value: number) => {
-    if (Number.isInteger(value)) return value.toString();
-    return value.toFixed(1);
-  };
-
-  const renderOrderCountLabel = (props: any) => {
-    const { x, y, width, value, height } = props;
-    const label = `${value} ${value === 1 ? 'pedido' : 'pedidos'}`;
-    return (
-      <text
-        x={x + width + 6}
-        y={y + (height || 24) / 2 + 4}
-        fill="hsl(var(--foreground))"
-        fontSize={11}
-        fontWeight={600}
-      >
-        {label}
-      </text>
-    );
-  };
-
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -168,75 +135,33 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
           </div>
         ) : (
           <>
-            {isMobile ? (
-              <div className="space-y-3">
+            <div className="space-y-3">
               {topProducts.map((product, index) => {
-                  const maxOrders = topProducts[0]?.orderCount || 1;
-                  const barWidth = (product.orderCount / maxOrders) * 100;
-                  
-                  return (
-                    <div key={product.productName} className="space-y-1">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-muted-foreground w-5">#{index + 1}</span>
-                        <span className="text-sm font-medium truncate flex-1">{product.productName}</span>
-                        <span className="text-sm font-semibold tabular-nums whitespace-nowrap">
-                          {product.orderCount} {product.orderCount === 1 ? 'pedido' : 'pedidos'}
-                        </span>
-                      </div>
-                      <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-300"
-                          style={{ 
-                            width: `${barWidth}%`,
-                            backgroundColor: CHART_COLORS[index],
-                          }}
-                        />
-                      </div>
+                const maxOrders = topProducts[0]?.orderCount || 1;
+                const barWidth = (product.orderCount / maxOrders) * 100;
+                
+                return (
+                  <div key={product.productName} className="space-y-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-medium text-muted-foreground w-5">#{index + 1}</span>
+                      <span className="text-sm font-medium truncate flex-1">{product.productName}</span>
+                      <span className="text-sm font-semibold tabular-nums whitespace-nowrap">
+                        {product.orderCount} {product.orderCount === 1 ? 'pedido' : 'pedidos'}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="h-[220px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={topProducts.map((p, i) => ({
-                      ...p,
-                      displayName: `#${i + 1}  ${p.productName.length > 18 ? p.productName.substring(0, 17) + '…' : p.productName}`,
-                      rank: i + 1,
-                    }))}
-                    layout="vertical"
-                    margin={{ top: 5, right: 75, left: 0, bottom: 5 }}
-                  >
-                    <XAxis type="number" hide />
-                    <YAxis
-                      type="category"
-                      dataKey="displayName"
-                      width={150}
-                      tick={{ 
-                        fill: 'hsl(var(--foreground))', 
-                        fontSize: 12,
-                      }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Bar
-                      dataKey="orderCount"
-                      radius={[0, 4, 4, 0]}
-                      maxBarSize={24}
-                    >
-                      {topProducts.map((_, index) => (
-                        <Cell key={`cell-${index}`} fill={CHART_COLORS[index]} />
-                      ))}
-                      <LabelList
-                        dataKey="orderCount"
-                        content={renderOrderCountLabel}
+                    <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full rounded-full transition-all duration-300"
+                        style={{ 
+                          width: `${barWidth}%`,
+                          backgroundColor: CHART_COLORS[index],
+                        }}
                       />
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
             <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-muted-foreground">
               <Package className="h-3.5 w-3.5" />
               <span>Baseado em {deliveredOrdersCount} pedido{deliveredOrdersCount !== 1 ? 's' : ''} entregue{deliveredOrdersCount !== 1 ? 's' : ''}</span>
