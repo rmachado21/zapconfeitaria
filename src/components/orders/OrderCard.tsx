@@ -202,17 +202,14 @@ export function OrderCard({ order, onClick, onDepositChange }: OrderCardProps) {
               <div className="w-6 h-6 rounded-full bg-muted flex items-center justify-center">
                 <MapPin className="h-3 w-3 text-muted-foreground" />
               </div>
-              <span className="text-muted-foreground truncate max-w-[100px]">{order.deliveryAddress}</span>
+              <span className="text-muted-foreground truncate max-w-[140px]">{order.deliveryAddress}</span>
             </div>
           )}
         </div>
 
         {/* Actions row */}
         <div className="flex items-center justify-end">
-          <div className="flex items-center gap-1 text-muted-foreground group-hover:text-primary transition-colors">
-            <span className="text-xs">Ver detalhes</span>
-            <ChevronRight className="h-4 w-4" />
-          </div>
+          <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
 
         {/* Payment status indicator */}
