@@ -15,6 +15,7 @@ import {
 import { TransactionFormDialog } from '@/components/finances/TransactionFormDialog';
 import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
 import { TopProductsChart } from '@/components/finances/TopProductsChart';
+import { ProductQuantityChart } from '@/components/finances/ProductQuantityChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
 import { MonthComparisonChart } from '@/components/finances/MonthComparisonChart';
 import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
@@ -511,8 +512,13 @@ const Finances = () => {
         </section>
 
         {/* Charts Grid */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <TopProductsChart 
+            orders={orders} 
+            selectedMonth={selectedMonth} 
+            period={period} 
+          />
+          <ProductQuantityChart 
             orders={orders} 
             selectedMonth={selectedMonth} 
             period={period} 
