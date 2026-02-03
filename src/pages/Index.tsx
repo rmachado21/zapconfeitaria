@@ -198,7 +198,7 @@ const Index = () => {
                     value={formatCurrency(periodIncome)}
                     subtitle={`${filteredOrders.filter((o) => o.status === "delivered").length} pedidos entregues`}
                     icon={TrendingUp}
-                    variant="primary"
+                    variant="delivered"
                     onClick={() => setGrossProfitDialogOpen(true)}
                   />
                 </div>
