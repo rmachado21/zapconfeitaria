@@ -80,7 +80,7 @@ export function ExpenseCategoryChart({ transactions }: ExpenseCategoryChartProps
 
   const CustomLegend = ({ payload }: any) => {
     return (
-      <div className="flex flex-wrap gap-2 justify-center mt-2">
+      <div className="flex flex-col gap-1.5 mt-2 px-2">
         {payload?.map((entry: any, index: number) => {
           const percentage = totalExpenses > 0 
             ? ((entry.payload.value / totalExpenses) * 100).toFixed(0) 
@@ -88,15 +88,16 @@ export function ExpenseCategoryChart({ transactions }: ExpenseCategoryChartProps
           return (
             <div 
               key={`legend-${index}`} 
-              className="flex items-center gap-1.5 text-xs px-2 py-1 rounded-full bg-muted/50"
+              className="flex items-center gap-2 text-xs"
             >
               <div 
-                className="w-2.5 h-2.5 rounded-full" 
+                className="w-2.5 h-2.5 rounded-full flex-shrink-0" 
                 style={{ backgroundColor: entry.color }}
               />
-              <span className="text-muted-foreground">
-                {entry.value} <span className="font-medium text-foreground">{percentage}%</span>
+              <span className="text-muted-foreground truncate flex-1 min-w-0">
+                {entry.value}
               </span>
+              <span className="font-medium text-foreground flex-shrink-0">{percentage}%</span>
             </div>
           );
         })}
@@ -131,7 +132,7 @@ export function ExpenseCategoryChart({ transactions }: ExpenseCategoryChartProps
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
+        <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
