@@ -536,7 +536,7 @@ const Finances = () => {
         </div>
 
         {/* Stats */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
             title={`Saldo (${displayPeriodLabel})`}
             value={formatCurrency(balance)}
@@ -546,6 +546,16 @@ const Finances = () => {
               value: Math.abs(Number(monthVariations.balance.toFixed(1))),
               isPositive: monthVariations.balance >= 0
             }}
+          />
+          <StatsCard
+            title="Lucro Bruto"
+            value={formatCurrency(estimatedProfit.profit)}
+            subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
+            icon={PiggyBank}
+            variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
+            tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais. Clique para ver detalhes."
+            mobileDescription="Vendas - Custo dos produtos. Toque para detalhes."
+            onClick={() => setGrossProfitDialogOpen(true)}
           />
           <StatsCard
             title="Receitas"
@@ -566,16 +576,6 @@ const Finances = () => {
               value: Math.abs(Number(monthVariations.expense.toFixed(1))),
               isPositive: monthVariations.expense <= 0
             }}
-          />
-          <StatsCard
-            title="Lucro Bruto"
-            value={formatCurrency(estimatedProfit.profit)}
-            subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
-            icon={PiggyBank}
-            variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
-            tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais. Clique para ver detalhes."
-            mobileDescription="Vendas - Custo dos produtos. Toque para detalhes."
-            onClick={() => setGrossProfitDialogOpen(true)}
           />
         </section>
 
