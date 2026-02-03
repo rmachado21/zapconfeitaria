@@ -133,8 +133,9 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
     return value.toFixed(1);
   };
 
-  const renderCustomLabel = (props: any) => {
+  const renderOrderCountLabel = (props: any) => {
     const { x, y, width, value, height } = props;
+    const label = `${value} ${value === 1 ? 'pedido' : 'pedidos'}`;
     return (
       <text
         x={x + width + 6}
@@ -143,7 +144,7 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
         fontSize={11}
         fontWeight={600}
       >
-        {formatQuantity(value)}
+        {label}
       </text>
     );
   };
@@ -169,16 +170,18 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
           <>
             {isMobile ? (
               <div className="space-y-3">
-                {topProducts.map((product, index) => {
-                  const maxQuantity = topProducts[0]?.quantity || 1;
-                  const barWidth = (product.quantity / maxQuantity) * 100;
+              {topProducts.map((product, index) => {
+                  const maxOrders = topProducts[0]?.orderCount || 1;
+                  const barWidth = (product.orderCount / maxOrders) * 100;
                   
                   return (
                     <div key={product.productName} className="space-y-1">
                       <div className="flex items-center justify-between gap-2">
                         <span className="text-xs font-medium text-muted-foreground w-5">#{index + 1}</span>
                         <span className="text-sm font-medium truncate flex-1">{product.productName}</span>
-                        <span className="text-sm font-semibold tabular-nums">{formatQuantity(product.quantity)}</span>
+                        <span className="text-sm font-semibold tabular-nums whitespace-nowrap">
+                          {product.orderCount} {product.orderCount === 1 ? 'pedido' : 'pedidos'}
+                        </span>
                       </div>
                       <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
                         <div 
@@ -218,7 +221,7 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
                       tickLine={false}
                     />
                     <Bar
-                      dataKey="quantity"
+                      dataKey="orderCount"
                       radius={[0, 4, 4, 0]}
                       maxBarSize={28}
                     >
@@ -226,8 +229,8 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
                         <Cell key={`cell-${index}`} fill={CHART_COLORS[index]} />
                       ))}
                       <LabelList
-                        dataKey="quantity"
-                        content={renderCustomLabel}
+                        dataKey="orderCount"
+                        content={renderOrderCountLabel}
                       />
                     </Bar>
                   </BarChart>
