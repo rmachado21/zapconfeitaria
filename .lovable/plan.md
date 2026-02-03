@@ -1,61 +1,137 @@
 
 
-## Plano: Unificar Layout do Top 5 Produtos com Quantidade Vendida
+## Plano: Abrir Painel de Transações ao Clicar em Receitas/Despesas
 
-### Situação Atual
+### Objetivo
+Permitir que ao clicar nos cards **Receitas** ou **Despesas** na página Financeiro, um `ResponsivePanel` seja aberto mostrando a lista de transações filtrada pelo tipo correspondente.
 
-| Card | Mobile | Desktop |
-|------|--------|---------|
-| **Top 5 Produtos** | Divs simples | Recharts (BarChart) |
-| **Quantidade Vendida** | Divs simples | Divs simples |
-
-Essa diferença gera inconsistência visual: no desktop, "Top 5 Produtos" tem um gráfico horizontal com eixos enquanto "Quantidade Vendida" usa barras de progresso simples.
-
-### Solução
-
-Simplificar o **TopProductsChart** para usar o mesmo layout de divs do **ProductQuantityChart**, removendo a dependência de Recharts e a lógica condicional `isMobile`.
-
-### Alterações em `src/components/finances/TopProductsChart.tsx`
-
-1. **Remover imports desnecessários**:
-   - Remover `BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList` de recharts
-   - Remover `useIsMobile` hook
-
-2. **Simplificar estrutura de renderização**:
-   - Remover condicional `isMobile ? ... : ...`
-   - Usar estrutura única baseada em divs para mobile e desktop
-   - Manter o indicador de ranking (`#1`, `#2`, etc.) como diferencial deste card
-
-3. **Remover código não utilizado**:
-   - Remover função `renderOrderCountLabel`
-   - Remover função `formatQuantity` (não usada)
-
-### Estrutura Final (igual ao ProductQuantityChart)
+### Comportamento Esperado
 
 ```text
-┌─────────────────────────────────────┐
-│ 📈 Top 5 Produtos                   │
-├─────────────────────────────────────┤
-│ #1  Bolo de Chocolate    12 pedidos │
-│ ████████████████████████████████░░░ │
-│                                     │
-│ #2  Brigadeiro           8 pedidos  │
-│ █████████████████████░░░░░░░░░░░░░░ │
-│                                     │
-│ #3  Torta de Limão       5 pedidos  │
-│ █████████████░░░░░░░░░░░░░░░░░░░░░░ │
-│                                     │
-│ 📦 Baseado em 25 pedidos entregues  │
-└─────────────────────────────────────┘
+┌──────────────────────────────────────────────────┐
+│  Receitas (ou Despesas)                      ✕   │
+├──────────────────────────────────────────────────┤
+│  📊 Resumo                                       │
+│  ┌───────────────────────────────────────────┐   │
+│  │ Total: R$ 5.240,00    │ 12 transações     │   │
+│  └───────────────────────────────────────────┘   │
+│                                                  │
+│  📋 Transações                                   │
+│  ┌───────────────────────────────────────────┐   │
+│  │ 15 Jan  Sinal - Pedido #0042   R$ 450,00  │   │
+│  ├───────────────────────────────────────────┤   │
+│  │ 12 Jan  Pagamento Final #0038  R$ 1.200   │   │
+│  ├───────────────────────────────────────────┤   │
+│  │ ...                                       │   │
+│  └───────────────────────────────────────────┘   │
+└──────────────────────────────────────────────────┘
 ```
+
+### Alterações
+
+#### 1. Criar novo componente `TransactionListPanel`
+
+**Arquivo**: `src/components/finances/TransactionListPanel.tsx`
+
+```typescript
+interface TransactionListPanelProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  type: 'income' | 'expense';
+  transactions: Transaction[];
+  total: number;
+  onOrderClick?: (orderId: string) => void;
+}
+```
+
+**Características**:
+- Usa `ResponsivePanel` (bottom sheet no mobile, side panel no desktop)
+- Título dinâmico: "Receitas" ou "Despesas"
+- Card de resumo com total e contagem
+- Lista de transações com:
+  - Data formatada
+  - Categoria (badge colorido)
+  - Descrição
+  - Valor
+  - Link para pedido (se `order_id` existir)
+
+#### 2. Modificar `src/pages/Finances.tsx`
+
+**Novos estados**:
+```typescript
+const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
+const [transactionPanelType, setTransactionPanelType] = useState<'income' | 'expense'>('income');
+```
+
+**Handlers**:
+```typescript
+const handleIncomeCardClick = () => {
+  setTransactionPanelType('income');
+  setTransactionPanelOpen(true);
+};
+
+const handleExpenseCardClick = () => {
+  setTransactionPanelType('expense');
+  setTransactionPanelOpen(true);
+};
+```
+
+**Atualizar StatsCards** (linhas 560-579):
+```typescript
+<StatsCard
+  title="Receitas"
+  ...
+  onClick={handleIncomeCardClick}  // Adicionar
+/>
+<StatsCard
+  title="Despesas"
+  ...
+  onClick={handleExpenseCardClick}  // Adicionar
+/>
+```
+
+**Adicionar componente no JSX**:
+```typescript
+<TransactionListPanel
+  open={transactionPanelOpen}
+  onOpenChange={setTransactionPanelOpen}
+  type={transactionPanelType}
+  transactions={filteredTransactions.filter(t => t.type === transactionPanelType)}
+  total={transactionPanelType === 'income' ? totalIncome : totalExpenses}
+  onOrderClick={handleOrderClick}
+/>
+```
+
+### Fluxo de Interação
+
+```text
+Usuário toca em "Receitas"
+       │
+       ▼
+setTransactionPanelType('income')
+setTransactionPanelOpen(true)
+       │
+       ▼
+ResponsivePanel abre com transações tipo='income'
+       │
+       ▼
+Usuário pode:
+  • Ver lista de receitas
+  • Tocar em transação com pedido → navega para pedido
+  • Fechar o painel
+```
+
+### Arquivos a Criar/Modificar
+
+| Arquivo | Ação |
+|---------|------|
+| `src/components/finances/TransactionListPanel.tsx` | **Criar** |
+| `src/pages/Finances.tsx` | **Modificar** |
 
 ### Benefícios
 
-1. **Consistência visual**: Ambos os cards terão o mesmo padrão de layout
-2. **Código mais simples**: Remove dependência de Recharts para este componente
-3. **Performance**: Menos overhead de renderização sem biblioteca de gráficos
-4. **Manutenibilidade**: Um único layout para ajustar em vez de dois
-
-### Arquivo a Modificar
-- `src/components/finances/TopProductsChart.tsx`
+1. **Acesso rápido**: Ver detalhes de receitas/despesas com um toque
+2. **Consistência**: Mesmo padrão do card "Lucro Bruto" (clique abre painel)
+3. **Navegabilidade**: Links diretos para pedidos relacionados
+4. **Mobile-first**: Usa ResponsivePanel otimizado para touch
 
