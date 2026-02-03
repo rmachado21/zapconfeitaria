@@ -1,104 +1,146 @@
 
 
-## Adicionar Número de Pedidos como Informação Principal
+## Novo Card: Quantidade Vendida por Produto
 
-### Alteração Proposta
+### Objetivo
 
-Manter a lógica de ranking por quantidade vendida, mas exibir o número de pedidos como métrica principal no display.
+Criar um card complementar ao "Top 5 Produtos" que mostra a **quantidade vendida** de cada produto no período, permitindo ao usuário ter uma visão de uso de matéria-prima. O card exibe 5 produtos inicialmente e permite expandir para ver todos.
 
-### Mudanças Visuais
+### Visual Proposto
 
-**Antes:**
 ```text
-#1  Bolo de Chocolate     ████████████  47
-#2  Cupcake Morango       ████████      32
+┌─────────────────────────────────────────┐
+│ 📦 Quantidade Vendida                    │
+├─────────────────────────────────────────┤
+│ Brigadeiro           ████████  250 un   │
+│ Bolo de Chocolate    ██████    12 Kg    │
+│ Cupcake Morango      █████     48 un    │
+│ Bem-casado           ████      3 centos │
+│ Bolo de Cenoura      ███       8 Kg     │
+├─────────────────────────────────────────┤
+│         ▼ Ver todos (12 produtos)       │
+└─────────────────────────────────────────┘
 ```
 
-**Depois:**
-```text
-#1  Bolo de Chocolate     ████████████  12 pedidos
-#2  Cupcake Morango       ████████       8 pedidos
-```
+### Comportamento
 
-### Implementação
+1. **Estado inicial**: Mostra top 5 produtos ordenados por quantidade
+2. **Expansível**: Botão "Ver todos (X produtos)" abre lista completa
+3. **Unidades corretas**: Exibe Kg, Un, ou Cento conforme o tipo do produto
+4. **Período sincronizado**: Respeita o filtro de período/mês selecionado
 
-**Arquivo:** `src/components/finances/TopProductsChart.tsx`
+---
 
-#### 1. Manter ordenação por quantidade (linha 121-123)
+## Detalhes Técnicos
+
+### Novo Arquivo
+
+**`src/components/finances/ProductQuantityChart.tsx`**
+
+#### Interface e Props
 ```typescript
-// Não muda - continua ordenando por quantity
-const sorted = Array.from(productMap.values())
-  .sort((a, b) => b.quantity - a.quantity)
-  .slice(0, 5);
+interface ProductQuantityChartProps {
+  orders: Order[];
+  selectedMonth: { month: number; year: number } | null;
+  period: 'week' | 'month' | 'year' | 'all';
+}
+
+interface ProductQuantity {
+  productName: string;
+  quantity: number;
+  unitType: string;
+}
 ```
 
-#### 2. Alterar exibição no Mobile (linhas 178-181)
-- Trocar `product.quantity` por `product.orderCount`
-- Adicionar sufixo "pedido(s)"
+#### Lógica Principal
+
+1. **Reutilizar filtro de período** do TopProductsChart (mesmo padrão de filtragem por `delivery_date`)
+
+2. **Agregar quantidades por produto**:
+   - Iterar pelos pedidos entregues no período
+   - Somar `quantity` por `product_name`
+   - Capturar `unit_type` de cada item
+
+3. **Ordenar por quantidade** (decrescente)
+
+4. **Estado de expansão**:
+   - `expanded: boolean` controla se mostra todos ou apenas 5
+   - Usar Collapsible para animação suave
+
+#### Formatação de Unidades
 
 ```typescript
-<span className="text-sm font-semibold tabular-nums whitespace-nowrap">
-  {product.orderCount} {product.orderCount === 1 ? 'pedido' : 'pedidos'}
-</span>
-```
-
-#### 3. Alterar barra de progresso no Mobile (linhas 173-174)
-- Calcular largura baseada em `orderCount` em vez de `quantity`
-
-```typescript
-const maxOrders = topProducts[0]?.orderCount || 1;
-const barWidth = (product.orderCount / maxOrders) * 100;
-```
-
-#### 4. Alterar gráfico Desktop (linhas 220-232)
-- Mudar `dataKey` de `"quantity"` para `"orderCount"`
-- Atualizar label customizado para mostrar "X pedidos"
-
-```typescript
-<Bar
-  dataKey="orderCount"
-  radius={[0, 4, 4, 0]}
-  maxBarSize={28}
->
-  ...
-  <LabelList
-    dataKey="orderCount"
-    content={renderOrderCountLabel}
-  />
-</Bar>
-```
-
-#### 5. Atualizar função de label (linhas 136-148)
-- Criar nova função que formata como "X pedido(s)"
-
-```typescript
-const renderOrderCountLabel = (props: any) => {
-  const { x, y, width, value, height } = props;
-  const label = `${value} ${value === 1 ? 'pedido' : 'pedidos'}`;
-  return (
-    <text
-      x={x + width + 6}
-      y={y + (height || 24) / 2 + 4}
-      fill="hsl(var(--foreground))"
-      fontSize={11}
-      fontWeight={600}
-    >
-      {label}
-    </text>
-  );
+const formatQuantity = (qty: number, unitType: string) => {
+  if (unitType === 'kg') {
+    return `${qty.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Kg`;
+  }
+  if (unitType === 'cento') {
+    return qty === 1 ? '1 cento' : `${qty} centos`;
+  }
+  return `${qty} un`;
 };
 ```
 
-### Resultado Final
+#### Componentes Utilizados
 
-A lógica `orderCount` já está sendo calculada corretamente no componente (linhas 95-109). Apenas precisamos:
-1. Usar `orderCount` para exibição em vez de `quantity`
-2. Formatar como "X pedido(s)"
-3. Basear a barra de progresso em `orderCount`
+- `Card`, `CardHeader`, `CardTitle`, `CardContent` (UI)
+- `Collapsible`, `CollapsibleTrigger`, `CollapsibleContent` (expansão)
+- `Button` (trigger de expansão)
+- `Package`, `ChevronDown` (ícones do lucide-react)
+- `useIsMobile()` hook (responsividade)
 
-### Benefício
+---
 
-- **Ranking inteligente** - Produtos com maior volume aparecem primeiro
-- **Informação acionável** - Usuário vê quantos pedidos tiveram aquele produto
-- **Simplicidade** - Uma única métrica clara para entender demanda
+### Modificação em Finances.tsx
+
+**Linha 17** - Adicionar import:
+```typescript
+import { ProductQuantityChart } from '@/components/finances/ProductQuantityChart';
+```
+
+**Linhas 513-521** - Atualizar grid de charts para 3 colunas no desktop:
+```typescript
+{/* Charts Grid */}
+<section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+  <TopProductsChart 
+    orders={orders} 
+    selectedMonth={selectedMonth} 
+    period={period} 
+  />
+  <ProductQuantityChart 
+    orders={orders} 
+    selectedMonth={selectedMonth} 
+    period={period} 
+  />
+  <ExpenseCategoryChart transactions={filteredTransactions} />
+</section>
+```
+
+---
+
+### Layout Responsivo
+
+| Dispositivo | Comportamento |
+|------------|---------------|
+| Mobile | Lista vertical compacta, barras de progresso horizontais |
+| Desktop | Mesma lista, ocupa 1/3 do grid |
+
+### Estado Vazio
+
+Quando não há pedidos entregues no período:
+```text
+📦 Nenhum pedido entregue no período
+   As quantidades vendidas aparecerão aqui
+```
+
+---
+
+## Resultado Esperado
+
+O usuário terá:
+- **Top 5 Produtos** → Demanda por frequência de pedidos
+- **Quantidade Vendida** → Volume total para planejamento de matéria-prima
+- **Despesas por Categoria** → Visão de gastos
+
+Três cards complementares que dão uma visão completa do negócio.
 
