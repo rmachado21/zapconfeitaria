@@ -16,6 +16,7 @@ interface Order {
   id: string;
   status: string;
   delivery_date: string | null;
+  delivery_fee?: number | null;
   order_items?: OrderItem[];
 }
 
@@ -82,8 +83,14 @@ export function ProductRevenueChart({ orders, selectedMonth, period }: ProductRe
 
     // Aggregate revenue by product
     const productMap = new Map<string, number>();
+    let totalDeliveryFee = 0;
 
     deliveredOrders.forEach(order => {
+      // Sum delivery fees
+      if (order.delivery_fee && order.delivery_fee > 0) {
+        totalDeliveryFee += order.delivery_fee;
+      }
+      
       (order.order_items || []).forEach(item => {
         if (item.is_gift) return;
         
@@ -93,19 +100,25 @@ export function ProductRevenueChart({ orders, selectedMonth, period }: ProductRe
       });
     });
 
-    // Sort by revenue and limit to top 6
+    // Sort by revenue and limit to top 6 (or 5 if we have delivery fee)
     const sorted = Array.from(productMap.entries())
       .map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value);
 
     let finalData: ProductRevenue[];
+    const maxProducts = totalDeliveryFee > 0 ? 5 : 6;
     
-    if (sorted.length > 6) {
-      const top6 = sorted.slice(0, 6);
-      const othersValue = sorted.slice(6).reduce((sum, item) => sum + item.value, 0);
-      finalData = [...top6, { name: 'Outros', value: othersValue }];
+    if (sorted.length > maxProducts) {
+      const topProducts = sorted.slice(0, maxProducts);
+      const othersValue = sorted.slice(maxProducts).reduce((sum, item) => sum + item.value, 0);
+      finalData = [...topProducts, { name: 'Outros', value: othersValue }];
     } else {
       finalData = sorted;
+    }
+
+    // Add delivery fee as a category if it exists
+    if (totalDeliveryFee > 0) {
+      finalData.push({ name: 'Taxa de Entrega', value: totalDeliveryFee });
     }
 
     const total = finalData.reduce((sum, item) => sum + item.value, 0);
