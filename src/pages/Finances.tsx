@@ -18,8 +18,8 @@ import { TopProductsChart } from '@/components/finances/TopProductsChart';
 import { ProductQuantityChart } from '@/components/finances/ProductQuantityChart';
 import { ProductRevenueChart } from '@/components/finances/ProductRevenueChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
-
 import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
+import { TransactionListPanel } from '@/components/finances/TransactionListPanel';
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter, MonthFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
 import { useProducts } from '@/hooks/useProducts';
@@ -82,6 +82,8 @@ const Finances = () => {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
+  const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
+  const [transactionPanelType, setTransactionPanelType] = useState<'income' | 'expense'>('income');
   
   // Month navigation state
   const [selectedMonth, setSelectedMonth] = useState<MonthFilter | null>(null);
@@ -566,6 +568,10 @@ const Finances = () => {
               value: Math.abs(Number(monthVariations.income.toFixed(1))),
               isPositive: monthVariations.income >= 0
             }}
+            onClick={() => {
+              setTransactionPanelType('income');
+              setTransactionPanelOpen(true);
+            }}
           />
           <StatsCard
             title="Despesas"
@@ -575,6 +581,10 @@ const Finances = () => {
             trend={{
               value: Math.abs(Number(monthVariations.expense.toFixed(1))),
               isPositive: monthVariations.expense <= 0
+            }}
+            onClick={() => {
+              setTransactionPanelType('expense');
+              setTransactionPanelOpen(true);
             }}
           />
         </section>
@@ -859,6 +869,17 @@ const Finances = () => {
         orders={deliveredOrdersForProfit}
         products={products}
         totals={estimatedProfit}
+      />
+
+      {/* Transaction List Panel */}
+      <TransactionListPanel
+        open={transactionPanelOpen}
+        onOpenChange={setTransactionPanelOpen}
+        type={transactionPanelType}
+        transactions={filteredTransactions.filter(t => t.type === transactionPanelType)}
+        total={transactionPanelType === 'income' ? totalIncome : totalExpenses}
+        orderNumberMap={orderNumberMap}
+        onOrderClick={handleOrderClick}
       />
     </AppLayout>
   );
