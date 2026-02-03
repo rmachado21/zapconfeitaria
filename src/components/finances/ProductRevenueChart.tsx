@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, ShoppingBag } from 'lucide-react';
 import { parseISO, startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter } from 'date-fns';
 
 interface OrderItem {
@@ -41,7 +41,7 @@ const COLORS = [
 ];
 
 export function ProductRevenueChart({ orders, selectedMonth, period }: ProductRevenueChartProps) {
-  const { chartData, totalRevenue } = useMemo(() => {
+  const { chartData, totalRevenue, deliveredOrdersCount } = useMemo(() => {
     const now = new Date();
     let startDate: Date | null = null;
     let endDate: Date | null = null;
@@ -110,7 +110,7 @@ export function ProductRevenueChart({ orders, selectedMonth, period }: ProductRe
 
     const total = finalData.reduce((sum, item) => sum + item.value, 0);
 
-    return { chartData: finalData, totalRevenue: total };
+    return { chartData: finalData, totalRevenue: total, deliveredOrdersCount: deliveredOrders.length };
   }, [orders, selectedMonth, period]);
 
   const formatCurrency = (value: number) => {
@@ -219,6 +219,10 @@ export function ProductRevenueChart({ orders, selectedMonth, period }: ProductRe
         <div className="text-center mt-2">
           <p className="text-xs text-muted-foreground">Total de Receitas</p>
           <p className="text-lg font-semibold" style={{ color: COLORS[0] }}>{formatCurrency(totalRevenue)}</p>
+        </div>
+        <div className="flex items-center justify-center gap-1.5 mt-3 text-xs text-muted-foreground">
+          <ShoppingBag className="h-3.5 w-3.5" />
+          <span>Baseado em {deliveredOrdersCount} pedido{deliveredOrdersCount !== 1 ? 's' : ''} entregue{deliveredOrdersCount !== 1 ? 's' : ''}</span>
         </div>
       </CardContent>
     </Card>
