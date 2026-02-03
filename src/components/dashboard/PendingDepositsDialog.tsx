@@ -2,16 +2,16 @@ import { useState } from "react";
 import { ResponsivePanel } from "@/components/ui/responsive-panel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { AlertTriangle, Check } from "lucide-react";
+import { Check } from "lucide-react";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { formatOrderNumber } from "@/hooks/useOrders";
 import { openWhatsAppWithTemplate } from "@/lib/whatsapp";
 import { useProfile } from "@/hooks/useProfile";
-import { differenceInDays, parseISO, format, isToday, isPast, startOfDay } from "date-fns";
+import { parseISO, format, isToday, isPast } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { OrderStatus } from "@/types";
 import { DepositAmountDialog } from "@/components/orders/DepositAmountDialog";
+import { UrgencyBadge } from "@/components/shared/UrgencyBadge";
 
 interface Order {
   id: string;
@@ -138,30 +138,8 @@ export function PendingDepositsDialog({
             {sortedOrders.map((order) => {
               const depositValue = order.total_amount / 2;
               const deliveryDate = order.delivery_date ? parseISO(order.delivery_date) : null;
-              const today = startOfDay(new Date());
-              const daysUntilDelivery = deliveryDate ? differenceInDays(startOfDay(deliveryDate), today) : null;
               const isDeliveryToday = deliveryDate ? isToday(deliveryDate) : false;
               const isOverdue = deliveryDate ? isPast(deliveryDate) && !isToday(deliveryDate) : false;
-
-              // Determine urgency level and colors
-              let urgencyText = "";
-              let urgencyBgClass = "";
-              if (isOverdue) {
-                urgencyText = "Atrasado";
-                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
-              } else if (isDeliveryToday) {
-                urgencyText = "Hoje!";
-                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
-              } else if (daysUntilDelivery === 1) {
-                urgencyText = "Amanhã";
-                urgencyBgClass = "bg-red-500/50 text-red-900 dark:text-red-100";
-              } else if (daysUntilDelivery !== null && daysUntilDelivery >= 2 && daysUntilDelivery <= 3) {
-                urgencyText = `${daysUntilDelivery} dias`;
-                urgencyBgClass = "bg-yellow-500/50 text-yellow-900 dark:text-yellow-100";
-              } else if (daysUntilDelivery !== null && daysUntilDelivery > 3) {
-                urgencyText = `${daysUntilDelivery} dias`;
-                urgencyBgClass = "bg-muted text-muted-foreground";
-              }
 
               return (
                 <Card
@@ -177,11 +155,7 @@ export function PendingDepositsDialog({
                           <span className="font-semibold text-sm">
                             {formatOrderNumber(order.order_number)}
                           </span>
-                          {urgencyText && (
-                            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${urgencyBgClass}`}>
-                              {urgencyText}
-                            </span>
-                          )}
+                          <UrgencyBadge deliveryDate={order.delivery_date} />
                         </div>
                         <p className="text-sm text-foreground">
                           {order.client?.name || "Cliente não informado"}
