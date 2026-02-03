@@ -1,117 +1,104 @@
 
 
-## Substituir Evolução Financeira por Top 5 Produtos Mais Vendidos
+## Adicionar Número de Pedidos como Informação Principal
 
-### Justificativa da Escolha
+### Alteração Proposta
 
-Entre as duas opções sugeridas ("Top 5 produtos mais vendidos" ou "Previsão de recebimentos"), optei pelo **Top 5 Produtos** porque:
+Manter a lógica de ranking por quantidade vendida, mas exibir o número de pedidos como métrica principal no display.
 
-1. **Dados já disponíveis** - Temos `order_items` com `product_name` e `quantity`, e `orders` com `delivery_date` e `status`
-2. **Acionável para o negócio** - Ajuda a confeiteira a entender quais produtos priorizar, estocar ingredientes e precificar
-3. **Alinhado com filtros existentes** - Pode respeitar o período/mês selecionado na página
-4. **Previsão de recebimentos** exigiria lógica mais complexa de pagamentos pendentes e estimativas
+### Mudanças Visuais
+
+**Antes:**
+```text
+#1  Bolo de Chocolate     ████████████  47
+#2  Cupcake Morango       ████████      32
+```
+
+**Depois:**
+```text
+#1  Bolo de Chocolate     ████████████  12 pedidos
+#2  Cupcake Morango       ████████       8 pedidos
+```
 
 ### Implementação
 
-#### 1. Criar Componente `TopProductsChart`
+**Arquivo:** `src/components/finances/TopProductsChart.tsx`
 
-Novo arquivo: `src/components/finances/TopProductsChart.tsx`
-
-**Props:**
-- `orders`: lista de pedidos com `order_items`
-- `selectedMonth`: mês selecionado (opcional)
-- `period`: período do filtro
-
-**Lógica:**
-```text
-1. Filtrar pedidos por período (mesma lógica do estimatedProfit)
-2. Considerar apenas pedidos "delivered" (entregues = confirmados)
-3. Agrupar order_items por product_name
-4. Somar quantity por produto
-5. Ordenar por quantidade decrescente
-6. Pegar top 5
-```
-
-**Visualização:**
-- Gráfico de barras horizontal (Recharts BarChart)
-- Mostrar nome do produto e quantidade vendida
-- Badge com posição (#1, #2, etc.)
-- Cores em gradiente do primário ao muted
-
-#### 2. Layout do Componente
-
-```text
-+--------------------------------------------------+
-|  Top 5 Produtos Mais Vendidos          [período] |
-+--------------------------------------------------+
-|                                                  |
-|  #1  Bolo de Chocolate        ████████████  47   |
-|  #2  Cupcake Morango          ████████      32   |
-|  #3  Brownie                  ██████        24   |
-|  #4  Torta de Limão           ████          18   |
-|  #5  Brigadeiro (cento)       ███           12   |
-|                                                  |
-|  [ícone] Baseado em 23 pedidos entregues         |
-+--------------------------------------------------+
-```
-
-#### 3. Atualizar Página Finances.tsx
-
-**Remover:**
-- Import do `FinanceChart`
-- Uso do `<FinanceChart />` na section de charts
-
-**Adicionar:**
-- Import do `TopProductsChart`
-- Passar `orders`, `selectedMonth` e `period` como props
-
-**Grid atualizado:**
-```tsx
-<section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-  <TopProductsChart 
-    orders={orders} 
-    selectedMonth={selectedMonth} 
-    period={period} 
-  />
-  <ExpenseCategoryChart transactions={filteredTransactions} />
-</section>
-```
-
-#### 4. Detalhes Técnicos
-
-**Estrutura de dados:**
+#### 1. Manter ordenação por quantidade (linha 121-123)
 ```typescript
-interface TopProduct {
-  productName: string;
-  quantity: number;
-  revenue: number; // unit_price * quantity
-  orderCount: number; // em quantos pedidos apareceu
-}
+// Não muda - continua ordenando por quantity
+const sorted = Array.from(productMap.values())
+  .sort((a, b) => b.quantity - a.quantity)
+  .slice(0, 5);
 ```
 
-**Lógica de filtragem (reutilizar do estimatedProfit):**
-- Se `selectedMonth` definido: filtrar por mês específico
-- Senão: usar `period` (week/month/year/all)
-- Apenas pedidos com `status === 'delivered'`
-- Filtrar por `delivery_date`
+#### 2. Alterar exibição no Mobile (linhas 178-181)
+- Trocar `product.quantity` por `product.orderCount`
+- Adicionar sufixo "pedido(s)"
 
-**Estado vazio:**
-- Mostrar ilustração + texto "Nenhum pedido entregue no período"
-- Botão para ajustar período
+```typescript
+<span className="text-sm font-semibold tabular-nums whitespace-nowrap">
+  {product.orderCount} {product.orderCount === 1 ? 'pedido' : 'pedidos'}
+</span>
+```
 
-### Arquivos a Modificar
+#### 3. Alterar barra de progresso no Mobile (linhas 173-174)
+- Calcular largura baseada em `orderCount` em vez de `quantity`
 
-| Arquivo | Ação |
-|---------|------|
-| `src/components/finances/TopProductsChart.tsx` | CRIAR |
-| `src/pages/Finances.tsx` | Substituir FinanceChart por TopProductsChart |
-| `src/components/finances/FinanceChart.tsx` | REMOVER (opcional, pode manter para uso futuro) |
+```typescript
+const maxOrders = topProducts[0]?.orderCount || 1;
+const barWidth = (product.orderCount / maxOrders) * 100;
+```
 
-### Benefícios
+#### 4. Alterar gráfico Desktop (linhas 220-232)
+- Mudar `dataKey` de `"quantity"` para `"orderCount"`
+- Atualizar label customizado para mostrar "X pedidos"
 
-1. **Insight acionável** - Usuário sabe quais produtos focar
-2. **Alinhado ao negócio** - Confeitarias precisam entender demanda
-3. **Consistência visual** - Usa mesmos padrões de cards/charts existentes
-4. **Performance** - Dados já carregados via `useOrders()`
-5. **Responsivo** - Barras horizontais funcionam bem em mobile
+```typescript
+<Bar
+  dataKey="orderCount"
+  radius={[0, 4, 4, 0]}
+  maxBarSize={28}
+>
+  ...
+  <LabelList
+    dataKey="orderCount"
+    content={renderOrderCountLabel}
+  />
+</Bar>
+```
+
+#### 5. Atualizar função de label (linhas 136-148)
+- Criar nova função que formata como "X pedido(s)"
+
+```typescript
+const renderOrderCountLabel = (props: any) => {
+  const { x, y, width, value, height } = props;
+  const label = `${value} ${value === 1 ? 'pedido' : 'pedidos'}`;
+  return (
+    <text
+      x={x + width + 6}
+      y={y + (height || 24) / 2 + 4}
+      fill="hsl(var(--foreground))"
+      fontSize={11}
+      fontWeight={600}
+    >
+      {label}
+    </text>
+  );
+};
+```
+
+### Resultado Final
+
+A lógica `orderCount` já está sendo calculada corretamente no componente (linhas 95-109). Apenas precisamos:
+1. Usar `orderCount` para exibição em vez de `quantity`
+2. Formatar como "X pedido(s)"
+3. Basear a barra de progresso em `orderCount`
+
+### Benefício
+
+- **Ranking inteligente** - Produtos com maior volume aparecem primeiro
+- **Informação acionável** - Usuário vê quantos pedidos tiveram aquele produto
+- **Simplicidade** - Uma única métrica clara para entender demanda
 
