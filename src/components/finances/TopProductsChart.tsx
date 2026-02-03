@@ -1,7 +1,7 @@
-import { useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { parseISO, startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter } from 'date-fns';
-import { Package, TrendingUp } from 'lucide-react';
+import { useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { parseISO, startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter } from "date-fns";
+import { Package, TrendingUp } from "lucide-react";
 
 interface OrderItem {
   id: string;
@@ -22,7 +22,7 @@ interface Order {
 interface TopProductsChartProps {
   orders: Order[];
   selectedMonth: { month: number; year: number } | null;
-  period: 'week' | 'month' | 'year' | 'all';
+  period: "week" | "month" | "year" | "all";
 }
 
 interface TopProduct {
@@ -33,11 +33,11 @@ interface TopProduct {
 }
 
 const CHART_COLORS = [
-  'hsl(var(--muted-foreground) / 0.30)',
-  'hsl(var(--muted-foreground) / 0.26)',
-  'hsl(var(--muted-foreground) / 0.22)',
-  'hsl(var(--muted-foreground) / 0.18)',
-  'hsl(var(--muted-foreground) / 0.14)',
+  "hsl(var(--muted-foreground) / 0.30)",
+  "hsl(var(--muted-foreground) / 0.26)",
+  "hsl(var(--muted-foreground) / 0.22)",
+  "hsl(var(--muted-foreground) / 0.18)",
+  "hsl(var(--muted-foreground) / 0.14)",
 ];
 
 export function TopProductsChart({ orders, selectedMonth, period }: TopProductsChartProps) {
@@ -45,47 +45,47 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
     const now = new Date();
     let startDate: Date | null = null;
     let endDate: Date | null = null;
-    
+
     if (selectedMonth) {
       startDate = new Date(selectedMonth.year, selectedMonth.month, 1);
       endDate = endOfMonth(startDate);
     } else {
       switch (period) {
-        case 'week':
+        case "week":
           startDate = startOfWeek(now, { weekStartsOn: 0 });
           break;
-        case 'month':
+        case "month":
           startDate = startOfMonth(now);
           break;
-        case 'year':
+        case "year":
           startDate = startOfYear(now);
           break;
       }
     }
 
-    const deliveredOrders = orders.filter(order => {
-      if (order.status !== 'delivered') return false;
+    const deliveredOrders = orders.filter((order) => {
+      if (order.status !== "delivered") return false;
       if (!order.delivery_date) return false;
       if (!startDate) return true;
-      
+
       const orderDate = parseISO(order.delivery_date);
       const afterStart = isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
-      
+
       if (endDate) {
         const beforeEnd = orderDate.getTime() <= endDate.getTime();
         return afterStart && beforeEnd;
       }
-      
+
       return afterStart;
     });
 
     const productMap = new Map<string, TopProduct>();
     const productOrders = new Map<string, Set<string>>();
 
-    deliveredOrders.forEach(order => {
-      (order.order_items || []).forEach(item => {
+    deliveredOrders.forEach((order) => {
+      (order.order_items || []).forEach((item) => {
         if (item.is_gift) return;
-        
+
         const existing = productMap.get(item.product_name);
         const orderSet = productOrders.get(item.product_name) || new Set();
         orderSet.add(order.id);
@@ -110,9 +110,9 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
       .sort((a, b) => b.orderCount - a.orderCount)
       .slice(0, 5);
 
-    return { 
-      topProducts: sorted, 
-      deliveredOrdersCount: deliveredOrders.length 
+    return {
+      topProducts: sorted,
+      deliveredOrdersCount: deliveredOrders.length,
     };
   }, [orders, selectedMonth, period]);
 
@@ -139,20 +139,20 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
               {topProducts.map((product, index) => {
                 const maxOrders = topProducts[0]?.orderCount || 1;
                 const barWidth = (product.orderCount / maxOrders) * 100;
-                
+
                 return (
                   <div key={product.productName} className="space-y-1">
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs font-medium text-muted-foreground w-5">#{index + 1}</span>
                       <span className="text-sm font-medium truncate flex-1">{product.productName}</span>
                       <span className="text-sm font-semibold tabular-nums whitespace-nowrap">
-                        {product.orderCount} {product.orderCount === 1 ? 'pedido' : 'pedidos'}
+                        {product.orderCount} {product.orderCount === 1 ? "pedido" : "pedidos"}
                       </span>
                     </div>
-                    <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                      <div 
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
                         className="h-full rounded-full transition-all duration-300"
-                        style={{ 
+                        style={{
                           width: `${barWidth}%`,
                           backgroundColor: CHART_COLORS[index],
                         }}
@@ -163,8 +163,11 @@ export function TopProductsChart({ orders, selectedMonth, period }: TopProductsC
               })}
             </div>
             <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-muted-foreground">
-              <Package className="h-3.5 w-3.5" />
-              <span>Baseado em {deliveredOrdersCount} pedido{deliveredOrdersCount !== 1 ? 's' : ''} entregue{deliveredOrdersCount !== 1 ? 's' : ''}</span>
+              <Package className="h-3 w-3.5" />
+              <span>
+                Baseado em {deliveredOrdersCount} pedido{deliveredOrdersCount !== 1 ? "s" : ""} entregue
+                {deliveredOrdersCount !== 1 ? "s" : ""}
+              </span>
             </div>
           </>
         )}
