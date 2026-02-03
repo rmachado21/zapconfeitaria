@@ -1,207 +1,101 @@
 
+## Padronização do Badge de Urgência
 
-## Janela de Confirmacao ao Adicionar Produto
+### Problema Identificado
 
-### Objetivo
-Substituir o "quick add" atual por um fluxo mais controlado onde o usuario define a quantidade antes de adicionar o produto ao pedido.
+Existem **inconsistências visuais** entre os componentes que exibem badges de urgência:
 
-### Fluxo Proposto
-```text
-Usuario clica em [+] → Dialog abre com produto selecionado → Usuario ajusta quantidade → Clica "Adicionar" → Produto e adicionado
-```
+| Componente | Classes (Critical) | Classes (Warning) |
+|------------|-------------------|------------------|
+| `OrderCard.tsx` | `bg-destructive/50 text-destructive-foreground` | `bg-warning/50 text-warning-foreground` |
+| `OrderDetailDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
+| `PendingDepositsDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
+| `ActiveOrdersDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
+| `FullyPaidOrdersDialog.tsx` | `bg-red-500/50 text-red-900` | `bg-yellow-500/50 text-yellow-900` |
+
+### Solução Proposta
+
+Criar um componente reutilizavel `UrgencyBadge` que centraliza:
+1. A logica de calculo de dias restantes
+2. O estilo visual padronizado
+3. Suporte a dark mode
 
 ### Implementacao
 
-#### 1. Criar Dialog de Quantidade
+#### 1. Criar Componente `UrgencyBadge`
 
-Novo componente `AddProductDialog` dentro do `ProductSelector.tsx`:
+Novo arquivo: `src/components/shared/UrgencyBadge.tsx`
 
 ```text
 +------------------------------------------+
-|  [X]                                     |
-|                                          |
-|  [IMG]  Bolo Ninho/Nutella               |
-|         R$ 97,00 / Kg                    |
-|                                          |
-|  Quantidade                              |
-|  [-]  [ 1 ]  [+]                         |
-|                                          |
-|  Subtotal: R$ 97,00                      |
-|                                          |
-|  [     Adicionar ao Pedido     ]         |
+|  Props:                                  |
+|  - deliveryDate: string                  |
+|  - showForDelivered?: boolean            |
++------------------------------------------+
+|  Retorna:                                |
+|  - null (se nao houver data)             |
+|  - Badge com texto e cor apropriada      |
 +------------------------------------------+
 ```
 
-#### 2. Alteracoes no ProductSelector.tsx
+Classes padronizadas (baseadas no tema):
+- **Critical** (Atrasado, Hoje!, Amanha): `bg-red-500/50 text-red-900 dark:text-red-100`
+- **Warning** (2-3 dias): `bg-amber-500/50 text-amber-900 dark:text-amber-100`
+- **Normal** (4+ dias): `bg-muted text-muted-foreground`
 
-**Estado adicional:**
-- `dialogProduct: Product | null` - produto selecionado para o dialog
-- `dialogQuantity: number` - quantidade no dialog
+#### 2. Atualizar Componentes Existentes
 
-**Remocao:**
-- Painel sticky de quantidade (linhas 175-265) - nao sera mais necessario
-- Estado `selectedProduct` pode ser substituido por `dialogProduct`
+| Arquivo | Alteracao |
+|---------|-----------|
+| `OrderCard.tsx` | Substituir logica inline por `<UrgencyBadge />` |
+| `OrderDetailDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
+| `PendingDepositsDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
+| `ActiveOrdersDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
+| `FullyPaidOrdersDialog.tsx` | Substituir logica inline por `<UrgencyBadge />` |
 
-**Novo componente interno:**
+#### 3. Cores Escolhidas
+
+Optei por usar cores explicitas (`red-500`, `amber-500`) em vez de variaveis de tema (`destructive`, `warning`) porque:
+- Mantem consistencia visual entre todos os componentes
+- As cores do tema `destructive` e `warning` podem ter leves variacoes de tom
+- Cores explicitas garantem contraste adequado no dark mode
+
+### Estrutura do Componente
+
 ```tsx
-function AddProductDialog({ 
-  product, 
-  open, 
-  onOpenChange, 
-  onConfirm 
-}: {
-  product: Product | null;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onConfirm: (quantity: number) => void;
-}) {
-  const [quantity, setQuantity] = useState(1);
-  
-  // Reset quantity quando produto muda
-  useEffect(() => {
-    if (product) {
-      setQuantity(product.unit_type === "kg" ? 0.5 : 1);
-    }
-  }, [product]);
+interface UrgencyBadgeProps {
+  deliveryDate: string | null;
+  showForDelivered?: boolean; // Para permitir ocultar em pedidos entregues
+}
 
-  if (!product) return null;
+function UrgencyBadge({ deliveryDate, showForDelivered = false }: UrgencyBadgeProps) {
+  // Logica de calculo
+  const urgency = useMemo(() => {
+    if (!deliveryDate) return null;
+    const date = parseISO(deliveryDate);
+    const today = new Date();
+    // ... calculo de diff
+    return { text, level };
+  }, [deliveryDate]);
+
+  if (!urgency) return null;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xs">
-        <DialogHeader>
-          <DialogTitle className="sr-only">Adicionar Produto</DialogTitle>
-        </DialogHeader>
-        
-        {/* Product Info */}
-        <div className="flex items-center gap-3">
-          {product.photo_url ? (
-            <img src={product.photo_url} className="h-16 w-16 rounded-lg object-cover" />
-          ) : (
-            <div className="h-16 w-16 rounded-lg bg-muted flex items-center justify-center">
-              <Package className="h-6 w-6 text-muted-foreground/30" />
-            </div>
-          )}
-          <div>
-            <p className="font-medium">{product.name}</p>
-            <p className="text-sm text-muted-foreground">
-              {formatCurrency(product.sale_price)} / {unitLabel}
-            </p>
-          </div>
-        </div>
-        
-        {/* Quantity Controls */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium">Quantidade</label>
-          <div className="flex items-center justify-center gap-2">
-            <Button variant="outline" size="icon" onClick={() => decrementQty()}>
-              <Minus className="h-4 w-4" />
-            </Button>
-            <Input 
-              type="text" 
-              inputMode="decimal"
-              value={quantity} 
-              onChange={handleQtyChange}
-              className="w-20 text-center"
-            />
-            <Button variant="outline" size="icon" onClick={() => incrementQty()}>
-              <Plus className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        
-        {/* Subtotal */}
-        <div className="flex justify-between items-center py-2 border-t">
-          <span className="text-sm text-muted-foreground">Subtotal</span>
-          <span className="text-lg font-semibold">
-            {formatCurrency(product.sale_price * quantity)}
-          </span>
-        </div>
-        
-        {/* Add Button */}
-        <Button 
-          onClick={() => {
-            onConfirm(quantity);
-            onOpenChange(false);
-          }}
-          className="w-full gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar ao Pedido
-        </Button>
-      </DialogContent>
-    </Dialog>
+    <span className={cn(
+      "text-[10px] font-medium px-1.5 py-0.5 rounded",
+      urgency.level === "critical" && "bg-red-500/50 text-red-900 dark:text-red-100",
+      urgency.level === "warning" && "bg-amber-500/50 text-amber-900 dark:text-amber-100",
+      urgency.level === "normal" && "bg-muted text-muted-foreground",
+    )}>
+      {urgency.text}
+    </span>
   );
 }
 ```
 
-#### 3. Mudanca no Fluxo de Adicao
+### Beneficios
 
-**Antes (handleQuickAdd):**
-```tsx
-const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
-  e.stopPropagation();
-  const defaultQty = product.unit_type === "kg" ? 0.5 : 1;
-  onAddProduct(product, defaultQty); // Adiciona direto
-};
-```
-
-**Depois:**
-```tsx
-const handleQuickAdd = (product: Product, e: React.MouseEvent) => {
-  e.stopPropagation();
-  setDialogProduct(product); // Abre dialog em vez de adicionar direto
-};
-
-const handleConfirmAdd = (quantity: number) => {
-  if (dialogProduct) {
-    onAddProduct(dialogProduct, quantity);
-    setJustAdded(dialogProduct.id);
-    setTimeout(() => setJustAdded(null), 800);
-    setDialogProduct(null);
-  }
-};
-```
-
-#### 4. Simplificacao - Remover Painel Sticky
-
-Como o dialog substitui o painel de quantidade, podemos remover:
-- O estado `selectedProduct` e `quantity` (substituidos por `dialogProduct` e estado interno do dialog)
-- O painel sticky (linhas 175-265)
-- A logica de `handleProductClick` para selecionar produto
-
-O clique no card pode ter dois comportamentos:
-- **Opcao A:** Clique no card = abre dialog (mesmo que o botao +)
-- **Opcao B:** Clique no card nao faz nada, apenas o botao + abre dialog
-
-Recomendo a **Opcao A** para maior area de toque no mobile.
-
-### Resumo das Alteracoes
-
-| Arquivo | Alteracao |
-|---------|-----------|
-| `ProductSelector.tsx` | Criar AddProductDialog, remover painel sticky, unificar fluxo de adicao |
-
-### Vantagens desta Abordagem
-
-1. **Fluxo unico e consistente** - nao ha mais dois caminhos para adicionar produto
-2. **Controle antes de adicionar** - usuario sempre ve a quantidade antes de confirmar
-3. **Menos confusao** - painel sticky as vezes ficava fora da tela
-4. **Padrao de mercado** - apps como iFood, Rappi usam esse pattern
-5. **Codigo mais simples** - menos estados e menos logica condicional
-
-### Secao Tecnica
-
-#### Imports adicionais no ProductSelector.tsx
-```tsx
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-```
-
-#### Alteracao completa do ProductSelector
-
-O componente sera reestruturado para:
-1. Substituir `selectedProduct` por `dialogProduct`
-2. Mover a logica de quantidade para dentro do dialog
-3. Remover o bloco do painel sticky (linhas 175-265)
-4. Adicionar o componente `AddProductDialog` ao final do JSX
-
+1. **DRY** - Logica de urgencia em um unico lugar
+2. **Consistencia** - Mesma aparencia em todos os lugares
+3. **Manutencao** - Alteracoes futuras em um unico arquivo
+4. **Dark Mode** - Suporte garantido e testado
