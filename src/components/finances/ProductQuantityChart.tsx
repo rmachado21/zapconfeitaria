@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { parseISO, startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter } from 'date-fns';
-import { Package, ChevronDown } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { parseISO, startOfWeek, startOfMonth, startOfYear, endOfMonth, isAfter } from "date-fns";
+import { Package, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface OrderItem {
   id: string;
@@ -25,7 +25,7 @@ interface Order {
 interface ProductQuantityChartProps {
   orders: Order[];
   selectedMonth: { month: number; year: number } | null;
-  period: 'week' | 'month' | 'year' | 'all';
+  period: "week" | "month" | "year" | "all";
 }
 
 interface ProductQuantity {
@@ -35,72 +35,72 @@ interface ProductQuantity {
 }
 
 const CHART_COLORS = [
-  'hsl(var(--muted-foreground) / 0.30)',
-  'hsl(var(--muted-foreground) / 0.26)',
-  'hsl(var(--muted-foreground) / 0.22)',
-  'hsl(var(--muted-foreground) / 0.18)',
-  'hsl(var(--muted-foreground) / 0.14)',
+  "hsl(var(--muted-foreground) / 0.30)",
+  "hsl(var(--muted-foreground) / 0.26)",
+  "hsl(var(--muted-foreground) / 0.22)",
+  "hsl(var(--muted-foreground) / 0.18)",
+  "hsl(var(--muted-foreground) / 0.14)",
 ];
 
 const formatQuantity = (qty: number, unitType: string) => {
-  if (unitType === 'kg') {
-    return `${qty.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Kg`;
+  if (unitType === "kg") {
+    return `${qty.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Kg`;
   }
-  if (unitType === 'cento') {
-    return qty === 1 ? '1 cento' : `${qty} centos`;
+  if (unitType === "cento") {
+    return qty === 1 ? "1 cento" : `${qty} centos`;
   }
   return `${qty} un`;
 };
 
 export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQuantityChartProps) {
   const [expanded, setExpanded] = useState(false);
-  
+
   const { productQuantities, deliveredOrdersCount } = useMemo(() => {
     const now = new Date();
     let startDate: Date | null = null;
     let endDate: Date | null = null;
-    
+
     if (selectedMonth) {
       startDate = new Date(selectedMonth.year, selectedMonth.month, 1);
       endDate = endOfMonth(startDate);
     } else {
       switch (period) {
-        case 'week':
+        case "week":
           startDate = startOfWeek(now, { weekStartsOn: 0 });
           break;
-        case 'month':
+        case "month":
           startDate = startOfMonth(now);
           break;
-        case 'year':
+        case "year":
           startDate = startOfYear(now);
           break;
       }
     }
 
-    const deliveredOrders = orders.filter(order => {
-      if (order.status !== 'delivered') return false;
+    const deliveredOrders = orders.filter((order) => {
+      if (order.status !== "delivered") return false;
       if (!order.delivery_date) return false;
       if (!startDate) return true;
-      
+
       const orderDate = parseISO(order.delivery_date);
       const afterStart = isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
-      
+
       if (endDate) {
         const beforeEnd = orderDate.getTime() <= endDate.getTime();
         return afterStart && beforeEnd;
       }
-      
+
       return afterStart;
     });
 
     const productMap = new Map<string, ProductQuantity>();
 
-    deliveredOrders.forEach(order => {
-      (order.order_items || []).forEach(item => {
+    deliveredOrders.forEach((order) => {
+      (order.order_items || []).forEach((item) => {
         if (item.is_gift) return;
-        
+
         const existing = productMap.get(item.product_name);
-        const unitType = item.unit_type || 'unit';
+        const unitType = item.unit_type || "unit";
 
         if (existing) {
           existing.quantity += item.quantity;
@@ -114,12 +114,11 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
       });
     });
 
-    const sorted = Array.from(productMap.values())
-      .sort((a, b) => b.quantity - a.quantity);
+    const sorted = Array.from(productMap.values()).sort((a, b) => b.quantity - a.quantity);
 
-    return { 
-      productQuantities: sorted, 
-      deliveredOrdersCount: deliveredOrders.length 
+    return {
+      productQuantities: sorted,
+      deliveredOrdersCount: deliveredOrders.length,
     };
   }, [orders, selectedMonth, period]);
 
@@ -150,7 +149,7 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
               {displayedProducts.map((product, index) => {
                 const barWidth = (product.quantity / maxQuantity) * 100;
                 const colorIndex = Math.min(index, CHART_COLORS.length - 1);
-                
+
                 return (
                   <div key={product.productName} className="space-y-1">
                     <div className="flex items-center justify-between gap-2">
@@ -159,10 +158,10 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
                         {formatQuantity(product.quantity, product.unitType)}
                       </span>
                     </div>
-                    <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                      <div 
+                    <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                      <div
                         className="h-full rounded-full transition-all duration-300"
-                        style={{ 
+                        style={{
                           width: `${barWidth}%`,
                           backgroundColor: CHART_COLORS[colorIndex],
                         }}
@@ -178,7 +177,7 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
                 <CollapsibleContent className="space-y-3 mt-3">
                   {productQuantities.slice(5).map((product, index) => {
                     const barWidth = (product.quantity / maxQuantity) * 100;
-                    
+
                     return (
                       <div key={product.productName} className="space-y-1">
                         <div className="flex items-center justify-between gap-2">
@@ -187,14 +186,14 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
                             {formatQuantity(product.quantity, product.unitType)}
                           </span>
                         </div>
-                        <div className="h-2.5 w-full bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-300"
-                          style={{ 
-                            width: `${barWidth}%`,
-                            backgroundColor: CHART_COLORS[CHART_COLORS.length - 1],
-                          }}
-                        />
+                        <div className="h-2 w-full bg-muted rounded-full overflow-hidden">
+                          <div
+                            className="h-full rounded-full transition-all duration-300"
+                            style={{
+                              width: `${barWidth}%`,
+                              backgroundColor: CHART_COLORS[CHART_COLORS.length - 1],
+                            }}
+                          />
                         </div>
                       </div>
                     );
@@ -202,27 +201,22 @@ export function ProductQuantityChart({ orders, selectedMonth, period }: ProductQ
                 </CollapsibleContent>
 
                 <CollapsibleTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full mt-3 text-muted-foreground hover:text-foreground"
-                    size="sm"
-                  >
-                    <ChevronDown className={cn(
-                      "h-4 w-4 mr-2 transition-transform duration-200",
-                      expanded && "rotate-180"
-                    )} />
-                    {expanded 
-                      ? 'Ver menos' 
-                      : `Ver todos (${productQuantities.length} produtos)`
-                    }
+                  <Button variant="ghost" className="w-full mt-3 text-muted-foreground hover:text-foreground" size="sm">
+                    <ChevronDown
+                      className={cn("h-4 w-4 mr-2 transition-transform duration-200", expanded && "rotate-180")}
+                    />
+                    {expanded ? "Ver menos" : `Ver todos (${productQuantities.length} produtos)`}
                   </Button>
                 </CollapsibleTrigger>
               </>
             )}
 
             <div className="flex items-center justify-center gap-1.5 mt-4 text-xs text-muted-foreground">
-              <Package className="h-3.5 w-3.5" />
-              <span>Baseado em {deliveredOrdersCount} pedido{deliveredOrdersCount !== 1 ? 's' : ''} entregue{deliveredOrdersCount !== 1 ? 's' : ''}</span>
+              <Package className="h-3 w-3.5" />
+              <span>
+                Baseado em {deliveredOrdersCount} pedido{deliveredOrdersCount !== 1 ? "s" : ""} entregue
+                {deliveredOrdersCount !== 1 ? "s" : ""}
+              </span>
             </div>
           </Collapsible>
         )}
