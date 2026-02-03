@@ -18,7 +18,7 @@ import { TopProductsChart } from '@/components/finances/TopProductsChart';
 import { ProductQuantityChart } from '@/components/finances/ProductQuantityChart';
 import { ProductRevenueChart } from '@/components/finances/ProductRevenueChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
-import { MonthComparisonChart } from '@/components/finances/MonthComparisonChart';
+
 import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
 import { useTransactions, Transaction, TransactionFormData, PeriodFilter, MonthFilter } from '@/hooks/useTransactions';
 import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
@@ -29,7 +29,7 @@ import {
   Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, FileText,
   ChevronLeft, ChevronRight, Filter, X
 } from 'lucide-react';
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter, endOfWeek, endOfMonth, endOfYear, subMonths, addMonths } from 'date-fns';
+import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter, isBefore, endOfWeek, endOfMonth, endOfYear, subMonths, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
@@ -209,6 +209,61 @@ const Finances = () => {
       deliveredOrdersForProfit: deliveredOrders 
     };
   }, [orders, products, period, selectedMonth]);
+
+  // Calculate month-over-month variations for stats cards
+  const monthVariations = useMemo(() => {
+    const currentDate = selectedMonth 
+      ? new Date(selectedMonth.year, selectedMonth.month, 1)
+      : new Date();
+    
+    const currentMonthStart = startOfMonth(currentDate);
+    const currentMonthEnd = endOfMonth(currentDate);
+    
+    const previousDate = subMonths(currentDate, 1);
+    const previousMonthStart = startOfMonth(previousDate);
+    const previousMonthEnd = endOfMonth(previousDate);
+
+    // Filter transactions for each month
+    const filterByMonth = (start: Date, end: Date) => {
+      return transactions.filter(t => {
+        const date = parseISO(t.date);
+        return (isAfter(date, start) || date.getTime() === start.getTime()) &&
+               (isBefore(date, end) || date.getTime() === end.getTime());
+      });
+    };
+
+    const currentMonthTransactions = filterByMonth(currentMonthStart, currentMonthEnd);
+    const previousMonthTransactions = filterByMonth(previousMonthStart, previousMonthEnd);
+
+    // Calculate totals
+    const calculate = (txns: Transaction[]) => {
+      const income = txns.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const expense = txns.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      return { income, expense, balance: income - expense };
+    };
+
+    const current = calculate(currentMonthTransactions);
+    const previous = calculate(previousMonthTransactions);
+
+    // Calculate variation percentages
+    const incomeVariation = previous.income > 0 
+      ? ((current.income - previous.income) / previous.income) * 100 
+      : current.income > 0 ? 100 : 0;
+    
+    const expenseVariation = previous.expense > 0 
+      ? ((current.expense - previous.expense) / previous.expense) * 100 
+      : current.expense > 0 ? 100 : 0;
+
+    const balanceVariation = previous.balance !== 0 
+      ? ((current.balance - previous.balance) / Math.abs(previous.balance)) * 100 
+      : current.balance !== 0 ? 100 : 0;
+
+    return {
+      income: incomeVariation,
+      expense: expenseVariation,
+      balance: balanceVariation,
+    };
+  }, [transactions, selectedMonth]);
 
   // Map transactions to order numbers for display
   const orderNumberMap = useMemo(() => {
@@ -487,18 +542,30 @@ const Finances = () => {
             value={formatCurrency(balance)}
             icon={Wallet}
             variant={balance >= 0 ? 'primary' : 'warning'}
+            trend={{
+              value: Math.abs(Number(monthVariations.balance.toFixed(1))),
+              isPositive: monthVariations.balance >= 0
+            }}
           />
           <StatsCard
             title="Receitas"
             value={formatCurrency(totalIncome)}
             icon={TrendingUp}
             variant="success"
+            trend={{
+              value: Math.abs(Number(monthVariations.income.toFixed(1))),
+              isPositive: monthVariations.income >= 0
+            }}
           />
           <StatsCard
             title="Despesas"
             value={formatCurrency(totalExpenses)}
             icon={TrendingDown}
             variant="warning"
+            trend={{
+              value: Math.abs(Number(monthVariations.expense.toFixed(1))),
+              isPositive: monthVariations.expense <= 0
+            }}
           />
           <StatsCard
             title="Lucro Bruto"
@@ -532,11 +599,6 @@ const Finances = () => {
           <ExpenseCategoryChart transactions={filteredTransactions} />
         </section>
 
-        {/* Month Comparison */}
-        <MonthComparisonChart 
-          allTransactions={transactions} 
-          selectedMonth={selectedMonth || undefined} 
-        />
 
         {/* Transactions List */}
         <Card className="overflow-hidden">
