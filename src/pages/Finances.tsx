@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/select';
 import { TransactionFormDialog } from '@/components/finances/TransactionFormDialog';
 import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
-import { FinanceChart } from '@/components/finances/FinanceChart';
+import { TopProductsChart } from '@/components/finances/TopProductsChart';
 import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
 import { MonthComparisonChart } from '@/components/finances/MonthComparisonChart';
 import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
@@ -512,7 +512,11 @@ const Finances = () => {
 
         {/* Charts Grid */}
         <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <FinanceChart transactions={filteredTransactions} />
+          <TopProductsChart 
+            orders={orders} 
+            selectedMonth={selectedMonth} 
+            period={period} 
+          />
           <ExpenseCategoryChart transactions={filteredTransactions} />
         </section>
 
