@@ -1,63 +1,61 @@
 
-Objetivo
-- Deixar as barras/linhas dos cards “Top 5 Produtos” e “Quantidade Vendida” mais discretas, com tons de cinza claros e sutis, evitando o aspecto “agressivo”/saturado.
-- Manter boa leitura em light e dark mode (cores “theme-aware”).
 
-Diagnóstico rápido (como está hoje)
-- Ambos os componentes usam uma paleta fixa de verdes/teal em `CHART_COLORS`, aplicada:
-  - TopProductsChart:
-    - Mobile: `style.backgroundColor = CHART_COLORS[index]`
-    - Desktop (Recharts): `<Cell fill={CHART_COLORS[index]} />`
-  - ProductQuantityChart:
-    - Top 5 e lista expandida: `style.backgroundColor = CHART_COLORS[colorIndex]` e um valor fixo no expandido.
-- Mesmo sendo mais suave que o laranja anterior, ainda há saturação perceptível nas barras.
+## Plano: Unificar Layout do Top 5 Produtos com Quantidade Vendida
 
-Solução proposta (cinzas sutis e consistentes com o tema)
-1) Trocar `CHART_COLORS` (em ambos os arquivos) para uma escala de cinza baseada em variáveis do tema (Shadcn/Tailwind tokens):
-- Usar `hsl(var(--muted-foreground) / <alpha>)` para gerar cinzas “macios” e responsivos ao dark mode.
-- Escala sugerida (do mais “presente” ao mais sutil):
-  - 0.30, 0.26, 0.22, 0.18, 0.14
+### Situação Atual
 
-Exemplo:
-```ts
-const CHART_COLORS = [
-  'hsl(var(--muted-foreground) / 0.30)',
-  'hsl(var(--muted-foreground) / 0.26)',
-  'hsl(var(--muted-foreground) / 0.22)',
-  'hsl(var(--muted-foreground) / 0.18)',
-  'hsl(var(--muted-foreground) / 0.14)',
-];
+| Card | Mobile | Desktop |
+|------|--------|---------|
+| **Top 5 Produtos** | Divs simples | Recharts (BarChart) |
+| **Quantidade Vendida** | Divs simples | Divs simples |
+
+Essa diferença gera inconsistência visual: no desktop, "Top 5 Produtos" tem um gráfico horizontal com eixos enquanto "Quantidade Vendida" usa barras de progresso simples.
+
+### Solução
+
+Simplificar o **TopProductsChart** para usar o mesmo layout de divs do **ProductQuantityChart**, removendo a dependência de Recharts e a lógica condicional `isMobile`.
+
+### Alterações em `src/components/finances/TopProductsChart.tsx`
+
+1. **Remover imports desnecessários**:
+   - Remover `BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell, LabelList` de recharts
+   - Remover `useIsMobile` hook
+
+2. **Simplificar estrutura de renderização**:
+   - Remover condicional `isMobile ? ... : ...`
+   - Usar estrutura única baseada em divs para mobile e desktop
+   - Manter o indicador de ranking (`#1`, `#2`, etc.) como diferencial deste card
+
+3. **Remover código não utilizado**:
+   - Remover função `renderOrderCountLabel`
+   - Remover função `formatQuantity` (não usada)
+
+### Estrutura Final (igual ao ProductQuantityChart)
+
+```text
+┌─────────────────────────────────────┐
+│ 📈 Top 5 Produtos                   │
+├─────────────────────────────────────┤
+│ #1  Bolo de Chocolate    12 pedidos │
+│ ████████████████████████████████░░░ │
+│                                     │
+│ #2  Brigadeiro           8 pedidos  │
+│ █████████████████████░░░░░░░░░░░░░░ │
+│                                     │
+│ #3  Torta de Limão       5 pedidos  │
+│ █████████████░░░░░░░░░░░░░░░░░░░░░░ │
+│                                     │
+│ 📦 Baseado em 25 pedidos entregues  │
+└─────────────────────────────────────┘
 ```
 
-2) Ajustar a lista expandida do “Quantidade Vendida” para não ter “cor fixa” fora da paleta
-- Hoje a lista expandida usa um `backgroundColor` hardcoded.
-- Trocar para algo derivado da própria paleta (ex.: `CHART_COLORS[CHART_COLORS.length - 1]`) para ficar consistente e fácil de ajustar no futuro.
+### Benefícios
 
-Exemplo:
-```ts
-backgroundColor: CHART_COLORS[CHART_COLORS.length - 1]
-```
+1. **Consistência visual**: Ambos os cards terão o mesmo padrão de layout
+2. **Código mais simples**: Remove dependência de Recharts para este componente
+3. **Performance**: Menos overhead de renderização sem biblioteca de gráficos
+4. **Manutenibilidade**: Um único layout para ajustar em vez de dois
 
-3) (Opcional, se ainda ficar forte ou fraco após ver no preview) Ajuste fino de contraste
-- Se as barras ficarem “apagadas demais” no fundo `bg-muted`, aumentar levemente os alphas (ex.: +0.02).
-- Se ainda estiverem “fortes”, reduzir levemente os alphas (ex.: -0.02).
-- Essa regulagem é rápida porque fica centralizada no `CHART_COLORS`.
-
-Arquivos que serão alterados
+### Arquivo a Modificar
 - `src/components/finances/TopProductsChart.tsx`
-  - Atualizar `CHART_COLORS` para a escala de cinzas com `--muted-foreground`.
-- `src/components/finances/ProductQuantityChart.tsx`
-  - Atualizar `CHART_COLORS` para a mesma escala de cinzas.
-  - Trocar a cor fixa da barra na lista expandida para usar `CHART_COLORS[...]`.
 
-Checklist de validação (QA)
-- Em /finances (mobile):
-  - Card “Top 5 Produtos”: barras com cinza suave, sem “gritar” visualmente, ainda legíveis.
-  - Card “Quantidade Vendida”: barras idem, e a lista expandida mantém a mesma linguagem de cor.
-- Em /finances (desktop):
-  - “Top 5 Produtos” (Recharts): as barras e labels continuam com boa leitura.
-- Testar em light e dark mode:
-  - Garantir que as barras não “somem” no dark, nem fiquem pesadas no light.
-
-Notas técnicas
-- O projeto já usa tokens HSL no `src/index.css` (ex.: `--muted-foreground`), então `hsl(var(--muted-foreground) / 0.xx)` tende a ficar bem consistente com o resto do sistema e automaticamente adaptável ao tema.
