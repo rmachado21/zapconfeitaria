@@ -1,31 +1,66 @@
 
 
-## Plano: Adicionar Borda Escura ao Popover WhatsApp
+## Plano: Corrigir Divergência Entre Card "Este Mês" e Dialog de Lucro Bruto
 
-### Objetivo
+### Problema Identificado
 
-Adicionar uma borda verde escura (`emerald-700`) ao popover de templates WhatsApp para melhorar o contraste visual com o conteúdo do painel principal atrás.
+No Dashboard (`Index.tsx`), há uma inconsistência na filtragem de pedidos:
 
-### Alteração
+| Elemento | Critério de Filtro | Resultado nas Imagens |
+|----------|-------------------|----------------------|
+| Card "Este Mês" | `delivery_date` | R$ 234,50 (1 pedido) |
+| Dialog "Lucro Bruto" | `updated_at` | R$ 443,50 (2 pedidos) |
 
-**Arquivo**: `src/components/orders/WhatsAppTemplatePreview.tsx`
+Isso ocorre porque:
+- **Card "Este Mês"** usa `filteredOrders` filtrado por `delivery_date` (linhas 46-54)
+- **Dialog "Lucro Bruto"** usa `deliveredOrdersForProfit` filtrado por `updated_at` (linhas 88-94)
 
-**Linha 97** - Adicionar borda emerald-700 ao PopoverContent:
+Na página Finances, ambos usam `delivery_date`, por isso não há divergência lá.
+
+### Solução
+
+Unificar a lógica no Dashboard para que tanto o card quanto o dialog usem o mesmo critério de filtragem (`delivery_date`).
+
+### Alterações
+
+**Arquivo**: `src/pages/Index.tsx`
+
+#### 1. Modificar o cálculo de `grossProfitTotals` (linhas 87-116)
+
+Mudar o filtro de `updated_at` para `delivery_date`:
 
 ```typescript
-// Antes
-<PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl" sideOffset={8}>
+// ANTES (linha 90-93):
+const deliveredOrders = orders.filter((order) => {
+  if (order.status !== "delivered") return false;
+  const orderDate = parseISO(order.updated_at);
+  return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
+});
 
-// Depois
-<PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl border-emerald-700" sideOffset={8}>
+// DEPOIS:
+const deliveredOrders = orders.filter((order) => {
+  if (order.status !== "delivered") return false;
+  if (!order.delivery_date) return false;
+  const deliveryDate = parseISO(order.delivery_date);
+  return isAfter(deliveryDate, startDate) || deliveryDate.getTime() === startDate.getTime();
+});
 ```
 
-### Resultado Visual
+### Resultado Esperado
 
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Borda** | Padrão (cinza claro) | Verde escuro (`border-emerald-700`) |
-| **Contraste** | Baixo com conteúdo atrás | Alto, popover se destaca claramente |
+Após a correção:
 
-A cor `emerald-700` (#047857) é escura o suficiente para criar separação visual clara, mas ainda harmoniza com o header verde suave do popover.
+| Elemento | Critério de Filtro | Resultado |
+|----------|-------------------|-----------|
+| Card "Este Mês" | `delivery_date` | R$ 234,50 |
+| Dialog "Lucro Bruto" | `delivery_date` | R$ 234,50 |
+| Card "Lucro Bruto" (Finances) | `delivery_date` | R$ 234,50 |
+
+Todos os três elementos mostrarão os mesmos dados, baseados na data de entrega dos pedidos, conforme a regra de negócio documentada na memória `business-logic/dashboard-este-mes-delivery-date-filter`.
+
+### Impacto
+
+- Correção mínima (apenas 2 linhas alteradas)
+- Alinhamento com a lógica já implementada na página Finances
+- Consistência na experiência do usuário
 
