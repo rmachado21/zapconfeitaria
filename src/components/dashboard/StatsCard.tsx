@@ -37,7 +37,7 @@ export function StatsCard({
     primary: "gradient-warm text-primary-foreground",
     success: "bg-success/10 border-success/20",
     warning: "bg-warning/10 border-warning/20",
-    delivered: "bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800",
+    delivered: "bg-sky-100 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800",
   };
 
   const iconStyles = {
