@@ -1,73 +1,94 @@
-import { useState, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AppLayout } from '@/components/layout/AppLayout';
-import { StatsCard } from '@/components/dashboard/StatsCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { StatsCard } from "@/components/dashboard/StatsCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { TransactionFormDialog } from "@/components/finances/TransactionFormDialog";
+import { DeleteTransactionDialog } from "@/components/finances/DeleteTransactionDialog";
+import { TopProductsChart } from "@/components/finances/TopProductsChart";
+import { ProductQuantityChart } from "@/components/finances/ProductQuantityChart";
+import { ProductRevenueChart } from "@/components/finances/ProductRevenueChart";
+import { ExpenseCategoryChart } from "@/components/finances/ExpenseCategoryChart";
+import { GrossProfitDetailDialog } from "@/components/finances/GrossProfitDetailDialog";
+import { TransactionListPanel } from "@/components/finances/TransactionListPanel";
+import { useTransactions, Transaction, TransactionFormData, PeriodFilter, MonthFilter } from "@/hooks/useTransactions";
+import { useOrders, formatOrderNumber } from "@/hooks/useOrders";
+import { useProducts } from "@/hooks/useProducts";
+import { useFinanceReportPdf } from "@/hooks/useFinanceReportPdf";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { TransactionFormDialog } from '@/components/finances/TransactionFormDialog';
-import { DeleteTransactionDialog } from '@/components/finances/DeleteTransactionDialog';
-import { TopProductsChart } from '@/components/finances/TopProductsChart';
-import { ProductQuantityChart } from '@/components/finances/ProductQuantityChart';
-import { ProductRevenueChart } from '@/components/finances/ProductRevenueChart';
-import { ExpenseCategoryChart } from '@/components/finances/ExpenseCategoryChart';
-import { GrossProfitDetailDialog } from '@/components/finances/GrossProfitDetailDialog';
-import { TransactionListPanel } from '@/components/finances/TransactionListPanel';
-import { useTransactions, Transaction, TransactionFormData, PeriodFilter, MonthFilter } from '@/hooks/useTransactions';
-import { useOrders, formatOrderNumber } from '@/hooks/useOrders';
-import { useProducts } from '@/hooks/useProducts';
-import { useFinanceReportPdf } from '@/hooks/useFinanceReportPdf';
-import { 
-  TrendingUp, TrendingDown, Wallet, Plus, ArrowUpRight, ArrowDownRight, 
-  Trash2, Loader2, Calendar, ExternalLink, PiggyBank, Pencil, FileText,
-  ChevronLeft, ChevronRight, Filter, X
-} from 'lucide-react';
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear, isAfter, isBefore, endOfWeek, endOfMonth, endOfYear, subMonths, addMonths } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { cn } from '@/lib/utils';
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  Plus,
+  ArrowUpRight,
+  ArrowDownRight,
+  Trash2,
+  Loader2,
+  Calendar,
+  ExternalLink,
+  PiggyBank,
+  Pencil,
+  FileText,
+  ChevronLeft,
+  ChevronRight,
+  Filter,
+  X,
+} from "lucide-react";
+import {
+  format,
+  parseISO,
+  startOfWeek,
+  startOfMonth,
+  startOfYear,
+  isAfter,
+  isBefore,
+  endOfWeek,
+  endOfMonth,
+  endOfYear,
+  subMonths,
+  addMonths,
+} from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 
 const periodLabels: Record<PeriodFilter, string> = {
-  week: 'Esta Semana',
-  month: 'Este Mês',
-  year: 'Este Ano',
-  all: 'Todo Período',
+  week: "Esta Semana",
+  month: "Este Mês",
+  year: "Este Ano",
+  all: "Todo Período",
 };
 
 const ALL_CATEGORIES = [
-  'Insumos',
-  'Embalagens',
-  'Combustível',
-  'Equipamentos',
-  'Marketing',
-  'Aluguel',
-  'Sinal',
-  'Pagamento Final',
-  'Venda Avulsa',
-  'Outros',
+  "Insumos",
+  "Embalagens",
+  "Combustível",
+  "Equipamentos",
+  "Marketing",
+  "Aluguel",
+  "Sinal",
+  "Pagamento Final",
+  "Venda Avulsa",
+  "Outros",
 ];
 
 // Category colors for badges
 const CATEGORY_COLORS: Record<string, { bg: string; text: string }> = {
-  'Insumos': { bg: 'bg-amber-100 dark:bg-amber-900/30', text: 'text-amber-700 dark:text-amber-300' },
-  'Embalagens': { bg: 'bg-orange-100 dark:bg-orange-900/30', text: 'text-orange-700 dark:text-orange-300' },
-  'Combustível': { bg: 'bg-red-100 dark:bg-red-900/30', text: 'text-red-700 dark:text-red-300' },
-  'Equipamentos': { bg: 'bg-slate-100 dark:bg-slate-800/50', text: 'text-slate-700 dark:text-slate-300' },
-  'Marketing': { bg: 'bg-purple-100 dark:bg-purple-900/30', text: 'text-purple-700 dark:text-purple-300' },
-  'Aluguel': { bg: 'bg-blue-100 dark:bg-blue-900/30', text: 'text-blue-700 dark:text-blue-300' },
-  'Sinal': { bg: 'bg-emerald-100 dark:bg-emerald-900/30', text: 'text-emerald-700 dark:text-emerald-300' },
-  'Pagamento Final': { bg: 'bg-green-100 dark:bg-green-900/30', text: 'text-green-700 dark:text-green-300' },
-  'Venda Avulsa': { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-700 dark:text-teal-300' },
-  'Outros': { bg: 'bg-gray-100 dark:bg-gray-800/50', text: 'text-gray-600 dark:text-gray-400' },
+  Insumos: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-300" },
+  Embalagens: { bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-700 dark:text-orange-300" },
+  Combustível: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-300" },
+  Equipamentos: { bg: "bg-slate-100 dark:bg-slate-800/50", text: "text-slate-700 dark:text-slate-300" },
+  Marketing: { bg: "bg-purple-100 dark:bg-purple-900/30", text: "text-purple-700 dark:text-purple-300" },
+  Aluguel: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-300" },
+  Sinal: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-300" },
+  "Pagamento Final": { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-300" },
+  "Venda Avulsa": { bg: "bg-teal-100 dark:bg-teal-900/30", text: "text-teal-700 dark:text-teal-300" },
+  Outros: { bg: "bg-gray-100 dark:bg-gray-800/50", text: "text-gray-600 dark:text-gray-400" },
 };
 
-type TypeFilter = 'all' | 'income' | 'expense';
+type TypeFilter = "all" | "income" | "expense";
 
 const ITEMS_PER_PAGE = 20;
 
@@ -77,23 +98,23 @@ const Finances = () => {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null);
-  const [period, setPeriod] = useState<PeriodFilter>('month');
+  const [period, setPeriod] = useState<PeriodFilter>("month");
   const [currentPage, setCurrentPage] = useState(1);
-  const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [typeFilter, setTypeFilter] = useState<TypeFilter>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [grossProfitDialogOpen, setGrossProfitDialogOpen] = useState(false);
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
-  const [transactionPanelType, setTransactionPanelType] = useState<'income' | 'expense'>('income');
-  
+  const [transactionPanelType, setTransactionPanelType] = useState<"income" | "expense">("income");
+
   // Month navigation state
   const [selectedMonth, setSelectedMonth] = useState<MonthFilter | null>(null);
 
   const { sharePdf: shareReportPdf, isGenerating: isGeneratingReport } = useFinanceReportPdf();
 
-  const { 
+  const {
     transactions,
     filteredTransactions,
-    isLoading, 
+    isLoading,
     createTransaction,
     updateTransaction,
     deleteTransaction,
@@ -150,38 +171,38 @@ const Finances = () => {
     const now = new Date();
     let startDate: Date | null = null;
     let endDate: Date | null = null;
-    
+
     // If a specific month is selected, use that
     if (selectedMonth) {
       startDate = new Date(selectedMonth.year, selectedMonth.month, 1);
       endDate = endOfMonth(startDate);
     } else {
       switch (period) {
-        case 'week':
+        case "week":
           startDate = startOfWeek(now, { weekStartsOn: 0 });
           break;
-        case 'month':
+        case "month":
           startDate = startOfMonth(now);
           break;
-        case 'year':
+        case "year":
           startDate = startOfYear(now);
           break;
       }
     }
 
-    const deliveredOrders = orders.filter(order => {
-      if (order.status !== 'delivered') return false;
+    const deliveredOrders = orders.filter((order) => {
+      if (order.status !== "delivered") return false;
       if (!order.delivery_date) return false;
       if (!startDate) return true;
-      
+
       const orderDate = parseISO(order.delivery_date);
       const afterStart = isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
-      
+
       if (endDate) {
         const beforeEnd = orderDate.getTime() <= endDate.getTime();
         return afterStart && beforeEnd;
       }
-      
+
       return afterStart;
     });
 
@@ -192,45 +213,45 @@ const Finances = () => {
     const costs = deliveredOrders.reduce((orderSum, order) => {
       const itemsCost = (order.order_items || []).reduce((itemSum, item) => {
         if (item.is_gift) return itemSum;
-        
+
         // Find product to get cost_price
-        const product = products.find(p => p.id === item.product_id);
+        const product = products.find((p) => p.id === item.product_id);
         const costPrice = product?.cost_price || 0;
-        
-        return itemSum + (costPrice * item.quantity);
+
+        return itemSum + costPrice * item.quantity;
       }, 0);
-      
+
       return orderSum + itemsCost;
     }, 0);
 
     const profit = revenue - costs;
     const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
 
-    return { 
+    return {
       estimatedProfit: { profit, margin, revenue, costs },
-      deliveredOrdersForProfit: deliveredOrders 
+      deliveredOrdersForProfit: deliveredOrders,
     };
   }, [orders, products, period, selectedMonth]);
 
   // Calculate month-over-month variations for stats cards
   const monthVariations = useMemo(() => {
-    const currentDate = selectedMonth 
-      ? new Date(selectedMonth.year, selectedMonth.month, 1)
-      : new Date();
-    
+    const currentDate = selectedMonth ? new Date(selectedMonth.year, selectedMonth.month, 1) : new Date();
+
     const currentMonthStart = startOfMonth(currentDate);
     const currentMonthEnd = endOfMonth(currentDate);
-    
+
     const previousDate = subMonths(currentDate, 1);
     const previousMonthStart = startOfMonth(previousDate);
     const previousMonthEnd = endOfMonth(previousDate);
 
     // Filter transactions for each month
     const filterByMonth = (start: Date, end: Date) => {
-      return transactions.filter(t => {
+      return transactions.filter((t) => {
         const date = parseISO(t.date);
-        return (isAfter(date, start) || date.getTime() === start.getTime()) &&
-               (isBefore(date, end) || date.getTime() === end.getTime());
+        return (
+          (isAfter(date, start) || date.getTime() === start.getTime()) &&
+          (isBefore(date, end) || date.getTime() === end.getTime())
+        );
       });
     };
 
@@ -239,8 +260,8 @@ const Finances = () => {
 
     // Calculate totals
     const calculate = (txns: Transaction[]) => {
-      const income = txns.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
-      const expense = txns.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const income = txns.filter((t) => t.type === "income").reduce((sum, t) => sum + t.amount, 0);
+      const expense = txns.filter((t) => t.type === "expense").reduce((sum, t) => sum + t.amount, 0);
       return { income, expense, balance: income - expense };
     };
 
@@ -248,17 +269,22 @@ const Finances = () => {
     const previous = calculate(previousMonthTransactions);
 
     // Calculate variation percentages
-    const incomeVariation = previous.income > 0 
-      ? ((current.income - previous.income) / previous.income) * 100 
-      : current.income > 0 ? 100 : 0;
-    
-    const expenseVariation = previous.expense > 0 
-      ? ((current.expense - previous.expense) / previous.expense) * 100 
-      : current.expense > 0 ? 100 : 0;
+    const incomeVariation =
+      previous.income > 0 ? ((current.income - previous.income) / previous.income) * 100 : current.income > 0 ? 100 : 0;
 
-    const balanceVariation = previous.balance !== 0 
-      ? ((current.balance - previous.balance) / Math.abs(previous.balance)) * 100 
-      : current.balance !== 0 ? 100 : 0;
+    const expenseVariation =
+      previous.expense > 0
+        ? ((current.expense - previous.expense) / previous.expense) * 100
+        : current.expense > 0
+          ? 100
+          : 0;
+
+    const balanceVariation =
+      previous.balance !== 0
+        ? ((current.balance - previous.balance) / Math.abs(previous.balance)) * 100
+        : current.balance !== 0
+          ? 100
+          : 0;
 
     return {
       income: incomeVariation,
@@ -270,7 +296,7 @@ const Finances = () => {
   // Map transactions to order numbers for display
   const orderNumberMap = useMemo(() => {
     const map: Record<string, number | null> = {};
-    orders.forEach(order => {
+    orders.forEach((order) => {
       map[order.id] = order.order_number;
     });
     return map;
@@ -278,8 +304,8 @@ const Finances = () => {
 
   // Extract category and clean description
   const parseTransaction = (description: string | null) => {
-    if (!description) return { category: null, cleanDescription: 'Sem descrição' };
-    const dashIndex = description.indexOf(' - ');
+    if (!description) return { category: null, cleanDescription: "Sem descrição" };
+    const dashIndex = description.indexOf(" - ");
     if (dashIndex > 0) {
       const category = description.substring(0, dashIndex);
       const cleanDescription = description.substring(dashIndex + 3);
@@ -292,16 +318,16 @@ const Finances = () => {
 
   // Filter transactions by type and category
   const listFilteredTransactions = useMemo(() => {
-    return filteredTransactions.filter(t => {
+    return filteredTransactions.filter((t) => {
       // Filter by type
-      if (typeFilter !== 'all' && t.type !== typeFilter) return false;
-      
+      if (typeFilter !== "all" && t.type !== typeFilter) return false;
+
       // Filter by category
-      if (categoryFilter !== 'all') {
+      if (categoryFilter !== "all") {
         const { category } = parseTransaction(t.description);
         if (category !== categoryFilter) return false;
       }
-      
+
       return true;
     });
   }, [filteredTransactions, typeFilter, categoryFilter]);
@@ -321,24 +347,24 @@ const Finances = () => {
   // Get available categories from current transactions
   const availableCategories = useMemo(() => {
     const categories = new Set<string>();
-    filteredTransactions.forEach(t => {
+    filteredTransactions.forEach((t) => {
       const { category } = parseTransaction(t.description);
       if (category) categories.add(category);
     });
     return Array.from(categories).sort();
   }, [filteredTransactions]);
 
-  const hasActiveFilters = typeFilter !== 'all' || categoryFilter !== 'all';
+  const hasActiveFilters = typeFilter !== "all" || categoryFilter !== "all";
 
   const clearFilters = () => {
-    setTypeFilter('all');
-    setCategoryFilter('all');
+    setTypeFilter("all");
+    setCategoryFilter("all");
   };
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
+    return new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
     }).format(value);
   };
 
@@ -346,7 +372,7 @@ const Finances = () => {
     try {
       return format(parseISO(dateString), "dd 'de' MMM", { locale: ptBR });
     } catch {
-      return 'Data inválida';
+      return "Data inválida";
     }
   };
 
@@ -383,7 +409,7 @@ const Finances = () => {
   };
 
   const handleOrderClick = (orderId: string) => {
-    navigate('/orders', { state: { openOrderId: orderId } });
+    navigate("/orders", { state: { openOrderId: orderId } });
   };
 
   // Calculate period dates for PDF
@@ -391,53 +417,53 @@ const Finances = () => {
     const now = new Date();
     let start: Date;
     let end: Date = now;
-    
+
     // If a specific month is selected, use that
     if (selectedMonth) {
       start = new Date(selectedMonth.year, selectedMonth.month, 1);
       end = endOfMonth(start);
     } else {
       switch (period) {
-        case 'week':
+        case "week":
           start = startOfWeek(now, { weekStartsOn: 0 });
           end = endOfWeek(now, { weekStartsOn: 0 });
           break;
-        case 'month':
+        case "month":
           start = startOfMonth(now);
           end = endOfMonth(now);
           break;
-        case 'year':
+        case "year":
           start = startOfYear(now);
           end = endOfYear(now);
           break;
         default:
           // For "all", use the oldest transaction date or current date
-          const dates = filteredTransactions.map(t => parseISO(t.date));
-          start = dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : now;
+          const dates = filteredTransactions.map((t) => parseISO(t.date));
+          start = dates.length > 0 ? new Date(Math.min(...dates.map((d) => d.getTime()))) : now;
           end = now;
       }
     }
-    
+
     return {
-      start: format(start, 'dd/MM/yyyy', { locale: ptBR }),
-      end: format(end, 'dd/MM/yyyy', { locale: ptBR }),
+      start: format(start, "dd/MM/yyyy", { locale: ptBR }),
+      end: format(end, "dd/MM/yyyy", { locale: ptBR }),
     };
   }, [period, selectedMonth, filteredTransactions]);
 
   // Calculate expenses by category for PDF
   const expensesByCategory = useMemo(() => {
     const categoryTotals: Record<string, number> = {};
-    
+
     filteredTransactions
-      .filter(t => t.type === 'expense')
-      .forEach(t => {
+      .filter((t) => t.type === "expense")
+      .forEach((t) => {
         const { category } = parseTransaction(t.description);
-        const cat = category || 'Outros';
+        const cat = category || "Outros";
         categoryTotals[cat] = (categoryTotals[cat] || 0) + t.amount;
       });
-    
+
     const total = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
-    
+
     return Object.entries(categoryTotals)
       .map(([category, amount]) => ({
         category,
@@ -449,7 +475,7 @@ const Finances = () => {
 
   const handleExportPDF = useCallback(() => {
     // Enrich transactions with category and order_number for PDF
-    const enrichedTransactions = listFilteredTransactions.map(t => {
+    const enrichedTransactions = listFilteredTransactions.map((t) => {
       const { category } = parseTransaction(t.description);
       return {
         id: t.id,
@@ -476,7 +502,20 @@ const Finances = () => {
       transactions: enrichedTransactions,
       expensesByCategory,
     });
-  }, [period, selectedMonth, capitalizedMonthLabel, periodDates, balance, totalIncome, totalExpenses, estimatedProfit, listFilteredTransactions, expensesByCategory, shareReportPdf, orderNumberMap]);
+  }, [
+    period,
+    selectedMonth,
+    capitalizedMonthLabel,
+    periodDates,
+    balance,
+    totalIncome,
+    totalExpenses,
+    estimatedProfit,
+    listFilteredTransactions,
+    expensesByCategory,
+    shareReportPdf,
+    orderNumberMap,
+  ]);
 
   // Get the period label to display in stats cards
   const displayPeriodLabel = selectedMonth ? capitalizedMonthLabel : periodLabels[period];
@@ -487,12 +526,8 @@ const Finances = () => {
         {/* Header */}
         <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-              Financeiro
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">
-              Acompanhe suas receitas e despesas
-            </p>
+            <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Financeiro</h1>
+            <p className="text-muted-foreground text-sm mt-1">Acompanhe suas receitas e despesas</p>
           </div>
           <div className="flex items-center gap-3">
             {!selectedMonth && (
@@ -519,24 +554,14 @@ const Finances = () => {
 
         {/* Month Navigation */}
         <div className="flex items-center justify-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToPreviousMonth}
-            className="h-9 w-9"
-          >
+          <Button variant="outline" size="icon" onClick={goToPreviousMonth} className="h-9 w-9">
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-lg min-w-[200px] justify-center">
             <Calendar className="h-4 w-4 text-muted-foreground" />
             <span className="font-medium text-foreground">{capitalizedMonthLabel}</span>
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={goToNextMonth}
-            className="h-9 w-9"
-          >
+          <Button variant="outline" size="icon" onClick={goToNextMonth} className="h-9 w-9">
             <ChevronRight className="h-4 w-4" />
           </Button>
           {selectedMonth && (
@@ -555,13 +580,13 @@ const Finances = () => {
         {/* Stats */}
         <section className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <StatsCard
-            title={`Saldo (${displayPeriodLabel})`}
+            title={`SALDO (${displayPeriodLabel})`}
             value={formatCurrency(balance)}
             icon={Wallet}
-            variant={balance >= 0 ? 'delivered' : 'warning'}
+            variant={balance >= 0 ? "delivered" : "warning"}
             trend={{
               value: Math.abs(Number(monthVariations.balance.toFixed(1))),
-              isPositive: monthVariations.balance >= 0
+              isPositive: monthVariations.balance >= 0,
             }}
           />
           <StatsCard
@@ -569,7 +594,7 @@ const Finances = () => {
             value={formatCurrency(estimatedProfit.profit)}
             subtitle={`Margem: ${estimatedProfit.margin.toFixed(1)}%`}
             icon={PiggyBank}
-            variant={estimatedProfit.profit >= 0 ? 'success' : 'warning'}
+            variant={estimatedProfit.profit >= 0 ? "success" : "warning"}
             tooltip="Faturamento dos pedidos entregues menos o custo dos produtos vendidos. Não inclui despesas operacionais. Clique para ver detalhes."
             mobileDescription="Vendas - Custo dos produtos. Toque para detalhes."
             onClick={() => setGrossProfitDialogOpen(true)}
@@ -581,10 +606,10 @@ const Finances = () => {
             variant="success"
             trend={{
               value: Math.abs(Number(monthVariations.income.toFixed(1))),
-              isPositive: monthVariations.income >= 0
+              isPositive: monthVariations.income >= 0,
             }}
             onClick={() => {
-              setTransactionPanelType('income');
+              setTransactionPanelType("income");
               setTransactionPanelOpen(true);
             }}
           />
@@ -595,10 +620,10 @@ const Finances = () => {
             variant="warning"
             trend={{
               value: Math.abs(Number(monthVariations.expense.toFixed(1))),
-              isPositive: monthVariations.expense <= 0
+              isPositive: monthVariations.expense <= 0,
             }}
             onClick={() => {
-              setTransactionPanelType('expense');
+              setTransactionPanelType("expense");
               setTransactionPanelOpen(true);
             }}
           />
@@ -606,24 +631,11 @@ const Finances = () => {
 
         {/* Charts Grid */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <TopProductsChart 
-            orders={orders} 
-            selectedMonth={selectedMonth} 
-            period={period} 
-          />
-          <ProductQuantityChart 
-            orders={orders} 
-            selectedMonth={selectedMonth} 
-            period={period} 
-          />
-          <ProductRevenueChart 
-            orders={orders} 
-            selectedMonth={selectedMonth} 
-            period={period} 
-          />
+          <TopProductsChart orders={orders} selectedMonth={selectedMonth} period={period} />
+          <ProductQuantityChart orders={orders} selectedMonth={selectedMonth} period={period} />
+          <ProductRevenueChart orders={orders} selectedMonth={selectedMonth} period={period} />
           <ExpenseCategoryChart transactions={filteredTransactions} />
         </section>
-
 
         {/* Transactions List */}
         <Card className="overflow-hidden">
@@ -643,7 +655,7 @@ const Finances = () => {
               Relatório PDF
             </Button>
           </CardHeader>
-          
+
           {/* Filters */}
           <div className="px-4 pb-3 flex flex-wrap items-center gap-2 border-b border-border">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -695,7 +707,7 @@ const Finances = () => {
             )}
 
             <span className="text-xs text-muted-foreground ml-auto">
-              {listFilteredTransactions.length} resultado{listFilteredTransactions.length !== 1 ? 's' : ''}
+              {listFilteredTransactions.length} resultado{listFilteredTransactions.length !== 1 ? "s" : ""}
             </span>
           </div>
 
@@ -706,7 +718,9 @@ const Finances = () => {
               </div>
             ) : listFilteredTransactions.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <p>{hasActiveFilters ? 'Nenhuma transação encontrada com esses filtros' : 'Nenhuma transação no período'}</p>
+                <p>
+                  {hasActiveFilters ? "Nenhuma transação encontrada com esses filtros" : "Nenhuma transação no período"}
+                </p>
                 {hasActiveFilters ? (
                   <Button variant="link" className="mt-2" onClick={clearFilters}>
                     Limpar filtros
@@ -726,18 +740,20 @@ const Finances = () => {
                       className={cn(
                         "flex items-center justify-between gap-3 p-4 hover:bg-muted/50 transition-colors group overflow-hidden",
                         "animate-slide-up",
-                        `stagger-${Math.min(index + 1, 5)}`
+                        `stagger-${Math.min(index + 1, 5)}`,
                       )}
-                      style={{ opacity: 0, animationFillMode: 'forwards' }}
+                      style={{ opacity: 0, animationFillMode: "forwards" }}
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className={cn(
-                          "w-10 h-10 rounded-full flex items-center justify-center",
-                          transaction.type === 'income' 
-                            ? 'bg-success/10 text-success' 
-                            : 'bg-destructive/10 text-destructive'
-                        )}>
-                          {transaction.type === 'income' ? (
+                        <div
+                          className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center",
+                            transaction.type === "income"
+                              ? "bg-success/10 text-success"
+                              : "bg-destructive/10 text-destructive",
+                          )}
+                        >
+                          {transaction.type === "income" ? (
                             <ArrowUpRight className="h-5 w-5" />
                           ) : (
                             <ArrowDownRight className="h-5 w-5" />
@@ -751,13 +767,15 @@ const Finances = () => {
                             {(() => {
                               const { category } = parseTransaction(transaction.description);
                               if (!category) return null;
-                              const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS['Outros'];
+                              const colors = CATEGORY_COLORS[category] || CATEGORY_COLORS["Outros"];
                               return (
-                                <span className={cn(
-                                  "text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap",
-                                  colors.bg,
-                                  colors.text
-                                )}>
+                                <span
+                                  className={cn(
+                                    "text-[10px] px-1.5 py-0.5 rounded-full font-medium whitespace-nowrap",
+                                    colors.bg,
+                                    colors.text,
+                                  )}
+                                >
                                   {category}
                                 </span>
                               );
@@ -765,29 +783,29 @@ const Finances = () => {
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
                             {transaction.order_id && (
-                              <Badge 
-                                variant="muted" 
+                              <Badge
+                                variant="muted"
                                 className="text-[10px] cursor-pointer hover:bg-primary/10 hover:text-primary transition-colors"
                                 onClick={() => handleOrderClick(transaction.order_id!)}
                               >
                                 <ExternalLink className="h-3 w-3 mr-1" />
-                                {orderNumberMap[transaction.order_id] 
+                                {orderNumberMap[transaction.order_id]
                                   ? formatOrderNumber(orderNumberMap[transaction.order_id])
-                                  : 'Pedido'}
+                                  : "Pedido"}
                               </Badge>
                             )}
-                            <span className="text-xs text-muted-foreground">
-                              {formatDate(transaction.date)}
-                            </span>
+                            <span className="text-xs text-muted-foreground">{formatDate(transaction.date)}</span>
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-                        <span className={cn(
-                          "font-semibold text-sm sm:text-base whitespace-nowrap",
-                          transaction.type === 'income' ? 'text-success' : 'text-destructive'
-                        )}>
-                          {transaction.type === 'income' ? '+' : '-'}
+                        <span
+                          className={cn(
+                            "font-semibold text-sm sm:text-base whitespace-nowrap",
+                            transaction.type === "income" ? "text-success" : "text-destructive",
+                          )}
+                        >
+                          {transaction.type === "income" ? "+" : "-"}
                           {formatCurrency(transaction.amount)}
                         </span>
                         <Button
@@ -821,7 +839,7 @@ const Finances = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                         disabled={currentPage === 1}
                       >
                         <ChevronLeft className="h-4 w-4" />
@@ -832,7 +850,7 @@ const Finances = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                         disabled={currentPage === totalPages}
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -872,7 +890,7 @@ const Finances = () => {
       <DeleteTransactionDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
-        description={selectedTransaction?.description || ''}
+        description={selectedTransaction?.description || ""}
         onConfirm={handleConfirmDelete}
         isLoading={deleteTransaction.isPending}
       />
@@ -891,8 +909,8 @@ const Finances = () => {
         open={transactionPanelOpen}
         onOpenChange={setTransactionPanelOpen}
         type={transactionPanelType}
-        transactions={filteredTransactions.filter(t => t.type === transactionPanelType)}
-        total={transactionPanelType === 'income' ? totalIncome : totalExpenses}
+        transactions={filteredTransactions.filter((t) => t.type === transactionPanelType)}
+        total={transactionPanelType === "income" ? totalIncome : totalExpenses}
         orderNumberMap={orderNumberMap}
         onOrderClick={handleOrderClick}
       />
