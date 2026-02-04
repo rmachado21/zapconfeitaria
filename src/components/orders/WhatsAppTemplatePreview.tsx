@@ -18,6 +18,7 @@ import {
   Package,
   Truck,
   Star,
+  X,
   LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -97,9 +98,19 @@ export function WhatsAppTemplatePreview({
       <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl" sideOffset={8}>
         <div className="flex flex-col">
           {/* Header */}
-          <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border-b border-emerald-100 rounded-t-md dark:bg-emerald-950/30 dark:border-emerald-900/50">
-            <WhatsAppIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            <span className="font-semibold text-emerald-700 dark:text-emerald-300">Mensagens WhatsApp</span>
+          <div className="flex items-center justify-between px-4 py-3 bg-emerald-50 border-b border-emerald-100 rounded-t-md dark:bg-emerald-950/30 dark:border-emerald-900/50">
+            <div className="flex items-center gap-2">
+              <WhatsAppIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <span className="font-semibold text-emerald-700 dark:text-emerald-300">Mensagens WhatsApp</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              className="h-7 w-7 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-100 dark:text-emerald-400 dark:hover:text-emerald-200 dark:hover:bg-emerald-900/50"
+              onClick={() => setOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
 
           {/* Template Selection */}
