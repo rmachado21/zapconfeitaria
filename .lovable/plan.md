@@ -1,108 +1,78 @@
 
 
-## Plano: Melhorar UX dos Filtros de Status Mobile
+## Plano: Expandir Área de Toque dos Filtros para Toda a Barra
 
-### Problemas Identificados
+### Problema Identificado
 
-| Problema | Impacto |
-|----------|---------|
-| **Sem indicador visual de rolagem** | Usuário não percebe que há mais opções à direita |
-| **Scroll preso nas bordas** | Difícil alcançar os filtros nas extremidades |
-| **Touch targets pequenos** | Botões com `px-3 py-2` são pequenos para toque |
-| **Sem scroll snap** | Rolagem não para em posições naturais |
-
-### Sugestões de Melhoria
-
-#### 1. Adicionar Indicador de Fade nas Bordas
-Efeito de gradiente sutil nas extremidades sinalizando conteúdo oculto:
-
-```text
-┌─────────────────────────────────────┐
-│ [Todos] [Orçam] [Aguard...  ░░░▓▓▓▓ │ ← Fade indica mais conteúdo
-└─────────────────────────────────────┘
+Atualmente, a estrutura é:
+```
+┌─ TabsList (p-1.5 = 6px padding) ────────────────────┐
+│  ┌─ TabsTrigger ───┐  ┌─ TabsTrigger ───┐          │
+│  │   min-h-44px    │  │   min-h-44px    │  ...     │ ← Área clicável
+│  └─────────────────┘  └─────────────────┘          │
+└────────────────────────────────────────────────────┘ ← Não clicável
 ```
 
-#### 2. Aumentar Área de Toque
-Aumentar padding dos botões de `px-3 py-2` para `px-4 py-2.5` (mínimo 44px de altura recomendado pelo iOS HIG).
+O padding `p-1.5` da `TabsList` cria uma borda de **6px** ao redor dos triggers que **não responde a toques**. Para usuários com dedos maiores, isso causa frustração ao tocar nas bordas.
 
-#### 3. Adicionar Scroll Snap
-Propriedade CSS `scroll-snap-type: x mandatory` para que a rolagem pare em posições naturais entre os filtros.
+### Solução
 
-#### 4. Adicionar Padding Horizontal no Container
-Padding extra no início/fim da lista para facilitar alcance dos filtros extremos.
-
-#### 5. Esconder Scrollbar
-Manter funcionalidade mas ocultar a barra visual que polui o design.
+1. **Remover padding da TabsList** e mover para padding interno dos triggers
+2. **Aumentar altura mínima dos triggers** para 48px (Apple HIG recomenda 44px mínimo, 48px é mais confortável)
+3. **Adicionar items-stretch** para que triggers ocupem toda a altura disponível
 
 ### Alterações Técnicas
 
 **Arquivo**: `src/components/orders/OrdersList.tsx`
 
-#### Container com Fade Indicators (linhas 88-106)
-
+#### Linha 93 - Ajustar TabsList
 ```tsx
-// Envolver TabsList em container com máscaras de gradiente
-<div className="relative">
-  {/* Fade esquerdo */}
-  <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-  
-  <TabsList className="w-full h-auto p-1.5 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1.5 scrollbar-hide scroll-smooth snap-x snap-mandatory px-6">
-    {STATUS_TABS.map((tab) => (
-      <TabsTrigger
-        key={tab.value}
-        value={tab.value}
-        className={cn(
-          "flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium transition-all snap-start",
-          "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
-          "data-[state=active]:text-primary data-[state=active]:shadow-soft",
-          "min-h-[44px]" // iOS HIG touch target
-        )}
-      >
-        {tab.label}
-        <span className="ml-1.5 text-xs opacity-70">
-          ({getFilteredOrders(tab.value).length})
-        </span>
-      </TabsTrigger>
-    ))}
-  </TabsList>
-  
-  {/* Fade direito */}
-  <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-</div>
+// ANTES
+<TabsList className="w-full h-auto p-1.5 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1.5 scrollbar-hide scroll-smooth snap-x snap-mandatory px-6">
+
+// DEPOIS  
+<TabsList className="w-full h-auto p-0 bg-muted/50 rounded-xl overflow-x-auto flex items-stretch justify-start gap-0 scrollbar-hide scroll-smooth snap-x snap-mandatory">
 ```
 
-#### CSS para Esconder Scrollbar
+#### Linhas 98-102 - Ajustar TabsTrigger
+```tsx
+// ANTES
+className={cn(
+  "flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium transition-all snap-start min-h-[44px]",
+  "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
+  "data-[state=active]:text-primary data-[state=active]:shadow-soft"
+)}
 
-Adicionar ao `src/index.css`:
-
-```css
-.scrollbar-hide {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
-}
+// DEPOIS
+className={cn(
+  "flex-shrink-0 px-5 py-3 first:pl-6 last:pr-6 first:rounded-l-xl last:rounded-r-xl text-sm font-medium transition-all snap-start min-h-[48px]",
+  "data-[state=active]:bg-card data-[state=active]:shadow-soft",
+  "data-[state=active]:text-primary"
+)}
 ```
 
-### Resultado Visual Esperado
+### Resultado Visual
 
-```text
+```
 Antes:
-┌──────────────────────────────────────┐
-│[Todos(86)][Orçamento(10)][Aguardando│ ← Corte abrupto
-└──────────────────────────────────────┘
+┌────────────────────────────────────────────────────┐
+│ ┌──────────┐ ┌──────────┐ ┌──────────┐            │ ← Gaps não clicáveis
+│ │  Todos   │ │ Orçamento│ │Aguardando│            │
+│ └──────────┘ └──────────┘ └──────────┘            │
+└────────────────────────────────────────────────────┘
 
 Depois:
-┌──────────────────────────────────────┐
-│ [Todos (86)] [Orçamento (10)] ░░░▓▓▓ │ ← Fade suave + snap
-└──────────────────────────────────────┘
+┌────────────────────────────────────────────────────┐
+│    Todos   │ Orçamento  │ Aguardando │   ...      │ ← Toda área clicável
+└────────────────────────────────────────────────────┘
 ```
 
 ### Benefícios
 
-- Usuário percebe imediatamente que há mais opções
-- Touch targets maiores reduzem erros de toque
-- Scroll snap melhora sensação de controle
-- Visual mais limpo sem scrollbar visível
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| **Altura touch** | 44px | 48px |
+| **Área clicável** | Só o trigger | Toda a altura da barra |
+| **Gaps entre triggers** | 6px não clicáveis | Sem gaps mortos |
+| **Padding nas bordas** | No container | Integrado aos triggers extremos |
 
