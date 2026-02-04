@@ -195,7 +195,7 @@ const Index = () => {
               <>
                 <div className="animate-fade-in stagger-1">
                   <StatsCard
-                    title="Este Mês"
+                    title="Faturamento no Mês"
                     value={formatCurrency(periodIncome)}
                     subtitle={`${filteredOrders.filter((o) => o.status === "delivered").length} pedidos entregues`}
                     icon={TrendingUp}
