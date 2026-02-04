@@ -1,15 +1,25 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { WhatsAppIcon } from "@/components/shared/WhatsAppIcon";
 import { WHATSAPP_TEMPLATES, TemplateType, TemplateContext, processTemplate } from "@/lib/whatsappTemplates";
 import { openWhatsApp } from "@/lib/whatsapp";
-import { ChevronDown, Send, MessageCircle, Eye, FileText, Cake, Wallet, CheckCircle, Heart, Package, Truck, Star, LucideIcon } from "lucide-react";
+import {
+  ChevronDown,
+  Send,
+  MessageCircle,
+  Eye,
+  FileText,
+  Cake,
+  Wallet,
+  CheckCircle,
+  Heart,
+  Package,
+  Truck,
+  Star,
+  LucideIcon,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TEMPLATE_ICONS: Record<TemplateType, LucideIcon> = {
@@ -39,63 +49,59 @@ export function WhatsAppTemplatePreview({
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateType | null>(null);
   const [open, setOpen] = useState(false);
 
-  const previewMessage = selectedTemplate && WHATSAPP_TEMPLATES[selectedTemplate]
-    ? processTemplate(selectedTemplate, context)
-    : null;
+  const previewMessage =
+    selectedTemplate && WHATSAPP_TEMPLATES[selectedTemplate] ? processTemplate(selectedTemplate, context) : null;
 
   const handleSend = () => {
     if (!selectedTemplate || !phone) return;
-    
-    const cleanPhone = phone.replace(/\D/g, '');
-    const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    
-    const link = document.createElement('a');
-    link.href = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(previewMessage || '')}`;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+
+    const cleanPhone = phone.replace(/\D/g, "");
+    const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+
+    const link = document.createElement("a");
+    link.href = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(previewMessage || "")}`;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     setOpen(false);
     setSelectedTemplate(null);
   };
 
   const handleOpenFreeChat = () => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    const formattedPhone = cleanPhone.startsWith('55') ? cleanPhone : `55${cleanPhone}`;
-    
-    const link = document.createElement('a');
+    const cleanPhone = phone.replace(/\D/g, "");
+    const formattedPhone = cleanPhone.startsWith("55") ? cleanPhone : `55${cleanPhone}`;
+
+    const link = document.createElement("a");
     link.href = `https://wa.me/${formattedPhone}`;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     setOpen(false);
   };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white"
-          disabled={disabled}
-        >
+        <Button className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={disabled}>
           <WhatsAppIcon className="mr-2 h-4 w-4" />
           WhatsApp
           <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-xl" sideOffset={8}>
+      <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-2xl" sideOffset={8}>
         <div className="flex flex-col">
           {/* Header */}
           <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border-b border-emerald-100 rounded-t-md dark:bg-emerald-950/30 dark:border-emerald-900/50">
             <WhatsAppIcon className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
             <span className="font-semibold text-emerald-700 dark:text-emerald-300">Mensagens WhatsApp</span>
           </div>
-          
+
           {/* Template Selection */}
           <div className="p-4 border-b">
             <p className="text-sm font-medium mb-3">Escolha o modelo:</p>
@@ -110,10 +116,7 @@ export function WhatsAppTemplatePreview({
                     key={templateType}
                     variant={isSelected ? "default" : "outline"}
                     size="sm"
-                    className={cn(
-                      "text-sm h-10 justify-start gap-2",
-                      isSelected && "bg-primary"
-                    )}
+                    className={cn("text-sm h-10 justify-start gap-2", isSelected && "bg-primary")}
                     onClick={() => setSelectedTemplate(templateType)}
                   >
                     <Icon className="h-4 w-4 shrink-0" />
@@ -149,12 +152,7 @@ export function WhatsAppTemplatePreview({
               <Send className="mr-2 h-4 w-4" />
               Enviar Mensagem
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleOpenFreeChat}
-              className="w-full text-muted-foreground"
-            >
+            <Button variant="ghost" size="sm" onClick={handleOpenFreeChat} className="w-full text-muted-foreground">
               <MessageCircle className="mr-2 h-3.5 w-3.5" />
               Abrir conversa livre
             </Button>
