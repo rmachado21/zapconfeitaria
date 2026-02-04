@@ -86,24 +86,32 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
   return (
     <div className="md:hidden">
       <Tabs defaultValue="all" className="w-full">
-        <TabsList className="w-full h-auto p-1 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1">
-          {STATUS_TABS.map((tab) => (
-            <TabsTrigger
-              key={tab.value}
-              value={tab.value}
-              className={cn(
-                "flex-shrink-0 px-3 py-2 rounded-lg text-xs font-medium transition-all",
-                "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
-                "data-[state=active]:text-primary data-[state=active]:shadow-soft"
-              )}
-            >
-              {tab.label}
-              <span className="ml-1.5 text-[10px] opacity-70">
-                ({getFilteredOrders(tab.value).length})
-              </span>
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <div className="relative">
+          {/* Fade esquerdo */}
+          <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none rounded-l-xl" />
+          
+          <TabsList className="w-full h-auto p-1.5 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1.5 scrollbar-hide scroll-smooth snap-x snap-mandatory px-6">
+            {STATUS_TABS.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value}
+                className={cn(
+                  "flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium transition-all snap-start min-h-[44px]",
+                  "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
+                  "data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                )}
+              >
+                {tab.label}
+                <span className="ml-1.5 text-xs opacity-70">
+                  ({getFilteredOrders(tab.value).length})
+                </span>
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          {/* Fade direito */}
+          <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none rounded-r-xl" />
+        </div>
 
         {STATUS_TABS.map((tab) => (
           <TabsContent key={tab.value} value={tab.value} className="mt-4 space-y-3">
