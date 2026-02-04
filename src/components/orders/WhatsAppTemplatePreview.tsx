@@ -95,7 +95,7 @@ export function WhatsAppTemplatePreview({
           <ChevronDown className="ml-2 h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl" sideOffset={8}>
+      <PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl border-emerald-700" sideOffset={8}>
         <div className="flex flex-col">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-emerald-50 border-b border-emerald-100 rounded-t-md dark:bg-emerald-950/30 dark:border-emerald-900/50">
