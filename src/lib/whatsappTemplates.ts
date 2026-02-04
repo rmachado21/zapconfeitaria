@@ -212,7 +212,12 @@ export function getAvailableTemplates(context: {
   status?: string;
   fullPaymentReceived?: boolean;
 }): TemplateType[] {
-  const templates: TemplateType[] = ["quote"];
+  const templates: TemplateType[] = [];
+
+  // Add quote only for orders not yet delivered or cancelled
+  if (context.status !== "delivered" && context.status !== "cancelled") {
+    templates.push("quote");
+  }
 
   // Add deposit collection only if deposit not paid AND full payment not received
   if (
