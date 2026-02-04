@@ -1,63 +1,31 @@
 
-## Plano: Adicionar Sombra e Header Verde ao Popover de WhatsApp
+
+## Plano: Adicionar Borda Escura ao Popover WhatsApp
 
 ### Objetivo
 
-Melhorar o contraste visual entre o popover de templates WhatsApp e o painel principal, adicionando:
-1. **Sombra pronunciada** para criar elevação
-2. **Header verde suave** com título em verde escuro para identidade visual
+Adicionar uma borda verde escura (`emerald-700`) ao popover de templates WhatsApp para melhorar o contraste visual com o conteúdo do painel principal atrás.
 
-### Alterações
+### Alteração
 
 **Arquivo**: `src/components/orders/WhatsAppTemplatePreview.tsx`
 
-#### 1. Adicionar sombra pronunciada ao PopoverContent (linha 91)
+**Linha 97** - Adicionar borda emerald-700 ao PopoverContent:
 
 ```typescript
 // Antes
-<PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0" sideOffset={8}>
+<PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl" sideOffset={8}>
 
 // Depois
-<PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-xl" sideOffset={8}>
-```
-
-#### 2. Adicionar header verde com título (linhas 92-95)
-
-```typescript
-// Antes
-<div className="flex flex-col">
-  {/* Template Selection */}
-  <div className="p-4 border-b">
-    <p className="text-sm font-medium mb-3">Escolha o modelo:</p>
-
-// Depois
-<div className="flex flex-col">
-  {/* Header */}
-  <div className="flex items-center gap-2 px-4 py-3 bg-emerald-50 border-b border-emerald-100 rounded-t-md">
-    <WhatsAppIcon className="h-5 w-5 text-emerald-600" />
-    <span className="font-semibold text-emerald-700">Mensagens WhatsApp</span>
-  </div>
-  
-  {/* Template Selection */}
-  <div className="p-4 border-b">
-    <p className="text-sm font-medium mb-3">Escolha o modelo:</p>
+<PopoverContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 shadow-3xl border-emerald-700" sideOffset={8}>
 ```
 
 ### Resultado Visual
 
-| Elemento | Antes | Depois |
-|----------|-------|--------|
-| **Sombra** | Padrão (`shadow-md`) | Pronunciada (`shadow-xl`) |
-| **Header** | Nenhum | Fundo verde suave (`bg-emerald-50`) |
-| **Ícone WhatsApp** | Não visível no header | Verde escuro (`text-emerald-600`) |
-| **Título** | "Escolha o modelo:" | "Mensagens WhatsApp" em verde escuro |
-| **Borda header** | Nenhuma | Verde suave (`border-emerald-100`) |
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| **Borda** | Padrão (cinza claro) | Verde escuro (`border-emerald-700`) |
+| **Contraste** | Baixo com conteúdo atrás | Alto, popover se destaca claramente |
 
-### Paleta de Cores Escolhida
+A cor `emerald-700` (#047857) é escura o suficiente para criar separação visual clara, mas ainda harmoniza com o header verde suave do popover.
 
-- **Fundo header**: `bg-emerald-50` (verde muito claro, quase branco)
-- **Borda header**: `border-emerald-100` (verde suave)
-- **Ícone**: `text-emerald-600` (verde médio-escuro)
-- **Título**: `text-emerald-700` (verde escuro para legibilidade)
-
-Esta paleta mantém a identidade WhatsApp mas com tons suaves que não competem com o botão de ação principal.
