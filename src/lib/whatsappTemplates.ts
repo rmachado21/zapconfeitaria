@@ -55,7 +55,7 @@ Obrigada! 💕`,
   },
   order_confirmed: {
     id: "order_confirmed",
-    name: "Confirmar Pgto Sinal",
+    name: "Confirmar Pagamento Sinal",
     template: `Olá [Nome]! ✨
 
 Seu pedido [Pedido] está confirmado! 🎉
