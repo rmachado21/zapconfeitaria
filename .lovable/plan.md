@@ -1,60 +1,68 @@
 
 
-## Plano: Remover Template "Enviar Orçamento" de Pedidos Entregues
+## Plano: Simplificar Lógica com Lista de Status Permitidos
 
 ### Situação Atual
 
-O template "Enviar Orçamento" (`quote`) é sempre incluído na lista de templates disponíveis:
+A lógica atual usa **múltiplas negações**, o que dificulta a leitura:
 
 ```typescript
-// Linha 215
-const templates: TemplateType[] = ["quote"];
+// Linha 218 - difícil de ler
+if (context.status !== "in_production" && context.status !== "ready" && context.status !== "delivered" && context.status !== "cancelled") {
+  templates.push("quote");
+}
 ```
 
-Isso faz com que apareça para **todos** os pedidos, inclusive os que já foram entregues - onde não faz sentido enviar orçamento.
+### Solução Proposta
 
-### Alteração Proposta
+Usar uma lista explícita de **status permitidos** com `includes()`:
+
+```typescript
+// Muito mais claro e legível
+if (["quote", "awaiting_deposit"].includes(context.status || "")) {
+  templates.push("quote");
+}
+```
+
+### Alteração
 
 **Arquivo**: `src/lib/whatsappTemplates.ts`
 
-**Linhas 214-215** - Adicionar condição para excluir pedidos entregues e cancelados:
+**Linha 217-220** - Substituir condição negativa por lista positiva:
 
 ```typescript
 // Antes
-export function getAvailableTemplates(context: {
-  depositPaid?: boolean;
-  status?: string;
-  fullPaymentReceived?: boolean;
-}): TemplateType[] {
-  const templates: TemplateType[] = ["quote"];
+// Add quote only for orders in quote or awaiting_deposit status
+if (context.status !== "in_production" && context.status !== "ready" && context.status !== "delivered" && context.status !== "cancelled") {
+  templates.push("quote");
+}
 
 // Depois
-export function getAvailableTemplates(context: {
-  depositPaid?: boolean;
-  status?: string;
-  fullPaymentReceived?: boolean;
-}): TemplateType[] {
-  const templates: TemplateType[] = [];
-  
-  // Add quote only for orders not yet delivered or cancelled
-  if (context.status !== "delivered" && context.status !== "cancelled") {
-    templates.push("quote");
-  }
+// Add quote only for orders in quote or awaiting_deposit status
+if (["quote", "awaiting_deposit"].includes(context.status || "")) {
+  templates.push("quote");
+}
 ```
 
-### Resultado
+### Benefícios
 
-| Status do Pedido | Template "Enviar Orçamento" |
-|------------------|----------------------------|
-| Orçamento | ✅ Disponível |
-| Aguardando Sinal | ✅ Disponível |
-| Em Produção | ✅ Disponível |
-| Pronto | ✅ Disponível |
-| **Entregue** | ❌ **Removido** |
-| Cancelado | ❌ Removido |
+| Aspecto | Antes | Depois |
+|---------|-------|--------|
+| **Legibilidade** | 4 negações encadeadas | Lista explícita de 2 status |
+| **Manutenção** | Precisa lembrar de adicionar novos status | Status permitidos são claros |
+| **Intenção** | "Não mostrar para X, Y, Z, W" | "Mostrar apenas para A, B" |
+| **Linhas** | Condição longa em 1 linha | Código conciso e claro |
 
-### Templates para Pedidos Entregues
+### Mapeamento de Status
 
-Após a alteração, pedidos entregues terão apenas:
-- **Pedir Avaliação** (review_request) - único template relevante para pós-entrega
+Para referência, os status permitidos para "Enviar Orçamento":
+
+| Status | Valor Interno | Template "Enviar Orçamento" |
+|--------|---------------|----------------------------|
+| Orçamento | `quote` | ✅ Disponível |
+| Aguardando Sinal | `awaiting_deposit` | ✅ Disponível |
+| Em Produção | `in_production` | ❌ Não disponível |
+| Pronto | `ready` | ❌ Não disponível |
+| Entregue | `delivered` | ❌ Não disponível |
+| Cancelado | `cancelled` | ❌ Não disponível |
 
