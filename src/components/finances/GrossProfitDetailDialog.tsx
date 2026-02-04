@@ -88,10 +88,10 @@ export function GrossProfitDetailDialog({
       <div className="space-y-4">
         {/* Summary Cards */}
         <div className="grid grid-cols-2 gap-3">
-          <Card className="bg-primary/10 border-primary/20">
+          <Card className="bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800">
             <CardContent className="p-3">
-              <p className="text-xs text-muted-foreground">Faturamento</p>
-              <p className="text-lg font-bold text-primary">{formatCurrency(totals.revenue)}</p>
+              <p className="text-xs text-sky-600 dark:text-sky-400">Faturamento</p>
+              <p className="text-lg font-bold text-sky-900 dark:text-sky-100">{formatCurrency(totals.revenue)}</p>
             </CardContent>
           </Card>
           <Card className="bg-warning/10 border-warning/20">
