@@ -215,7 +215,7 @@ export function getAvailableTemplates(context: {
   const templates: TemplateType[] = [];
 
   // Add quote only for orders in quote or awaiting_deposit status
-  if (context.status !== "in_production" && context.status !== "ready" && context.status !== "delivered" && context.status !== "cancelled") {
+  if (["quote", "awaiting_deposit"].includes(context.status || "")) {
     templates.push("quote");
   }
 
