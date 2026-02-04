@@ -1,78 +1,52 @@
 
 
-## Plano: Expandir Área de Toque dos Filtros para Toda a Barra
+## Plano: Padronizar Cores dos Cards no Dialog de Lucro Bruto
 
 ### Problema Identificado
 
-Atualmente, a estrutura é:
-```
-┌─ TabsList (p-1.5 = 6px padding) ────────────────────┐
-│  ┌─ TabsTrigger ───┐  ┌─ TabsTrigger ───┐          │
-│  │   min-h-44px    │  │   min-h-44px    │  ...     │ ← Área clicável
-│  └─────────────────┘  └─────────────────┘          │
-└────────────────────────────────────────────────────┘ ← Não clicável
-```
+| Card | Cor Atual | Cor Esperada |
+|------|-----------|--------------|
+| Faturamento (Dialog) | `bg-primary/10` (terracota) | Sky blue (mesmo do Dashboard) |
+| Custo Produtos | `bg-warning/10` (amarelo) | Manter |
+| Lucro Bruto | `bg-success/10` (verde) | Manter |
+| Margem | `bg-muted` (cinza) | Manter |
 
-O padding `p-1.5` da `TabsList` cria uma borda de **6px** ao redor dos triggers que **não responde a toques**. Para usuários com dedos maiores, isso causa frustração ao tocar nas bordas.
+O card "Faturamento" no dialog deve usar o mesmo tom de azul Sky usado no StatsCard com variant `delivered`, criando consistência visual com o card "Faturamento no Mês" do Dashboard e da página Finances.
 
-### Solução
+### Alterações
 
-1. **Remover padding da TabsList** e mover para padding interno dos triggers
-2. **Aumentar altura mínima dos triggers** para 48px (Apple HIG recomenda 44px mínimo, 48px é mais confortável)
-3. **Adicionar items-stretch** para que triggers ocupem toda a altura disponível
+**Arquivo**: `src/components/finances/GrossProfitDetailDialog.tsx`
 
-### Alterações Técnicas
+#### Linhas 91-96 - Ajustar card de Faturamento
 
-**Arquivo**: `src/components/orders/OrdersList.tsx`
-
-#### Linha 93 - Ajustar TabsList
 ```tsx
 // ANTES
-<TabsList className="w-full h-auto p-1.5 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1.5 scrollbar-hide scroll-smooth snap-x snap-mandatory px-6">
-
-// DEPOIS  
-<TabsList className="w-full h-auto p-0 bg-muted/50 rounded-xl overflow-x-auto flex items-stretch justify-start gap-0 scrollbar-hide scroll-smooth snap-x snap-mandatory">
-```
-
-#### Linhas 98-102 - Ajustar TabsTrigger
-```tsx
-// ANTES
-className={cn(
-  "flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium transition-all snap-start min-h-[44px]",
-  "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
-  "data-[state=active]:text-primary data-[state=active]:shadow-soft"
-)}
+<Card className="bg-primary/10 border-primary/20">
+  <CardContent className="p-3">
+    <p className="text-xs text-muted-foreground">Faturamento</p>
+    <p className="text-lg font-bold text-primary">{formatCurrency(totals.revenue)}</p>
+  </CardContent>
+</Card>
 
 // DEPOIS
-className={cn(
-  "flex-shrink-0 px-5 py-3 first:pl-6 last:pr-6 first:rounded-l-xl last:rounded-r-xl text-sm font-medium transition-all snap-start min-h-[48px]",
-  "data-[state=active]:bg-card data-[state=active]:shadow-soft",
-  "data-[state=active]:text-primary"
-)}
+<Card className="bg-sky-50 dark:bg-sky-950/40 border-sky-200 dark:border-sky-800">
+  <CardContent className="p-3">
+    <p className="text-xs text-sky-600 dark:text-sky-400">Faturamento</p>
+    <p className="text-lg font-bold text-sky-900 dark:text-sky-100">{formatCurrency(totals.revenue)}</p>
+  </CardContent>
+</Card>
 ```
 
 ### Resultado Visual
 
-```
-Antes:
-┌────────────────────────────────────────────────────┐
-│ ┌──────────┐ ┌──────────┐ ┌──────────┐            │ ← Gaps não clicáveis
-│ │  Todos   │ │ Orçamento│ │Aguardando│            │
-│ └──────────┘ └──────────┘ └──────────┘            │
-└────────────────────────────────────────────────────┘
+Os cards dentro do "Detalhamento do Lucro Bruto" seguirão esta paleta:
 
-Depois:
-┌────────────────────────────────────────────────────┐
-│    Todos   │ Orçamento  │ Aguardando │   ...      │ ← Toda área clicável
-└────────────────────────────────────────────────────┘
-```
+| Card | Background | Texto |
+|------|------------|-------|
+| **Faturamento** | Sky blue | Sky-900/100 |
+| **Custo Produtos** | Warning/amarelo | Warning |
+| **Lucro Bruto** | Success/verde | Success |
+| **Margem** | Muted/cinza | Foreground |
 
-### Benefícios
-
-| Aspecto | Antes | Depois |
-|---------|-------|--------|
-| **Altura touch** | 44px | 48px |
-| **Área clicável** | Só o trigger | Toda a altura da barra |
-| **Gaps entre triggers** | 6px não clicáveis | Sem gaps mortos |
-| **Padding nas bordas** | No container | Integrado aos triggers extremos |
+Isso cria uma linguagem visual consistente onde "Faturamento" sempre aparece em azul Sky, associando-o visualmente aos cards de receita/entregues em todo o sistema.
 
