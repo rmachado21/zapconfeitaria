@@ -89,8 +89,9 @@ const Index = () => {
     const startDate = startOfMonth(new Date());
     const deliveredOrders = orders.filter((order) => {
       if (order.status !== "delivered") return false;
-      const orderDate = parseISO(order.updated_at);
-      return isAfter(orderDate, startDate) || orderDate.getTime() === startDate.getTime();
+      if (!order.delivery_date) return false;
+      const deliveryDate = parseISO(order.delivery_date);
+      return isAfter(deliveryDate, startDate) || deliveryDate.getTime() === startDate.getTime();
     });
     const revenue = deliveredOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
     const costs = deliveredOrders.reduce((orderSum, order) => {
