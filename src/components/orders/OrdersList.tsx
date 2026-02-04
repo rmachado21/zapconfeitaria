@@ -90,15 +90,15 @@ export function OrdersList({ orders, onOrderClick, onDepositChange }: OrdersList
           {/* Fade esquerdo */}
           <div className="absolute left-0 top-0 bottom-0 w-6 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none rounded-l-xl" />
           
-          <TabsList className="w-full h-auto p-1.5 bg-muted/50 rounded-xl overflow-x-auto flex justify-start gap-1.5 scrollbar-hide scroll-smooth snap-x snap-mandatory px-6">
+          <TabsList className="w-full h-auto p-0 bg-muted/50 rounded-xl overflow-x-auto flex items-stretch justify-start gap-0 scrollbar-hide scroll-smooth snap-x snap-mandatory">
             {STATUS_TABS.map((tab) => (
               <TabsTrigger
                 key={tab.value}
                 value={tab.value}
                 className={cn(
-                  "flex-shrink-0 px-4 py-2.5 rounded-lg text-sm font-medium transition-all snap-start min-h-[44px]",
-                  "data-[state=active]:bg-card data-[state=active]:border-2 data-[state=active]:border-primary",
-                  "data-[state=active]:text-primary data-[state=active]:shadow-soft"
+                  "flex-shrink-0 px-5 py-3 first:pl-6 last:pr-6 first:rounded-l-xl last:rounded-r-xl text-sm font-medium transition-all snap-start min-h-[48px]",
+                  "data-[state=active]:bg-card data-[state=active]:shadow-soft",
+                  "data-[state=active]:text-primary"
                 )}
               >
                 {tab.label}
