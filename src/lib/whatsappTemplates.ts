@@ -214,8 +214,8 @@ export function getAvailableTemplates(context: {
 }): TemplateType[] {
   const templates: TemplateType[] = [];
 
-  // Add quote only for orders not yet delivered or cancelled
-  if (context.status !== "delivered" && context.status !== "cancelled") {
+  // Add quote only for orders not yet ready, delivered or cancelled
+  if (context.status !== "ready" && context.status !== "delivered" && context.status !== "cancelled") {
     templates.push("quote");
   }
 
