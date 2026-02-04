@@ -353,13 +353,14 @@ export function OrderDetailDialog({
           disabled={isGenerating}
         >
           {isGenerating ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : isMobile ? (
-            <Share2 className="mr-2 h-4 w-4" />
+            <Share2 className="h-4 w-4" />
           ) : (
-            <Download className="mr-2 h-4 w-4" />
+            <Download className="h-4 w-4" />
           )}
-          Orçamento em PDF
+          <span className="sm:hidden">PDF</span>
+          <span className="hidden sm:inline">Orçamento em PDF</span>
         </Button>
         <WhatsAppTemplatePreview
           phone={order.client?.phone || ''}
