@@ -1,64 +1,60 @@
 
 
-## Plano: Refinar Cores das Barras de Progresso para Tom Laranja Sutil
+## Plano: Remover Template "Enviar Orçamento" de Pedidos Entregues
 
 ### Situação Atual
 
-Os gráficos "Top 5 Produtos" e "Quantidade Vendida" usam paleta de cinza baseada em `--muted-foreground`:
+O template "Enviar Orçamento" (`quote`) é sempre incluído na lista de templates disponíveis:
 
 ```typescript
-const CHART_COLORS = [
-  "hsl(var(--muted-foreground) / 0.30)",  // Cinza 30%
-  "hsl(var(--muted-foreground) / 0.26)",  // Cinza 26%
-  "hsl(var(--muted-foreground) / 0.22)",  // Cinza 22%
-  "hsl(var(--muted-foreground) / 0.18)",  // Cinza 18%
-  "hsl(var(--muted-foreground) / 0.14)",  // Cinza 14%
-];
+// Linha 215
+const templates: TemplateType[] = ["quote"];
 ```
 
-### Proposta de Alteração
+Isso faz com que apareça para **todos** os pedidos, inclusive os que já foram entregues - onde não faz sentido enviar orçamento.
 
-Usar a variável `--primary` (terracotta, hue 15°) com opacidades sutis para manter a identidade visual do aplicativo:
+### Alteração Proposta
+
+**Arquivo**: `src/lib/whatsappTemplates.ts`
+
+**Linhas 214-215** - Adicionar condição para excluir pedidos entregues e cancelados:
 
 ```typescript
-const CHART_COLORS = [
-  "hsl(var(--primary) / 0.40)",  // Laranja 40%
-  "hsl(var(--primary) / 0.32)",  // Laranja 32%
-  "hsl(var(--primary) / 0.25)",  // Laranja 25%
-  "hsl(var(--primary) / 0.18)",  // Laranja 18%
-  "hsl(var(--primary) / 0.12)",  // Laranja 12%
-];
+// Antes
+export function getAvailableTemplates(context: {
+  depositPaid?: boolean;
+  status?: string;
+  fullPaymentReceived?: boolean;
+}): TemplateType[] {
+  const templates: TemplateType[] = ["quote"];
+
+// Depois
+export function getAvailableTemplates(context: {
+  depositPaid?: boolean;
+  status?: string;
+  fullPaymentReceived?: boolean;
+}): TemplateType[] {
+  const templates: TemplateType[] = [];
+  
+  // Add quote only for orders not yet delivered or cancelled
+  if (context.status !== "delivered" && context.status !== "cancelled") {
+    templates.push("quote");
+  }
 ```
 
-### Comparativo Visual
+### Resultado
 
-```text
-ANTES (Cinza)
-━━━━━━━━━━━━━━━━━━━━━━━━━  ← Cinza neutro, sem personalidade
-━━━━━━━━━━━━━━━━━━━━━
-━━━━━━━━━━━━━━━━━
-━━━━━━━━━━━━━
-━━━━━━━━━
+| Status do Pedido | Template "Enviar Orçamento" |
+|------------------|----------------------------|
+| Orçamento | ✅ Disponível |
+| Aguardando Sinal | ✅ Disponível |
+| Em Produção | ✅ Disponível |
+| Pronto | ✅ Disponível |
+| **Entregue** | ❌ **Removido** |
+| Cancelado | ❌ Removido |
 
-DEPOIS (Laranja sutil)
-━━━━━━━━━━━━━━━━━━━━━━━━━  ← Terracotta suave, identidade da marca
-━━━━━━━━━━━━━━━━━━━━━
-━━━━━━━━━━━━━━━━━
-━━━━━━━━━━━━━
-━━━━━━━━━
-```
+### Templates para Pedidos Entregues
 
-### Arquivos a Modificar
-
-| Arquivo | Alteração |
-|---------|-----------|
-| `src/components/finances/TopProductsChart.tsx` | Atualizar `CHART_COLORS` (linhas 35-41) |
-| `src/components/finances/ProductQuantityChart.tsx` | Atualizar `CHART_COLORS` (linhas 37-43) |
-
-### Benefícios
-
-1. **Consistência visual**: Cores alinhadas com a identidade terracotta/confeitaria
-2. **Sutileza mantida**: Opacidades baixas evitam agressividade visual
-3. **Compatibilidade dark mode**: Variável CSS funciona em ambos os temas
-4. **Hierarquia preservada**: Gradação de opacidade indica ranking
+Após a alteração, pedidos entregues terão apenas:
+- **Pedir Avaliação** (review_request) - único template relevante para pós-entrega
 
