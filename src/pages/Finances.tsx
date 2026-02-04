@@ -55,10 +55,10 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 
 const periodLabels: Record<PeriodFilter, string> = {
-  week: "Esta Semana",
-  month: "Este Mês",
-  year: "Este Ano",
-  all: "Todo Período",
+  week: "esta Semana",
+  month: "este Mês",
+  year: "este Ano",
+  all: "Todo o Período",
 };
 
 const ALL_CATEGORIES = [
