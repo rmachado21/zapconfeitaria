@@ -63,14 +63,14 @@ export default function Auth() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) {
-      let message = "Erro ao fazer login. Tente novamente.";
+      let message = `Erro: ${error.message}`; // Debug mode
       if (error.message.includes("Invalid login credentials")) {
         message = "Email ou senha incorretos.";
       } else if (error.message.includes("Email not confirmed")) {
         message = "Por favor, confirme seu email antes de fazer login.";
       }
       toast({
-        title: "Erro no login",
+        title: "Erro no login (Debug)",
         description: message,
         variant: "destructive",
       });
