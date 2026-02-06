@@ -309,13 +309,13 @@ export function OrderDetailDialog({
 
   const handleFullPayment = () => {
     if (!selectedPaymentMethod || !onFullPayment) return;
-    
+
     setDisplayFullPayment(true);
     // Update status optimistically if it will change
     if (currentStatus === "quote" || currentStatus === "awaiting_deposit") {
       setDisplayStatus("in_production");
     }
-    
+
     onFullPayment(
       order.id,
       selectedPaymentMethod,
@@ -689,7 +689,7 @@ export function OrderDetailDialog({
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-warning text-warning hover:bg-warning hover:text-warning-foreground"
+                        className="border-warning text-orange-600 hover:bg-warning hover:text-warning-foreground"
                         onClick={() => setDepositAmountDialogOpen(true)}
                       >
                         Marcar como Pago
@@ -705,51 +705,51 @@ export function OrderDetailDialog({
             {/* Payment History */}
             {orderTransactions.length > 0 && (
               <div className="border-t pt-4 mt-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <History className="h-3.5 w-3.5 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground font-medium">Histórico de Pagamentos</p>
-                  </div>
-                  <div className="space-y-1">
-                    {orderTransactions.map((transaction) => {
-                      // Extract payment method from description
-                      const description = transaction.description || "Pagamento";
-                      const pixMatch = description.includes("(Pix)");
-                      const cardMatch = description.includes("(Cartão de Crédito)");
-                      const linkMatch = description.includes("(Link)");
-                      
-                      // Clean description by removing payment method suffix
-                      const cleanDescription = description
-                        .replace(" (Pix)", "")
-                        .replace(" (Cartão de Crédito)", "")
-                        .replace(" (Link)", "");
-                      
-                      const paymentMethodLabel = pixMatch ? "Pix" : cardMatch ? "Cartão" : linkMatch ? "Link" : null;
-                      
-                      return (
-                        <div
-                          key={transaction.id}
-                          className="flex items-center justify-between text-xs py-1.5"
-                        >
-                          <div className="flex flex-col">
-                            <div className="flex items-center gap-2">
-                              <span className="text-muted-foreground">{cleanDescription}</span>
-                              {paymentMethodLabel && (
-                                <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground">
-                                  {paymentMethodLabel}
-                                </Badge>
-                              )}
-                            </div>
-                            <span className="text-[11px] text-muted-foreground/70">
-                              {format(parseISO(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
-                            </span>
+                <div className="flex items-center gap-2 mb-2">
+                  <History className="h-3.5 w-3.5 text-muted-foreground" />
+                  <p className="text-xs text-muted-foreground font-medium">Histórico de Pagamentos</p>
+                </div>
+                <div className="space-y-1">
+                  {orderTransactions.map((transaction) => {
+                    // Extract payment method from description
+                    const description = transaction.description || "Pagamento";
+                    const pixMatch = description.includes("(Pix)");
+                    const cardMatch = description.includes("(Cartão de Crédito)");
+                    const linkMatch = description.includes("(Link)");
+
+                    // Clean description by removing payment method suffix
+                    const cleanDescription = description
+                      .replace(" (Pix)", "")
+                      .replace(" (Cartão de Crédito)", "")
+                      .replace(" (Link)", "");
+
+                    const paymentMethodLabel = pixMatch ? "Pix" : cardMatch ? "Cartão" : linkMatch ? "Link" : null;
+
+                    return (
+                      <div
+                        key={transaction.id}
+                        className="flex items-center justify-between text-xs py-1.5"
+                      >
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <span className="text-muted-foreground">{cleanDescription}</span>
+                            {paymentMethodLabel && (
+                              <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-normal text-muted-foreground">
+                                {paymentMethodLabel}
+                              </Badge>
+                            )}
                           </div>
-                          <span className="text-muted-foreground">
-                            {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
+                          <span className="text-[11px] text-muted-foreground/70">
+                            {format(parseISO(transaction.date), "dd/MM/yyyy", { locale: ptBR })}
                           </span>
                         </div>
-                      );
-                    })}
-                  </div>
+                        <span className="text-muted-foreground">
+                          {transaction.type === "income" ? "+" : "-"}{formatCurrency(transaction.amount)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -761,7 +761,7 @@ export function OrderDetailDialog({
                     <CreditCard className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                     <p className="font-semibold">Pagamento Antecipado</p>
                   </div>
-                  
+
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-muted-foreground">Valor Total</span>
@@ -770,8 +770,8 @@ export function OrderDetailDialog({
 
                     <div className="space-y-2">
                       <Label className="text-sm">Forma de Pagamento</Label>
-                      <Select 
-                        value={selectedPaymentMethod} 
+                      <Select
+                        value={selectedPaymentMethod}
                         onValueChange={(value) => setSelectedPaymentMethod(value as 'pix' | 'credit_card' | 'link')}
                       >
                         <SelectTrigger className="h-10">
@@ -794,8 +794,8 @@ export function OrderDetailDialog({
                               type="button"
                               className={cn(
                                 "px-3 py-1 text-xs font-medium transition-colors",
-                                feeType === 'percentage' 
-                                  ? "bg-primary text-primary-foreground" 
+                                feeType === 'percentage'
+                                  ? "bg-primary text-primary-foreground"
                                   : "bg-muted hover:bg-muted/80"
                               )}
                               onClick={() => {
@@ -809,8 +809,8 @@ export function OrderDetailDialog({
                               type="button"
                               className={cn(
                                 "px-3 py-1 text-xs font-medium transition-colors",
-                                feeType === 'value' 
-                                  ? "bg-primary text-primary-foreground" 
+                                feeType === 'value'
+                                  ? "bg-primary text-primary-foreground"
                                   : "bg-muted hover:bg-muted/80"
                               )}
                               onClick={() => {
@@ -882,9 +882,9 @@ export function OrderDetailDialog({
                       <PackageCheck className="h-5 w-5 text-primary" />
                       <p className="font-medium">Pronto para entregar?</p>
                     </div>
-                    <Button 
+                    <Button
                       onClick={() => handleStatusChange("delivered")}
-                      className="bg-success hover:bg-success/90 text-success-foreground"
+                      className="bg-blue-200 hover:bg-blue-300 text-blue-900"
                     >
                       <Check className="mr-2 h-4 w-4" />
                       Marcar como Entregue
@@ -995,10 +995,10 @@ export function OrderDetailDialog({
               <strong>Pagamento Final</strong> no valor de{" "}
               <strong className="text-destructive">
                 {formatCurrency(
-                  order.full_payment_received 
+                  order.full_payment_received
                     ? (order.total_amount || 0) - (order.payment_fee || 0)
-                    : order.deposit_paid 
-                      ? (order.total_amount || 0) / 2 
+                    : order.deposit_paid
+                      ? (order.total_amount || 0) / 2
                       : (order.total_amount || 0)
                 )}
               </strong>{" "}

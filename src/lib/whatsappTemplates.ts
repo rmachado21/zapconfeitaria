@@ -229,9 +229,11 @@ export function getAvailableTemplates(context: {
     templates.push("deposit_collection");
   }
 
-  // Add order confirmed if deposit paid or full payment received (order is confirmed)
+  // Add order confirmed only if deposit paid AND full payment NOT received
+  // (If full payment received, we use payment_thanks instead)
   if (
-    (context.depositPaid || context.fullPaymentReceived) &&
+    context.depositPaid &&
+    !context.fullPaymentReceived &&
     context.status !== "delivered" &&
     context.status !== "cancelled"
   ) {

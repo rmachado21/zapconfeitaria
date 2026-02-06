@@ -169,7 +169,7 @@ export default function Landing() {
                   animationDelay: "0.2s",
                 }}
               >
-                Organize sua confeitaria e <span className="text-primary">aumente seus lucros</span>
+                Transforme seus doces em um negócio <span className="text-primary">Lucrativo e Organizado</span>
               </h1>
               <p
                 className="text-lg md:text-xl text-muted-foreground mb-8 opacity-0 animate-fade-in-up"
@@ -590,8 +590,8 @@ export default function Landing() {
             {/* Contact Column */}
             <div className="flex flex-col items-center md:items-start gap-4">
               <h4 className="font-semibold text-white">Contato</h4>
-              <a 
-                href="mailto:suporte@zapconfeitaria.com.br" 
+              <a
+                href="mailto:suporte@zapconfeitaria.com.br"
                 className="flex items-center gap-2 text-sm text-slate-400 hover:text-white transition-colors"
               >
                 <Mail className="h-4 w-4" />
@@ -610,9 +610,9 @@ export default function Landing() {
               </p>
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <span>Feito com ❤️ por</span>
-                <a 
-                  href="https://digitrail.com.br" 
-                  target="_blank" 
+                <a
+                  href="https://digitrail.com.br"
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="hover:opacity-80 transition-opacity"
                 >

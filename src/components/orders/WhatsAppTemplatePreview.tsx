@@ -89,7 +89,7 @@ export function WhatsAppTemplatePreview({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button className="flex-1 h-11 sm:h-10 bg-[#25D366] hover:bg-[#20BD5A] text-white" disabled={disabled}>
+        <Button className="flex-1 h-11 sm:h-10 bg-[#20BD5A] hover:bg-[#25D366] text-white" disabled={disabled}>
           <WhatsAppIcon className="mr-2 h-4 w-4" />
           WhatsApp
           <ChevronDown className="ml-2 h-4 w-4" />
@@ -116,7 +116,7 @@ export function WhatsAppTemplatePreview({
           {/* Template Selection */}
           <div className="p-4 border-b">
             <p className="text-sm font-medium mb-3">Escolha o modelo:</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               {availableTemplates.map((templateType) => {
                 const template = WHATSAPP_TEMPLATES[templateType];
                 if (!template) return null;
