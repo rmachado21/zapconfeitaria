@@ -55,7 +55,7 @@ Obrigada! 💕`,
   },
   order_confirmed: {
     id: "order_confirmed",
-    name: "Confirmar Pagamento Sinal",
+    name: "Confirmar Pgto Sinal",
     template: `Olá [Nome]! ✨
 
 Seu pedido [Pedido] está confirmado! 🎉
@@ -70,7 +70,7 @@ Obrigada pela preferência! 💕`,
   },
   payment_thanks: {
     id: "payment_thanks",
-    name: "Agradecer Pgto 100%",
+    name: "Confirmar Pgto Total",
     template: `Olá [Nome]! 💚
 
 Muito obrigada pelo pagamento do pedido [Pedido]! ✅
@@ -235,7 +235,8 @@ export function getAvailableTemplates(context: {
     context.depositPaid &&
     !context.fullPaymentReceived &&
     context.status !== "delivered" &&
-    context.status !== "cancelled"
+    context.status !== "cancelled" &&
+    context.status !== "ready"
   ) {
     templates.push("order_confirmed");
   }
